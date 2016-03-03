@@ -19,18 +19,13 @@ source:
 	gzip -f9n ../${APP}_${VERSION}.orig.tar
 install:
 	mkdir -p ${DESTDIR}/usr
-	mkdir -p ${DESTDIR}${PREFIX}
-	mkdir -p ${DESTDIR}${PREFIX}/${LIBDIR}
 	mkdir -p ${DESTDIR}${PREFIX}/${LIBDIR}/${APP}
-	mkdir -p ${DESTDIR}${PREFIX}/include
 	mkdir -p ${DESTDIR}${PREFIX}/include/${APP}
 	cp src/*.h ${DESTDIR}${PREFIX}/include/${APP}
 	install -m 755 ${LIBNAME} ${DESTDIR}${PREFIX}/${LIBDIR}
 	ln -sf ${DESTDIR}${PREFIX}/${LIBDIR}/${LIBNAME} ${DESTDIR}${PREFIX}/${LIBDIR}/${SONAME}
 	ln -sf ${DESTDIR}${PREFIX}/${LIBDIR}/${LIBNAME} ${DESTDIR}${PREFIX}/${LIBDIR}/${APP}.so
 	ldconfig
-	mkdir -m 755 -p ${DESTDIR}${PREFIX}/share
-	mkdir -m 755 -p ${DESTDIR}${PREFIX}/share/man
 	mkdir -m 755 -p ${DESTDIR}${PREFIX}/share/man/man1
 	install -m 644 man/${APP}.1.gz ${DESTDIR}${PREFIX}/share/man/man1
 uninstall:
@@ -42,15 +37,10 @@ uninstall:
 	ldconfig
 instlib:
 	mkdir -p ${DESTDIR}/usr
-	mkdir -p ${DESTDIR}${PREFIX}
-	mkdir -p ${DESTDIR}${PREFIX}/${LIBDIR}
 	mkdir -p ${DESTDIR}${PREFIX}/${LIBDIR}/${APP}
-	mkdir -p ${DESTDIR}${PREFIX}/include
 	mkdir -p ${DESTDIR}${PREFIX}/include/${APP}
 	cp src/*.h ${DESTDIR}${PREFIX}/include/${APP}
 	install -m 755 ${LIBNAME} ${DESTDIR}${PREFIX}/${LIBDIR}
-	mkdir -m 755 -p ${DESTDIR}${PREFIX}/share
-	mkdir -m 755 -p ${DESTDIR}${PREFIX}/share/man
 	mkdir -m 755 -p ${DESTDIR}${PREFIX}/share/man/man1
 	install -m 644 man/${APP}.1.gz ${DESTDIR}${PREFIX}/share/man/man1
 clean:
