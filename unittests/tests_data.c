@@ -74,6 +74,14 @@ static void test_data_add()
         free(outputs);
     }
     assert(learner.data_samples == 5);
+    assert(learner.indexed_data_samples == 0);
+
+    assert(deeplearndata_index_data(
+            learner.data,
+            learner.data_samples,
+            &learner.indexed_data,
+            &learner.indexed_data_samples) == 0);
+    assert(learner.indexed_data_samples == 5);
 
     /* check that the samples have the expected values.
        Note that the sequence is reversed */
@@ -151,14 +159,28 @@ static void test_data_training_test()
         free(outputs);
     }
     assert(learner.data_samples == 100);
+    assert(learner.indexed_data_samples == 0);
+
+    assert(deeplearndata_index_data(
+            learner.data,
+            learner.data_samples,
+            &learner.indexed_data,
+            &learner.indexed_data_samples) == 0);
+    assert(learner.indexed_data_samples == 100);
 
     assert(learner.training_data_samples == 0);
     assert(learner.training_data_labeled_samples == 0);
     assert(learner.test_data_samples == 0);
+    assert(learner.indexed_training_data_samples == 0);
+    assert(learner.indexed_training_data_labeled_samples == 0);
+    assert(learner.indexed_test_data_samples == 0);
     assert(deeplearndata_create_datasets(&learner, 20) == 0);
     assert(learner.training_data_samples == 80);
     assert(learner.training_data_labeled_samples == 77);
     assert(learner.test_data_samples == 20);
+    assert(learner.indexed_training_data_samples == 80);
+    assert(learner.indexed_training_data_labeled_samples == 77);
+    assert(learner.indexed_test_data_samples == 20);
 
     /* check that all test samples are labeled */
     for (int i = 0; i < learner.test_data_samples; i++) {
