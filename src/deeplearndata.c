@@ -132,23 +132,53 @@ int deeplearndata_add(deeplearndata ** datalist,
 }
 
 /**
-* @brief Returns a metadata sample
-* @param Pointer to the metadata list
-* @returns metadata object
+* @brief Indexes data for fast read access
+* @param meta Pointer to the data list
+* @param samples The size of the data list
+* @param indexed_list Pointer to the indexed data list
+* @param indexed_samples Pointer to the size of the indexed data list
+* @returns 0 if data indexed successfully, 1 if samples does not match list size
 */
-static deeplearndata_meta * deeplearndata_get_meta(deeplearndata_meta * list, int index)
+int deeplearndata_index_data(
+        deeplearndata * list,
+        int samples,
+        deeplearndata *** indexed_list,
+        int* indexed_samples)
 {
-    int i = 0;
-    deeplearndata_meta * ptr = list;
-
-    while (i < index) {
-        if (ptr == 0) {
-            break;
-        }
-        ptr = (deeplearndata_meta*)ptr->next;
-        i++;
+    *indexed_list = (deeplearndata**)malloc(samples*sizeof(deeplearndata*));
+    deeplearndata* data_head = list;
+    *indexed_samples = 0;
+    for(int i = 0; i < samples && data_head != 0; ++i) {
+        (*indexed_list)[i] = data_head;
+        data_head = data_head->next;
+        (*indexed_samples)++;
     }
-    return ptr;
+    return *indexed_samples == samples ? 0 : 1;
+}
+
+/**
+* @brief Indexes metadata for fast read access
+* @param meta Pointer to the metadata list
+* @param samples The size of the metadata list
+* @param indexed_list Pointer to the indexed metadata list
+* @param indexed_samples Pointer to the size of the indexed metadata list
+* @returns 0 if data indexed successfully, 1 if samples does not match list size
+*/
+int deeplearndata_index_meta(
+        deeplearndata_meta * list,
+        int samples,
+        deeplearndata_meta *** indexed_list,
+        int* indexed_samples)
+{
+    *indexed_list = (deeplearndata_meta**)malloc(samples*sizeof(deeplearndata_meta*));
+    deeplearndata_meta* data_head = list;
+    *indexed_samples = 0;
+    for(int i = 0; i < samples && data_head != 0; ++i) {
+        (*indexed_list)[i] = data_head;
+        data_head = data_head->next;
+        (*indexed_samples)++;
+    }
+    return *indexed_samples == samples ? 0 : 1;
 }
 
 /**
@@ -158,10 +188,11 @@ static deeplearndata_meta * deeplearndata_get_meta(deeplearndata_meta * list, in
 */
 deeplearndata * deeplearndata_get_training(deeplearn * learner, int index)
 {
-    if ((index < 0) || (index >= learner->training_data_samples)) {
+    if ((index < 0) || (index >= learner->indexed_training_data_samples)) {
         return 0;
     }
-    deeplearndata_meta * meta = deeplearndata_get_meta(learner->training_data, index);
+
+    deeplearndata_meta * meta = learner->indexed_training_data[index];
     if (meta == 0) {
         return 0;
     }
@@ -175,10 +206,11 @@ deeplearndata * deeplearndata_get_training(deeplearn * learner, int index)
 */
 deeplearndata * deeplearndata_get_training_labeled(deeplearn * learner, int index)
 {
-    if ((index < 0) || (index >= learner->training_data_labeled_samples)) {
+    if ((index < 0) || (index >= learner->indexed_training_data_labeled_samples)) {
         return 0;
     }
-    deeplearndata_meta * meta = deeplearndata_get_meta(learner->training_data_labeled, index);
+
+    deeplearndata_meta * meta = learner->indexed_training_data_labeled[index];
     if (meta == 0) {
         return 0;
     }
@@ -192,10 +224,11 @@ deeplearndata * deeplearndata_get_training_labeled(deeplearn * learner, int inde
 */
 deeplearndata * deeplearndata_get_test(deeplearn * learner, int index)
 {
-    if ((index < 0) || (index >= learner->test_data_samples)) {
+    if ((index < 0) || (index >= learner->indexed_test_data_samples)) {
         return 0;
     }
-    deeplearndata_meta * meta = deeplearndata_get_meta(learner->test_data, index);
+
+    deeplearndata_meta * meta = learner->indexed_test_data[index];
     if (meta == 0) {
         return 0;
     }
@@ -209,20 +242,13 @@ deeplearndata * deeplearndata_get_test(deeplearn * learner, int index)
 */
 deeplearndata * deeplearndata_get(deeplearn * learner, int index)
 {
-    int i = 0;
-    deeplearndata * ptr = learner->data;
 
     /* range checking of the index */
-    if ((index < 0) || (index >= learner->data_samples)) {
+    if ((index < 0) || (index >= learner->indexed_data_samples)) {
       return 0;
     }
-    while (i < index) {
-        if (ptr == 0) {
-            break;
-        }
-        ptr = (deeplearndata*)ptr->next;
-        i++;
-    }
+
+    deeplearndata * ptr = learner->indexed_data[index];
     return ptr;
 }
 
@@ -255,6 +281,9 @@ static void deeplearndata_free_datasets(deeplearn * learner)
     }
     learner->training_data = 0;
     learner->training_data_samples = 0;
+    free(learner->indexed_training_data);
+    learner->indexed_training_data = 0;
+    learner->indexed_training_data_samples = 0;
 
     /* free labeled training samples */
     deeplearndata_meta * training_sample_labeled = learner->training_data_labeled;
@@ -266,6 +295,9 @@ static void deeplearndata_free_datasets(deeplearn * learner)
     }
     learner->training_data_labeled = 0;
     learner->training_data_labeled_samples = 0;
+    free(learner->indexed_training_data_labeled);
+    learner->indexed_training_data_labeled = 0;
+    learner->indexed_training_data_labeled_samples = 0;
 
     /* free test samples */
     deeplearndata_meta * test_sample = learner->test_data;
@@ -277,6 +309,9 @@ static void deeplearndata_free_datasets(deeplearn * learner)
     }
     learner->test_data = 0;
     learner->test_data_samples = 0;
+    free(learner->indexed_test_data);
+    learner->indexed_test_data = 0;
+    learner->indexed_test_data_samples = 0;
 }
 
 /**
@@ -412,6 +447,10 @@ int deeplearndata_create_datasets(deeplearn * learner, int test_data_percentage)
         }
     }
 
+    /* create the indexed array for fast access */
+    deeplearndata_index_meta(learner->training_data, learner->training_data_samples, &learner->indexed_training_data, &learner->indexed_training_data_samples);
+    deeplearndata_index_meta(learner->training_data_labeled, learner->training_data_labeled_samples, &learner->indexed_training_data_labeled, &learner->indexed_training_data_labeled_samples);
+
     /* create test samples */
     sample = learner->data;
     while (sample != 0) {
@@ -433,6 +472,9 @@ int deeplearndata_create_datasets(deeplearn * learner, int test_data_percentage)
         }
         sample = (deeplearndata*)sample->next;
     }
+
+    /* create the indexed array for fast access */
+    deeplearndata_index_meta(learner->test_data, learner->test_data_samples, &learner->indexed_test_data, &learner->indexed_test_data_samples);
 
     return 0;
 }
@@ -644,6 +686,9 @@ int deeplearndata_read_csv(char * filename,
     learner->data = data;
     learner->data_samples = data_samples;
 
+    /* create the indexed array for fast access */
+    deeplearndata_index_data(learner->data, learner->data_samples, &learner->indexed_data, &learner->indexed_data_samples);
+
     /* set the field ranges */
     for (i = 0; i < no_of_input_fields; i++) {
         learner->input_range_min[i] = input_range_min[i];
@@ -722,7 +767,7 @@ float deeplearndata_get_performance(deeplearn * learner)
     float * outputs = (float*)malloc(learner->net->NoOfOutputs*sizeof(float));
 
     for (index = 0; index < learner->test_data_samples; index++) {
-        deeplearndata * sample = deeplearndata_get_training(learner, index);
+        deeplearndata * sample = deeplearndata_get_test(learner, index);
         deeplearn_set_inputs(learner, sample);
         deeplearn_feed_forward(learner);
         deeplearn_get_outputs(learner, outputs);

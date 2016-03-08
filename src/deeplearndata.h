@@ -51,6 +51,16 @@ int deeplearndata_add(deeplearndata ** datalist,
                       float input_range_max[],
                       float output_range_min[],
                       float output_range_max[]);
+int deeplearndata_index_data(
+        deeplearndata * list,
+        int samples,
+        deeplearndata *** indexed_list,
+        int* indexed_samples);
+int deeplearndata_index_meta(
+        deeplearndata_meta * list,
+        int samples,
+        deeplearndata_meta *** indexed_list,
+        int* indexed_samples);
 deeplearndata * deeplearndata_get(deeplearn * learner, int index);
 deeplearndata * deeplearndata_get_training(deeplearn * learner, int index);
 deeplearndata * deeplearndata_get_training_labeled(deeplearn * learner, int index);

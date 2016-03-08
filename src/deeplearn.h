@@ -39,7 +39,7 @@
 #include "encoding.h"
 #include "deeplearn_conv.h"
 
-typedef struct {
+struct deeplearndata {
     float * inputs;
     char ** inputs_text;
     float * outputs;
@@ -47,13 +47,15 @@ typedef struct {
     unsigned int labeled;
     struct deeplearndata * prev;
     struct deeplearndata * next;
-} deeplearndata;
+};
+typedef struct deeplearndata deeplearndata;
 
-typedef struct {
+struct deeplearndata_meta {
     deeplearndata * sample;
     struct deeplearndata_meta * prev;
     struct deeplearndata_meta * next;
-} deeplearndata_meta;
+};
+typedef struct deeplearndata_meta deeplearndata_meta;
 
 struct deepl {
     bp * net;
@@ -68,12 +70,23 @@ struct deepl {
 
     deeplearndata * data;
     int data_samples;
+    deeplearndata ** indexed_data;
+    int indexed_data_samples;
+
     deeplearndata_meta * training_data;
     int training_data_samples;
+    deeplearndata_meta ** indexed_training_data;
+    int indexed_training_data_samples;
+
     deeplearndata_meta * training_data_labeled;
     int training_data_labeled_samples;
+    deeplearndata_meta ** indexed_training_data_labeled;
+    int indexed_training_data_labeled_samples;
+
     deeplearndata_meta * test_data;
     int test_data_samples;
+    deeplearndata_meta ** indexed_test_data;
+    int indexed_test_data_samples;
 
     float * input_range_min;
     float * input_range_max;

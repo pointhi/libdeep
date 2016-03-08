@@ -108,12 +108,23 @@ int deeplearn_init(deeplearn * learner,
     /* no training/test data yet */
     learner->data = 0;
     learner->data_samples = 0;
+    learner->indexed_data = 0;
+    learner->indexed_data_samples = 0;
+
     learner->training_data = 0;
     learner->training_data_samples = 0;
+    learner->indexed_training_data = 0;
+    learner->indexed_training_data_samples = 0;
+
     learner->training_data_labeled = 0;
     learner->training_data_labeled_samples = 0;
+    learner->indexed_training_data_labeled = 0;
+    learner->indexed_training_data_labeled_samples = 0;
+
     learner->test_data = 0;
     learner->test_data_samples = 0;
+    learner->indexed_test_data = 0;
+    learner->indexed_test_data_samples = 0;
 
     learner->no_of_input_fields = 0;
     learner->field_length = 0;

@@ -327,8 +327,11 @@ static void test_deeplearn_csv_with_text()
                            &random_seed);
 
     assert(learner.training_data_samples == 6);
+    assert(learner.indexed_training_data_samples == 6);
     assert(learner.training_data_labeled_samples == 6);
+    assert(learner.indexed_training_data_labeled_samples == 6);
     assert(learner.test_data_samples == 2);
+    assert(learner.indexed_test_data_samples == 2);
     assert(learner.net->NoOfInputs == 2 + (5*CHAR_BITS));
     assert(learner.no_of_input_fields == 3);
 
@@ -390,8 +393,11 @@ static void test_deeplearn_csv_numeric()
                            &random_seed);
 
     assert(learner.training_data_samples == 6);
+    assert(learner.indexed_training_data_samples == 6);
     assert(learner.training_data_labeled_samples == 6);
+    assert(learner.indexed_training_data_labeled_samples == 6);
     assert(learner.test_data_samples == 2);
+    assert(learner.indexed_test_data_samples == 2);
     assert(learner.net->NoOfInputs == 3);
     assert(learner.no_of_input_fields == 3);
 
