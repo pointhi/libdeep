@@ -1,6 +1,6 @@
 /*
  libdeep - a library for deep learning
- Copyright (C) 2013  Bob Mottram <bob@robotics.uk.to>
+ Copyright (C) 2013-2016  Bob Mottram <bob@robotics.uk.to>
 
  Redistribution and use in source and binary forms, with or without
  modification, are permitted provided that the following conditions
@@ -44,4 +44,14 @@ int rand_num(unsigned int * seed)
 
     *seed = v;
     return abs((int)v);
+}
+
+/**
+ * @brief Returns a small random value used to initialise weights
+ * @param seed Random number generator seed
+ * @return Small random value
+ */
+float rand_initial_weight(unsigned int * seed)
+{
+    return (0.2f*(rand_num(seed)%100000/100000.0f)) - 0.1f;
 }

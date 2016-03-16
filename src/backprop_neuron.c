@@ -1,18 +1,18 @@
 /*
  libdeep - a library for deep learning
- Copyright (C) 2013-2015  Bob Mottram <bob@robotics.uk.to>
+ Copyright (C) 2013-2016  Bob Mottram <bob@robotics.uk.to>
 
  Redistribution and use in source and binary forms, with or without
  modification, are permitted provided that the following conditions
  are met:
  1. Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
+ notice, this list of conditions and the following disclaimer.
  2. Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
+ notice, this list of conditions and the following disclaimer in the
+ documentation and/or other materials provided with the distribution.
  3. Neither the name of the University nor the names of its contributors
-    may be used to endorse or promote products derived from this software
-    without specific prior written permission.
+ may be used to endorse or promote products derived from this software
+ without specific prior written permission.
  .
  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
@@ -30,30 +30,21 @@
 #include "backprop_neuron.h"
 
 /**
-* @brief Randomly initialises the weights within the given range
-* @param n Backprop neuron object
-* @param minVal The minimum weight value
-* @param maxVal The maximum weight value
-* @param random_seed Random number generator seed
-*/
+ * @brief Randomly initialises the weights within the given range
+ * @param n Backprop neuron object
+ * @param random_seed Random number generator seed
+ */
 static void bp_neuron_init_weights(bp_neuron * n,
-                                   float minVal, float maxVal,
                                    unsigned int * random_seed)
 {
-    float min, max;
     int i;
-
-    min = minVal;
-    max = maxVal;
 
     n->min_weight = 9999;
     n->max_weight = -9999;
 
     /* do the weights */
     for (i = 0; i < n->NoOfInputs; i++) {
-        n->weights[i] =
-            min + (((rand_num(random_seed)%10000)/10000.0f) *
-                   (max - min));
+        n->weights[i] = rand_initial_weight(random_seed);
         n->lastWeightChange[i] = 0;
         if (n->weights[i] < n->min_weight) {
             n->min_weight = n->weights[i];
@@ -64,9 +55,7 @@ static void bp_neuron_init_weights(bp_neuron * n,
     }
 
     /* dont forget the bias value */
-    n->bias =
-        min + (((rand_num(random_seed)%10000)/10000.0f) *
-               (max - min));
+    n->bias = rand_initial_weight(random_seed);
     n->lastBiasChange = 0;
 }
 
@@ -79,7 +68,7 @@ void bp_neuron_copy(bp_neuron * source,
                     bp_neuron * dest)
 {
     /* check that the source and destination have the same
-        number of inputs */
+	   number of inputs */
     if (source->NoOfInputs !=
         dest->NoOfInputs) {
         printf("Warning: neurons have different numbers of inputs\n");
@@ -125,7 +114,7 @@ int bp_neuron_init(bp_neuron * n,
         return -2;
     }
 
-    bp_neuron_init_weights(n, -0.1f, 0.1f, random_seed);
+    bp_neuron_init_weights(n, random_seed);
     n->desiredValue = -1;
     n->value = 0;
     n->value_reprojected = 0;
