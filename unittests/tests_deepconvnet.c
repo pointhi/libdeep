@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2015  Bob Mottram <bob@robotics.uk.to>
+  Copyright (C) 2015-2016  Bob Mottram <bob@robotics.uk.to>
 
   Redistribution and use in source and binary forms, with or without
   modification, are permitted provided that the following conditions
@@ -61,6 +61,26 @@ static void test_init()
     printf("Ok\n");
 }
 
+static void set_pattern(unsigned char img[],
+                        int img_width, int img_height,
+                        int depth,
+                        int pattern[])
+{
+    for (int y = 0; y < img_height; y++) {
+        int yy = y * 7 / img_height;
+        for (int x = 0; x < img_width; x++) {
+            int xx = x * 7 / img_width;
+            int n0 = (y*img_width + x) * depth;
+            int n1 = yy*7 + xx;
+            if (pattern[n1] != 0) {
+                for (int c = 0; c < depth; c++) {
+                    img[n0+c] = 255;
+                }
+            }
+        }
+    }
+}
+
 static void set_test_pattern(unsigned char img[],
                              int img_width, int img_height,
                              int depth, int shape)
@@ -78,19 +98,7 @@ static void set_test_pattern(unsigned char img[],
             0,0,1,1,1,0,0,
             0,0,0,0,0,0,0
         };
-        for (int y = 0; y < img_height; y++) {
-            int yy = y * 7 / img_height;
-            for (int x = 0; x < img_width; x++) {
-                int xx = x * 7 / img_width;
-                int n0 = (y*img_width + x) * depth;
-                int n1 = yy*7 + xx;
-                if (pattern[n1] != 0) {
-                    for (int c = 0; c < depth; c++) {
-                        img[n0+c] = 255;
-                    }
-                }
-            }
-        }
+        set_pattern(img, img_width, img_height, depth, pattern);
         break;
     }
     case 1: {
@@ -103,19 +111,7 @@ static void set_test_pattern(unsigned char img[],
             0,0,0,1,0,0,0,
             0,0,0,0,0,0,0
         };
-        for (int y = 0; y < img_height; y++) {
-            int yy = y * 7 / img_height;
-            for (int x = 0; x < img_width; x++) {
-                int xx = x * 7 / img_width;
-                int n0 = (y*img_width + x) * depth;
-                int n1 = yy*7 + xx;
-                if (pattern[n1] != 0) {
-                    for (int c = 0; c < depth; c++) {
-                        img[n0+c] = 255;
-                    }
-                }
-            }
-        }
+        set_pattern(img, img_width, img_height, depth, pattern);
         break;
     }
     case 2: {
@@ -128,19 +124,7 @@ static void set_test_pattern(unsigned char img[],
             1,0,1,0,1,0,0,
             0,0,0,0,0,0,0
         };
-        for (int y = 0; y < img_height; y++) {
-            int yy = y * 7 / img_height;
-            for (int x = 0; x < img_width; x++) {
-                int xx = x * 7 / img_width;
-                int n0 = (y*img_width + x) * depth;
-                int n1 = yy*7 + xx;
-                if (pattern[n1] != 0) {
-                    for (int c = 0; c < depth; c++) {
-                        img[n0+c] = 255;
-                    }
-                }
-            }
-        }
+        set_pattern(img, img_width, img_height, depth, pattern);
         break;
     }
     case 3: {
@@ -153,19 +137,7 @@ static void set_test_pattern(unsigned char img[],
             0,1,1,1,1,1,0,
             0,0,0,0,0,0,0
         };
-        for (int y = 0; y < img_height; y++) {
-            int yy = y * 7 / img_height;
-            for (int x = 0; x < img_width; x++) {
-                int xx = x * 7 / img_width;
-                int n0 = (y*img_width + x) * depth;
-                int n1 = yy*7 + xx;
-                if (pattern[n1] != 0) {
-                    for (int c = 0; c < depth; c++) {
-                        img[n0+c] = 255;
-                    }
-                }
-            }
-        }
+        set_pattern(img, img_width, img_height, depth, pattern);
         break;
     }
     case 4: {
@@ -178,19 +150,7 @@ static void set_test_pattern(unsigned char img[],
             0,0,1,0,1,0,0,
             0,0,0,0,0,0,0
         };
-        for (int y = 0; y < img_height; y++) {
-            int yy = y * 7 / img_height;
-            for (int x = 0; x < img_width; x++) {
-                int xx = x * 7 / img_width;
-                int n0 = (y*img_width + x) * depth;
-                int n1 = yy*7 + xx;
-                if (pattern[n1] != 0) {
-                    for (int c = 0; c < depth; c++) {
-                        img[n0+c] = 255;
-                    }
-                }
-            }
-        }
+        set_pattern(img, img_width, img_height, depth, pattern);
         break;
     }
     }
@@ -294,13 +254,13 @@ static void test_learn_test_patterns()
     int inputs_across = 32;
     int inputs_down = 32;
     int inputs_depth = 3;
-    int max_features = 20;
+    int max_features = 8;
     int reduction_factor = 2;
-    int no_of_outputs = 3;
+    int no_of_outputs = 5;
     deepconvnet convnet;
-    float error_threshold[] = { 2.0, 13.0, 5.0, 5.0, 5.0 };
+    float error_threshold[] = { 1.5, 7.0, 5.0, 5.0, 33.0 };
     float prev_error = DEEPLEARN_UNKNOWN_ERROR;
-    int prev_layer = 0;
+    int prev_layer = 0, ctr = 0, i, score = 0;
     unsigned int random_seed = 7423;
     unsigned char * img =
         (unsigned char*)malloc(inputs_across*inputs_down*
@@ -320,7 +280,10 @@ static void test_learn_test_patterns()
                             error_threshold,
                             &random_seed) == 0);
 
-    int training_itteration = 0;
+	convnet.history_plot_interval=200;
+	deepconvnet_set_learning_rate(&convnet, 0.1f);
+
+	int training_itteration = 0;
     while (convnet.training_complete == 0) {
         /* create the input image */
         set_test_pattern(img, inputs_across, inputs_down,
@@ -331,30 +294,48 @@ static void test_learn_test_patterns()
                                       training_itteration%no_of_outputs) == 0);
 
         /* check that a valid backprop error exists */
-        if (training_itteration%20 == 0) {
+        if (training_itteration%30 == 0) {
             if (!(convnet.BPerror == DEEPLEARN_UNKNOWN_ERROR)) {
                 if ((!(prev_error == DEEPLEARN_UNKNOWN_ERROR)) &&
                     (prev_layer == convnet.current_layer)) {
-                    assert(prev_error > convnet.BPerror);
+                    if (prev_error <= convnet.BPerror) {
+                        ctr++;
+                        assert(ctr < 10);
+                    }
+                    else {
+                        ctr = 0;
+                    }
+                }
+                else {
+                    ctr = 0;
                 }
                 prev_error = convnet.BPerror;
                 prev_layer = convnet.current_layer;
             }
         }
 
-        if (convnet.current_layer >= 4) {
-            printf("%d/%d BPerror: %f/%f\n",
-                   convnet.current_layer, no_of_convolutions + no_of_deep_layers,
-                   convnet.BPerror, error_threshold[convnet.current_layer]);
-        }
-
         training_itteration++;
     }
+
+    /* test the system */
+    for (i = 0; i < no_of_outputs; i++) {
+        /* input pattern */
+        set_test_pattern(img, inputs_across, inputs_down,
+                         inputs_depth, i);
+        assert(deepconvnet_test_img(&convnet, img) == 0);
+        if (deepconvnet_get_class(&convnet) == i) score++;
+    }
+    assert(score > 0);
 
     deepconvnet_free(&convnet);
     free(img);
 
-    printf("Ok\n");
+    if (score < no_of_outputs) {
+        printf("WARNING: score %d/%d\n", score, no_of_outputs);
+    }
+    else {
+        printf("Ok\n");
+    }
 }
 
 int run_tests_deepconvnet()

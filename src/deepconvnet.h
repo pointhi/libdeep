@@ -1,6 +1,6 @@
 /*
  libdeep - a library for deep learning
- Copyright (C) 2015  Bob Mottram <bob@robotics.uk.to>
+ Copyright (C) 2015-2016  Bob Mottram <bob@robotics.uk.to>
 
  Redistribution and use in source and binary forms, with or without
  modification, are permitted provided that the following conditions
@@ -86,6 +86,7 @@ int deepconvnet_save(FILE * fp, deepconvnet * convnet);
 int deepconvnet_load(FILE * fp, deepconvnet * convnet,
                      unsigned int * random_seed);
 int deepconvnet_update_img(deepconvnet * convnet, unsigned char img[], int class_number);
+int deepconvnet_test_img(deepconvnet * convnet, unsigned char img[]);
 void deepconvnet_set_learning_rate(deepconvnet * convnet, float rate);
 void deepconvnet_set_dropouts(deepconvnet * convnet, float dropout_percent);
 int deepconvnet_read_images(char * directory,
@@ -111,5 +112,6 @@ int deepconvnet_plot_features(deepconvnet * convnet,
                               int layer_index,
                               char * filename,
                               int img_width, int img_height);
+void deepconvnet_set_learning_rate(deepconvnet * convnet, float rate);
 
 #endif
