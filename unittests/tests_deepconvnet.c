@@ -340,12 +340,12 @@ static void test_learn_test_patterns()
 
 int run_tests_deepconvnet()
 {
-    printf("\nRunning deepconvnet tests\n");
+	printf("\nRunning deepconvnet tests\n");
 
-    test_init();
-    test_update_img();
-    test_learn_test_patterns();
+	test_init();
+	test_update_img();
+	test_learn_test_patterns();
 
-    printf("All deepconvnet tests completed\n");
-    return 1;
+	printf("All deepconvnet tests completed\n");
+	return 1;
 }

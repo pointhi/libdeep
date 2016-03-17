@@ -44,6 +44,8 @@
 
 int main(int argc, char* argv[])
 {
+	system("rm training.png");
+
     run_tests_autocoder();
     run_tests_backprop();
     run_tests_images();
