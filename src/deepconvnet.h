@@ -113,5 +113,6 @@ int deepconvnet_plot_features(deepconvnet * convnet,
                               char * filename,
                               int img_width, int img_height);
 void deepconvnet_set_learning_rate(deepconvnet * convnet, float rate);
+int deepconvnet_is_training(deepconvnet * convnet);
 
 #endif

@@ -1,18 +1,18 @@
 /*
  libdeep - a library for deep learning
- Copyright (C) 2013-2015  Bob Mottram <bob@robotics.uk.to>
+ Copyright (C) 2013-2016  Bob Mottram <bob@robotics.uk.to>
 
  Redistribution and use in source and binary forms, with or without
  modification, are permitted provided that the following conditions
  are met:
  1. Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
+ notice, this list of conditions and the following disclaimer.
  2. Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
+ notice, this list of conditions and the following disclaimer in the
+ documentation and/or other materials provided with the distribution.
  3. Neither the name of the University nor the names of its contributors
-    may be used to endorse or promote products derived from this software
-    without specific prior written permission.
+ may be used to endorse or promote products derived from this software
+ without specific prior written permission.
  .
  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
@@ -72,14 +72,15 @@ int features_learn_from_flt(int samples_across,
                             float * BPerror);
 
 int features_conv_img_to_neurons(int samples_across,
-                                   int samples_down,
-                                   int patch_radius,
-                                   int img_width,
-                                   int img_height,
-                                   int img_depth,
-                                   unsigned char img[],
-                                   bp * net,
-                                   ac * feature_autocoder);
+                                 int samples_down,
+                                 int patch_radius,
+                                 int img_width,
+                                 int img_height,
+                                 int img_depth,
+                                 unsigned char img[],
+                                 bp * net,
+                                 ac * feature_autocoder,
+                                 unsigned char use_dropouts);
 
 int features_conv_img_to_flt(int samples_across,
                              int samples_down,
@@ -90,7 +91,8 @@ int features_conv_img_to_flt(int samples_across,
                              unsigned char img[],
                              int layer0_units,
                              float layer0[],
-                             ac * feature_autocoder);
+                             ac * feature_autocoder,
+                             unsigned char use_dropouts);
 
 int features_conv_flt_to_flt(int samples_across,
                              int samples_down,
@@ -101,7 +103,8 @@ int features_conv_flt_to_flt(int samples_across,
                              float layer0[],
                              int layer1_units,
                              float layer1[],
-                             ac * feature_autocoder);
+                             ac * feature_autocoder,
+                             unsigned char use_dropouts);
 
 int features_conv_floats_to_neurons(int samples_across,
                                     int samples_down,
@@ -111,6 +114,7 @@ int features_conv_floats_to_neurons(int samples_across,
                                     int floats_depth,
                                     float layer0[],
                                     bp * net,
-                                    ac * feature_autocoder);
+                                    ac * feature_autocoder,
+                                    unsigned char use_dropouts);
 
 #endif

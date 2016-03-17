@@ -120,35 +120,35 @@ int autocoder_init(ac * autocoder,
  * @param encoded Array to store the encoded values
  * @param use_dropouts If non-zero then allow dropouts in the returned results
  */
-    void autocoder_encode(ac * autocoder, float * encoded, unsigned char use_dropouts)
-    {
-        for (int h = 0; h < autocoder->NoOfHiddens; h++) {
-            if (use_dropouts != 0) {
-                if (rand_num(&autocoder->random_seed)%10000 <
-                    autocoder->DropoutPercent*100) {
-                    autocoder->hiddens[h] = (int)AUTOCODER_DROPPED_OUT;
-                    continue;
-                }
-            }
+void autocoder_encode(ac * autocoder, float * encoded, unsigned char use_dropouts)
+{
+	for (int h = 0; h < autocoder->NoOfHiddens; h++) {
+		if (use_dropouts != 0) {
+			if (rand_num(&autocoder->random_seed)%10000 <
+				autocoder->DropoutPercent*100) {
+				autocoder->hiddens[h] = (int)AUTOCODER_DROPPED_OUT;
+				continue;
+			}
+		}
 
-            /* weighted sum of inputs */
-            float adder = autocoder->bias[h];
-            for (int i = 0; i < autocoder->NoOfInputs; i++) {
-                adder +=
-                    autocoder->weights[h*autocoder->NoOfInputs + i] *
-                    autocoder->inputs[i];
-            }
+		/* weighted sum of inputs */
+		float adder = autocoder->bias[h];
+		for (int i = 0; i < autocoder->NoOfInputs; i++) {
+			adder +=
+				autocoder->weights[h*autocoder->NoOfInputs + i] *
+				autocoder->inputs[i];
+		}
 
-            /* add some random noise */
-            if (autocoder->noise > 0) {
-                adder = ((1.0f - autocoder->noise) * adder) +
-                    (autocoder->noise * ((rand_num(&autocoder->random_seed)%10000)/10000.0f));
-            }
+		/* add some random noise */
+		if (autocoder->noise > 0) {
+			adder = ((1.0f - autocoder->noise) * adder) +
+				(autocoder->noise * ((rand_num(&autocoder->random_seed)%10000)/10000.0f));
+		}
 
-            /* activation function */
-            encoded[h] = 1.0f / (1.0f + exp(-adder));
-        }
-    }
+		/* activation function */
+		encoded[h] = 1.0f / (1.0f + exp(-adder));
+	}
+}
 
 /**
  * @brief Decodes the encoded (hidden) units to a given output array

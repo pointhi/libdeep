@@ -1,18 +1,18 @@
 /*
  libdeep - a library for deep learning
- Copyright (C) 2015  Bob Mottram <bob@robotics.uk.to>
+ Copyright (C) 2015-2016  Bob Mottram <bob@robotics.uk.to>
 
  Redistribution and use in source and binary forms, with or without
  modification, are permitted provided that the following conditions
  are met:
  1. Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
+ notice, this list of conditions and the following disclaimer.
  2. Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
+ notice, this list of conditions and the following disclaimer in the
+ documentation and/or other materials provided with the distribution.
  3. Neither the name of the University nor the names of its contributors
-    may be used to endorse or promote products derived from this software
-    without specific prior written permission.
+ may be used to endorse or promote products derived from this software
+ without specific prior written permission.
  .
  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
@@ -104,7 +104,8 @@ int conv_init(int no_of_layers,
 
 void conv_free(deeplearn_conv * conv);
 int conv_img(unsigned char img[],
-             deeplearn_conv * conv);
+             deeplearn_conv * conv,
+			 unsigned char use_dropouts);
 int conv_plot_history(deeplearn_conv * conv,
                       char * filename, char * title,
                       int img_width, int img_height);

@@ -32,7 +32,7 @@
 /**
  * @brief Scans an image patch and transfers the values to an autocoder
  * @param img_width Width of the image
- * @param img_depth Depth of the image
+ * @param img_depth Depth of the image, typically bytes per pixel
  * @param tx Top left coordinate of the patch
  * @param ty Top coordinate of the patch
  * @param bx Bottom right coordinate of the patch
@@ -60,8 +60,6 @@ static int scan_img_patch(unsigned char img[],
             }
         }
     }
-
-    /*autocoder_normalise_inputs(feature_autocoder);*/
 
     /* check that the patch size is the same as the autocoder inputs */
     if (index_feature_input != feature_autocoder->NoOfInputs) {
@@ -317,6 +315,7 @@ int features_learn_from_flt(int samples_across,
  * @param img Image buffer
  * @param layer0 Neural net
  * @param feature_autocoder An autocoder containing learned features
+ * @param use_dropouts non-zero if dropouts are used
  * @returns zero on success
  */
 int features_conv_img_to_neurons(int samples_across,
@@ -327,7 +326,8 @@ int features_conv_img_to_neurons(int samples_across,
                                  int img_depth,
                                  unsigned char img[],
                                  bp * net,
-                                 ac * feature_autocoder)
+                                 ac * feature_autocoder,
+                                 unsigned char use_dropouts)
 {
     int no_of_learned_features = feature_autocoder->NoOfHiddens;
 
@@ -365,7 +365,8 @@ int features_conv_img_to_neurons(int samples_across,
             int index_input_layer =
                 (fy * samples_across + fx) *
                 no_of_learned_features;
-            autocoder_encode(feature_autocoder, feature_autocoder->hiddens,0);
+            autocoder_encode(feature_autocoder, feature_autocoder->hiddens,
+                             use_dropouts);
             for (int f = 0; f < no_of_learned_features; f++) {
                 bp_set_input(net, index_input_layer+f,
                              autocoder_get_hidden(feature_autocoder, f));
@@ -390,6 +391,7 @@ int features_conv_img_to_neurons(int samples_across,
  * @param layer0_units Number of units in the float array
  * @param layer0 float array
  * @param feature_autocoder An autocoder containing learned features
+ * @param use_dropouts Non-zero if dropouts are to be used
  * @returns zero on success
  */
 int features_conv_img_to_flt(int samples_across,
@@ -401,7 +403,8 @@ int features_conv_img_to_flt(int samples_across,
                              unsigned char img[],
                              int layer0_units,
                              float layer0[],
-                             ac * feature_autocoder)
+                             ac * feature_autocoder,
+                             unsigned char use_dropouts)
 {
     int no_of_learned_features = feature_autocoder->NoOfHiddens;
 
@@ -418,12 +421,16 @@ int features_conv_img_to_flt(int samples_across,
         return -2;
     }
 
+    /* for each input image sample */
     for (int fy = 0; fy < samples_down; fy++) {
         for (int fx = 0; fx < samples_across; fx++) {
+            /* starting position in the first layer,
+               where the depth is the number of encoded features */
             int index_layer0 =
                 (fy * samples_across + fx) *
                 no_of_learned_features;
 
+            /* coordinates of the patch in the input image */
             int tx=0, ty=0, bx=0, by=0;
             if (features_patch_coords(fx, fy,
                                       samples_across, samples_down,
@@ -436,13 +443,17 @@ int features_conv_img_to_flt(int samples_across,
                 continue;
             }
 
+            /* scan the patch from the input image and get the
+               feature responses */
             if (scan_img_patch(img, img_width, img_depth,
                                tx, ty, bx, by,
                                feature_autocoder) != 0) {
                 return -4;
             }
 
-            autocoder_encode(feature_autocoder, &layer0[index_layer0],0);
+            /* set the first layer at this position to the feature responses */
+            autocoder_encode(feature_autocoder, &layer0[index_layer0],
+                             use_dropouts);
         }
     }
     return 0;
@@ -460,6 +471,7 @@ int features_conv_img_to_flt(int samples_across,
  * @param layer1_units Number of units in the second float array
  * @param layer1 Second float array
  * @param feature_autocoder An autocoder containing learned features
+ * @param use_dropouts non-zero if dropouts are to be used
  * @returns zero on success
  */
 int features_conv_flt_to_flt(int samples_across,
@@ -471,7 +483,8 @@ int features_conv_flt_to_flt(int samples_across,
                              float layer0[],
                              int layer1_units,
                              float layer1[],
-                             ac * feature_autocoder)
+                             ac * feature_autocoder,
+                             unsigned char use_dropouts)
 {
     int no_of_learned_features = feature_autocoder->NoOfHiddens;
 
@@ -512,7 +525,8 @@ int features_conv_flt_to_flt(int samples_across,
                 return -4;
             }
 
-            autocoder_encode(feature_autocoder, &layer1[index_layer1],0);
+            autocoder_encode(feature_autocoder, &layer1[index_layer1],
+                             use_dropouts);
         }
     }
     return 0;
@@ -531,6 +545,7 @@ int features_conv_flt_to_flt(int samples_across,
  * @param layer0 Array of floats
  * @param net Neural net to set the inputs for
  * @param feature_autocoder An autocoder containing learned features
+ * @param use_dropouts Non-zero if dropouts are to be used
  * @returns zero on success
  */
 int features_conv_floats_to_neurons(int samples_across,
@@ -541,7 +556,8 @@ int features_conv_floats_to_neurons(int samples_across,
                                     int floats_depth,
                                     float layer0[],
                                     bp * net,
-                                    ac * feature_autocoder)
+                                    ac * feature_autocoder,
+                                    unsigned char use_dropouts)
 {
     int no_of_learned_features = feature_autocoder->NoOfHiddens;
 
@@ -579,7 +595,8 @@ int features_conv_floats_to_neurons(int samples_across,
             int index_net_inputs =
                 (fy * samples_across + fx) *
                 no_of_learned_features;
-            autocoder_encode(feature_autocoder, feature_autocoder->hiddens,0);
+            autocoder_encode(feature_autocoder, feature_autocoder->hiddens,
+                             use_dropouts);
             for (int f = 0; f < no_of_learned_features; f++) {
                 bp_set_input(net, index_net_inputs+f,
                              autocoder_get_hidden(feature_autocoder, f));

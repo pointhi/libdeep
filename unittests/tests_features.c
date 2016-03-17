@@ -216,8 +216,9 @@ static void test_features_conv_img_to_flt()
     int no_of_inputs = patch_radius*patch_radius*4*img_depth;
     int no_of_hiddens = max_features;
     unsigned int random_seed = 2389;
+	unsigned char use_dropouts = 0;
 
-    printf("test_features_conv_img_to_flt...");
+	printf("test_features_conv_img_to_flt...");
 
     assert(autocoder_init(&feature_autocoder,
                           no_of_inputs, no_of_hiddens,
@@ -239,7 +240,8 @@ static void test_features_conv_img_to_flt()
                                  img_width, img_height,
                                  img_depth,
                                  img, layer0_units,
-                                 layer0, &feature_autocoder);
+                                 layer0, &feature_autocoder,
+								 use_dropouts);
     if (retval != 0) {
         printf("\nretval = %d\n", retval);
     }

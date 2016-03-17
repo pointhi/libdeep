@@ -72,11 +72,12 @@ static void test_conv_image()
     float BPerror = -1;
     char plot_filename[256];
     char plot_title[256];
+	unsigned char use_dropouts = 0;
 
-    /* load image from file */
-    assert(deeplearn_read_png_file((char*)"Lenna.png",
-                                   &img_width, &img_height,
-                                   &bitsperpixel, &img)==0);
+	/* load image from file */
+	assert(deeplearn_read_png_file((char*)"Lenna.png",
+								   &img_width, &img_height,
+								   &bitsperpixel, &img)==0);
 
     img2 = (unsigned char*)malloc(128*128*3*sizeof(unsigned char));
     assert(img2);
@@ -103,7 +104,7 @@ static void test_conv_image()
             conv.layer[0].convolution[j] = -9999;
         }
 
-        assert(conv_img(img, &conv) == 0);
+        assert(conv_img(img, &conv, use_dropouts) == 0);
 
         /* check that some convolution happened */
         for (int j = 0; j < conv0_size; j++) {
@@ -132,7 +133,7 @@ static void test_conv_image()
             conv.layer[1].convolution[j] = -9999;
         }
 
-        assert(conv_img(img, &conv) == 0);
+        assert(conv_img(img, &conv, use_dropouts) == 0);
 
         /* check that some convolution happened */
         for (int j = 0; j < conv1_size; j++) {

@@ -331,11 +331,13 @@ int convolution_layer_units(int layer_index,
  * @param img Input image
  * @param conv Preprocessing object
  * @param BPerror Returned total backprop error from feature learning
+ * @param use_dropouts Non-zero if dropouts are to be used
  * @return zero on success
  */
 static int conv_img_initial(unsigned char img[],
                             deeplearn_conv * conv,
-                            float * BPerror)
+                            float * BPerror,
+							unsigned char use_dropouts)
 {
     float currBPerror=0;
     int retval;
@@ -370,7 +372,8 @@ static int conv_img_initial(unsigned char img[],
                                  conv->inputs_depth, img,
                                  convolution_layer_units(0,conv),
                                  conv->layer[0].convolution,
-                                 conv->layer[0].autocoder);
+                                 conv->layer[0].autocoder,
+								 use_dropouts);
     if (retval != 0) {
         return -2;
     }
@@ -391,10 +394,11 @@ static int conv_subsequent(deeplearn_conv * conv,
     float currBPerror=0;
     int retval;
     int patch_radius = conv_patch_radius(layer_index, conv);
+	unsigned char use_dropouts = 0;
 
-    if (layer_index < 1) {
-        return -3;
-    }
+	if (layer_index < 1) {
+		return -3;
+	}
 
     if (conv->enable_learning != 0) {
         /* do feature learning */
@@ -414,7 +418,8 @@ static int conv_subsequent(deeplearn_conv * conv,
             return -4;
         }
         *BPerror = *BPerror + currBPerror;
-    }
+		use_dropouts = 1;
+	}
     /* do the convolution for this layer */
     retval =
         features_conv_flt_to_flt(conv_layer_width(layer_index,conv,BEFORE_POOLING),
@@ -426,7 +431,8 @@ static int conv_subsequent(deeplearn_conv * conv,
                                  conv->layer[layer_index-1].pooling,
                                  convolution_layer_units(layer_index,conv),
                                  conv->layer[layer_index].convolution,
-                                 conv->layer[layer_index].autocoder);
+                                 conv->layer[layer_index].autocoder,
+								 use_dropouts);
     if (retval != 0) {
         return -5;
     }
@@ -529,10 +535,12 @@ void conv_update_training_error(int layer_index,
  *        convolutions and poolings
  * @param img Input image
  * @param conv Convolution object
+ * @param use_dropouts Non-zero if dropouts are to be used
  * @returns zero on success
  */
 int conv_img(unsigned char img[],
-             deeplearn_conv * conv)
+             deeplearn_conv * conv,
+			 unsigned char use_dropouts)
 {
     int retval = -1;
     int max_layer = get_max_layer(conv);
@@ -543,7 +551,7 @@ int conv_img(unsigned char img[],
 
         BPerror = 0;
         if (i == 0) {
-            retval = conv_img_initial(img, conv, &BPerror);
+            retval = conv_img_initial(img, conv, &BPerror, use_dropouts);
         }
         else {
             retval = conv_subsequent(conv, i, &BPerror);
