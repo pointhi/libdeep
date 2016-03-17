@@ -1,6 +1,6 @@
 /*
   libdeep - a library for deep learning
-  Copyright (C) 2013-2015  Bob Mottram <bob@robotics.uk.to>
+  Copyright (C) 2013-2016  Bob Mottram <bob@robotics.uk.to>
 
   Redistribution and use in source and binary forms, with or without
   modification, are permitted provided that the following conditions
@@ -92,8 +92,13 @@ static int scan_floats_patch(float inputs_floats[],
         for (int x = tx; x < bx; x++) {
             int index_inputs =
                 ((y*inputs_width) + x) * inputs_depth;
+
+            /* depth typically corresponds to colour channels
+               in the initial layer, or feature responses in
+               subsequent layers */
             for (int d = 0; d < inputs_depth;
                  d++, index_feature_input++) {
+
                 /* set the inputs of the autocoder */
                 autocoder_set_input(feature_autocoder,
                                     index_feature_input,
@@ -191,8 +196,11 @@ int features_learn_from_img(int samples_across,
         return -2;
     }
 
+    /* for each patch */
     for (int fy = 0; fy < samples_down; fy++) {
         for (int fx = 0; fx < samples_across; fx++) {
+
+            /* get the coordinates of the patch in the image */
             int tx=0, ty=0, bx=0, by=0;
             if (features_patch_coords(fx, fy,
                                       samples_across, samples_down,
@@ -202,12 +210,14 @@ int features_learn_from_img(int samples_across,
                 continue;
             }
 
+            /* scan the patch into the feature autocoder inputs */
             if (scan_img_patch(img, img_width, img_depth,
                                tx, ty, bx, by,
                                feature_autocoder) != 0) {
                 return -4;
             }
 
+            /* feature autocoder learns and the total error is incremented */
             autocoder_update(feature_autocoder);
             *BPerror = *BPerror + feature_autocoder->BPerror;
         }
@@ -260,8 +270,11 @@ int features_learn_from_flt(int samples_across,
         return -2;
     }
 
+    /* for each patch */
     for (int fy = 0; fy < samples_down; fy++) {
         for (int fx = 0; fx < samples_across; fx++) {
+
+            /* get the coordinates of the patch in the image */
             int tx=0, ty=0, bx=0, by=0;
             if (features_patch_coords(fx, fy, samples_across,
                                       samples_down,
@@ -271,6 +284,7 @@ int features_learn_from_flt(int samples_across,
                 continue;
             }
 
+            /* scan the patch into the feature autocoder inputs */
             if (scan_floats_patch(inputs_floats,
                                   inputs_width, inputs_depth,
                                   tx, ty, bx, by,
@@ -278,6 +292,7 @@ int features_learn_from_flt(int samples_across,
                 return -4;
             }
 
+            /* feature autocoder learns and the total error is incremented */
             autocoder_update(feature_autocoder);
             *BPerror = *BPerror + feature_autocoder->BPerror;
         }
