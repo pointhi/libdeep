@@ -1,37 +1,37 @@
 /*
- libdeep - a library for deep learning
- Copyright (C) 2015-2016  Bob Mottram <bob@robotics.uk.to>
+  libdeep - a library for deep learning
+  Copyright (C) 2015-2016  Bob Mottram <bob@robotics.uk.to>
 
- A deep convolution network combines a convolutional net as a
- preprocessing stage together with a deep learning system as the
- final stage. The use of convolution greatly reduces the
- dimensionality of the problem for image processing, since the
- neural nets at each convolution layer only handle a small patch
- of the input surface.
+  A deep convolution network combines a convolutional net as a
+  preprocessing stage together with a deep learning system as the
+  final stage. The use of convolution greatly reduces the
+  dimensionality of the problem for image processing, since the
+  neural nets at each convolution layer only handle a small patch
+  of the input surface.
 
- Redistribution and use in source and binary forms, with or without
- modification, are permitted provided that the following conditions
- are met:
- 1. Redistributions of source code must retain the above copyright
- notice, this list of conditions and the following disclaimer.
- 2. Redistributions in binary form must reproduce the above copyright
- notice, this list of conditions and the following disclaimer in the
- documentation and/or other materials provided with the distribution.
- 3. Neither the name of the University nor the names of its contributors
- may be used to endorse or promote products derived from this software
- without specific prior written permission.
- .
- THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
- A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE HOLDERS OR
- CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
- EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
- PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
- PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
- LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
- NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+  Redistribution and use in source and binary forms, with or without
+  modification, are permitted provided that the following conditions
+  are met:
+  1. Redistributions of source code must retain the above copyright
+  notice, this list of conditions and the following disclaimer.
+  2. Redistributions in binary form must reproduce the above copyright
+  notice, this list of conditions and the following disclaimer in the
+  documentation and/or other materials provided with the distribution.
+  3. Neither the name of the University nor the names of its contributors
+  may be used to endorse or promote products derived from this software
+  without specific prior written permission.
+  .
+  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+  ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+  A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE HOLDERS OR
+  CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+  EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+  PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+  PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+  LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 #include "deepconvnet.h"
@@ -161,9 +161,9 @@ void deepconvnet_free(deepconvnet * convnet)
 }
 
 /**
-* @brief Update the learning history
-* @param convnet Deep convnet object
-*/
+ * @brief Update the learning history
+ * @param convnet Deep convnet object
+ */
 static void deepconvnet_update_history(deepconvnet * convnet)
 {
     int i;
@@ -199,11 +199,11 @@ static void deepconvnet_update_history(deepconvnet * convnet)
 }
 
 /**
-* @brief Saves the given deep convnet object to a file
-* @param fp File pointer
-* @param convnet Deep convnet object
-* @return zero value on success
-*/
+ * @brief Saves the given deep convnet object to a file
+ * @param fp File pointer
+ * @param convnet Deep convnet object
+ * @return zero value on success
+ */
 int deepconvnet_save(FILE * fp, deepconvnet * convnet)
 {
     if (conv_save(fp, convnet->convolution) != 0) return -1;
@@ -212,12 +212,12 @@ int deepconvnet_save(FILE * fp, deepconvnet * convnet)
 }
 
 /**
-* @brief Loads a deep convnet object from file
-* @param fp File pointer
-* @param convnet Deep convnet object
-* @param random_seed Random number generator seed
-* @return zero value on success
-*/
+ * @brief Loads a deep convnet object from file
+ * @param fp File pointer
+ * @param convnet Deep convnet object
+ * @param random_seed Random number generator seed
+ * @return zero value on success
+ */
 int deepconvnet_load(FILE * fp, deepconvnet * convnet,
                      unsigned int * random_seed)
 {
@@ -229,13 +229,13 @@ int deepconvnet_load(FILE * fp, deepconvnet * convnet,
 }
 
 /**
-* @brief Sets the input values to the outputs of convolutional net.
-*        This provides the glue sticking the preprocessing convolutional
-*        stage together with the final deep learning stage.
-* @param learner Deep learner object
-* @param conv Convolution object
-* @return zero on success
-*/
+ * @brief Sets the input values to the outputs of convolutional net.
+ *        This provides the glue sticking the preprocessing convolutional
+ *        stage together with the final deep learning stage.
+ * @param learner Deep learner object
+ * @param conv Convolution object
+ * @return zero on success
+ */
 static int deepconvnet_set_inputs_conv(deeplearn * learner, deeplearn_conv * conv)
 {
     int layer_index = conv->no_of_layers-1;
@@ -255,9 +255,9 @@ static int deepconvnet_set_inputs_conv(deeplearn * learner, deeplearn_conv * con
 }
 
 /**
-* @brief Updates the current training error
-* @param convnet Deep convnet object
-*/
+ * @brief Updates the current training error
+ * @param convnet Deep convnet object
+ */
 static void deepconvnet_update_training_error(deepconvnet * convnet)
 {
     /* update the backprop error */
@@ -271,9 +271,9 @@ static void deepconvnet_update_training_error(deepconvnet * convnet)
 }
 
 /**
-* @brief Updates the index of the current layer being trained
-* @param convnet Deep convnet object
-*/
+ * @brief Updates the index of the current layer being trained
+ * @param convnet Deep convnet object
+ */
 static void deepconvnet_update_current_layer(deepconvnet * convnet)
 {
     /* set the current layer */
@@ -283,9 +283,9 @@ static void deepconvnet_update_current_layer(deepconvnet * convnet)
 }
 
 /**
-* @brief Periodicaly plots the training error in a graph
-* @param convnet Deep convnet object
-*/
+ * @brief Periodicaly plots the training error in a graph
+ * @param convnet Deep convnet object
+ */
 static void deepconvnet_update_training_plot(deepconvnet * convnet)
 {
     /* plot a graph showing training progress */
@@ -301,9 +301,9 @@ static void deepconvnet_update_training_plot(deepconvnet * convnet)
 }
 
 /**
-* @brief Used during training to update error, current layer, etc
-* @param convnet Deep convnet object
-*/
+ * @brief Used during training to update error, current layer, etc
+ * @param convnet Deep convnet object
+ */
 static void deepconvnet_update(deepconvnet * convnet)
 {
     deepconvnet_update_training_error(convnet);
@@ -363,9 +363,7 @@ int deepconvnet_update_img(deepconvnet * convnet, unsigned char img[],
  */
 int deepconvnet_test_img(deepconvnet * convnet, unsigned char img[])
 {
-    unsigned char use_dropouts = 0;
-
-	if (deepconvnet_is_training(convnet)) use_dropouts = 1;
+    const unsigned char use_dropouts = 0;
 
 	if (conv_img(img, convnet->convolution, use_dropouts) != 0) {
 		return -1;
@@ -522,55 +520,55 @@ int deepconvnet_plot_history(deepconvnet * convnet,
  * @brief Performs training
  * @param convnet Deep convnet object
  */
-		int deepconvnet_training(deepconvnet * convnet)
-		{
-			if (convnet->learner->training_complete != 0) return 0;
-			if (convnet->no_of_images == 0) return 0;
-			if (convnet->classification_number == NULL) return -1;
+int deepconvnet_training(deepconvnet * convnet)
+{
+	if (convnet->learner->training_complete != 0) return 0;
+	if (convnet->no_of_images == 0) return 0;
+	if (convnet->classification_number == NULL) return -1;
 
-			/* pick an image at random */
-			int training_images = convnet->no_of_images*8/10;
-			int index0 =
-				rand_num(&convnet->learner->net->random_seed)%training_images;
-			int index = convnet->training_set_index[index0];
-			unsigned char * img = convnet->images[index];
-			if (deepconvnet_update_img(convnet, img,
-									   convnet->classification_number[index]) != 0) {
-				return -2;
-			}
+	/* pick an image at random */
+	int training_images = convnet->no_of_images*8/10;
+	int index0 =
+		rand_num(&convnet->learner->net->random_seed)%training_images;
+	int index = convnet->training_set_index[index0];
+	unsigned char * img = convnet->images[index];
+	if (deepconvnet_update_img(convnet, img,
+							   convnet->classification_number[index]) != 0) {
+		return -2;
+	}
 
-			return 0;
-		}
+	return 0;
+}
 
 /**
  * @brief Returns performance on the test set
  * @param convnet Deep convnet object
  * @return Percentage of correct classifications or a negative number on error
  */
-		float deepconvnet_get_performance(deepconvnet * convnet)
-		{
-			float performance = 0;
-			int ctr = 0;
-			int test_images = convnet->no_of_images*2/10;
+float deepconvnet_get_performance(deepconvnet * convnet)
+{
+	float performance = 0;
+	int ctr = 0;
+	int test_images = convnet->no_of_images*2/10;
 
-			if (convnet->no_of_images == 0) return -1;
-			if (convnet->classification_number == NULL) return -2;
+	if (convnet->no_of_images == 0) return -1;
+	if (convnet->classification_number == NULL) return -2;
 
-			for (int i = 0; i < test_images; i++) {
-				int index = convnet->test_set_index[i];
-				unsigned char * img = convnet->images[index];
-				deepconvnet_update_img(convnet, img, -1);
-				if (deeplearn_get_class(convnet->learner) ==
-					convnet->classification_number[index]) {
-					performance += 100.0f;
-				}
-				ctr++;
-			}
-			if (ctr > 0) {
-				performance /= ctr;
-			}
-			return performance;
+	for (int i = 0; i < test_images; i++) {
+		int index = convnet->test_set_index[i];
+		unsigned char * img = convnet->images[index];
+		deepconvnet_update_img(convnet, img, -1);
+		if (deeplearn_get_class(convnet->learner) ==
+			convnet->classification_number[index]) {
+			performance += 100.0f;
 		}
+		ctr++;
+	}
+	if (ctr > 0) {
+		performance /= ctr;
+	}
+	return performance;
+}
 
 /**
  * @brief Creates training and test arrays which contain randomly ordered
@@ -578,46 +576,46 @@ int deepconvnet_plot_history(deepconvnet * convnet,
  *        is no bias depending on the sequences of inputs during training.
  * @param convnet Deep convnet object
  */
-		int deepconvnet_create_training_test_sets(deepconvnet * convnet)
-		{
-			int i, j;
+int deepconvnet_create_training_test_sets(deepconvnet * convnet)
+{
+	int i, j;
 
-			/* create arrays to store randomly ordered array indexes
-			   for training and test sets */
-			int training_images = convnet->no_of_images*8/10;
-			convnet->training_set_index =
-				(int*)malloc((training_images+1)*sizeof(int));
-			if (!convnet->training_set_index) return -1;
-			i = 0;
-			while (i < training_images) {
-				int index =
-					rand_num(&convnet->learner->net->random_seed)%convnet->no_of_images;
-				for (j = 0; j < i; j++) {
-					if (convnet->training_set_index[j] == index) {
-						break;
-					}
-				}
-				if (j == i) {
-					convnet->training_set_index[i] = index;
-					i++;
-				}
+	/* create arrays to store randomly ordered array indexes
+	   for training and test sets */
+	int training_images = convnet->no_of_images*8/10;
+	convnet->training_set_index =
+		(int*)malloc((training_images+1)*sizeof(int));
+	if (!convnet->training_set_index) return -1;
+	i = 0;
+	while (i < training_images) {
+		int index =
+			rand_num(&convnet->learner->net->random_seed)%convnet->no_of_images;
+		for (j = 0; j < i; j++) {
+			if (convnet->training_set_index[j] == index) {
+				break;
 			}
-			int test_images = 0;
-			convnet->test_set_index =
-				(int*)malloc((convnet->no_of_images - training_images+1)*sizeof(int));
-			if (!convnet->test_set_index) return -2;
-			for (i = 0; i < convnet->no_of_images; i++) {
-				for (j = 0; j < training_images; j++) {
-					if (convnet->training_set_index[j] == i) {
-						break;
-					}
-				}
-				if (j == training_images) {
-					convnet->test_set_index[test_images++] = i;
-				}
-			}
-			return 0;
 		}
+		if (j == i) {
+			convnet->training_set_index[i] = index;
+			i++;
+		}
+	}
+	int test_images = 0;
+	convnet->test_set_index =
+		(int*)malloc((convnet->no_of_images - training_images+1)*sizeof(int));
+	if (!convnet->test_set_index) return -2;
+	for (i = 0; i < convnet->no_of_images; i++) {
+		for (j = 0; j < training_images; j++) {
+			if (convnet->training_set_index[j] == i) {
+				break;
+			}
+		}
+		if (j == training_images) {
+			convnet->test_set_index[test_images++] = i;
+		}
+	}
+	return 0;
+}
 
 
 /**
@@ -637,44 +635,44 @@ int deepconvnet_plot_history(deepconvnet * convnet,
  * @param random_seed Random number seed
  * @return zero on success
  */
-		int deepconvnet_read_images(char * directory,
-									deepconvnet * convnet,
-									int image_width, int image_height,
-									int no_of_convolutions,
-									int max_features_per_convolution,
-									int reduction_factor,
-									int no_of_deep_layers,
-									int no_of_outputs,
-									int output_classes,
-									float error_threshold[],
-									unsigned int * random_seed)
-		{
-			if (deepconvnet_init(no_of_convolutions,
-								 no_of_deep_layers,
-								 image_width, image_height, 3,
-								 max_features_per_convolution,
-								 reduction_factor,
-								 no_of_outputs, convnet,
-								 error_threshold,
-								 random_seed) != 0) {
-				return -1;
-			}
+int deepconvnet_read_images(char * directory,
+							deepconvnet * convnet,
+							int image_width, int image_height,
+							int no_of_convolutions,
+							int max_features_per_convolution,
+							int reduction_factor,
+							int no_of_deep_layers,
+							int no_of_outputs,
+							int output_classes,
+							float error_threshold[],
+							unsigned int * random_seed)
+{
+	if (deepconvnet_init(no_of_convolutions,
+						 no_of_deep_layers,
+						 image_width, image_height, 3,
+						 max_features_per_convolution,
+						 reduction_factor,
+						 no_of_outputs, convnet,
+						 error_threshold,
+						 random_seed) != 0) {
+		return -1;
+	}
 
-			convnet->no_of_images =
-				deeplearn_load_training_images(directory, &convnet->images,
-											   &convnet->classifications,
-											   &convnet->classification_number,
-											   image_width, image_height);
-			if (convnet->no_of_images <= 0) {
-				return -2;
-			}
+	convnet->no_of_images =
+		deeplearn_load_training_images(directory, &convnet->images,
+									   &convnet->classifications,
+									   &convnet->classification_number,
+									   image_width, image_height);
+	if (convnet->no_of_images <= 0) {
+		return -2;
+	}
 
-			if (deepconvnet_create_training_test_sets(convnet) != 0) {
-				return -3;
-			}
+	if (deepconvnet_create_training_test_sets(convnet) != 0) {
+		return -3;
+	}
 
-			return 0;
-		}
+	return 0;
+}
 
 /**
  * @brief Plots the features learned for a given convolution layer
@@ -685,29 +683,29 @@ int deepconvnet_plot_history(deepconvnet * convnet,
  * @param img_height Image height
  * @return zero on success
  */
-		int deepconvnet_plot_features(deepconvnet * convnet,
-									  int layer_index,
-									  char * filename,
-									  int img_width, int img_height)
-		{
-			unsigned char * img;
+int deepconvnet_plot_features(deepconvnet * convnet,
+							  int layer_index,
+							  char * filename,
+							  int img_width, int img_height)
+{
+	unsigned char * img;
 
-			/* allocate memory for the image */
-			img = (unsigned char*)malloc(img_width*img_height*3*sizeof(unsigned char));
-			if (!img) {
-				return -1;
-			}
+	/* allocate memory for the image */
+	img = (unsigned char*)malloc(img_width*img_height*3*sizeof(unsigned char));
+	if (!img) {
+		return -1;
+	}
 
-			int retval =
-				conv_plot_features(convnet->convolution,
-								   layer_index, img, img_width, img_height);
-			if (retval != 0) return retval;
+	int retval =
+		conv_plot_features(convnet->convolution,
+						   layer_index, img, img_width, img_height);
+	if (retval != 0) return retval;
 
-			deeplearn_write_png_file(filename,
-									 (unsigned int)img_width,
-									 (unsigned int)img_height,
-									 24, img);
+	deeplearn_write_png_file(filename,
+							 (unsigned int)img_width,
+							 (unsigned int)img_height,
+							 24, img);
 
-			free(img);
-			return 0;
-		}
+	free(img);
+	return 0;
+}

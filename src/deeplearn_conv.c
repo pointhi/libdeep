@@ -1,6 +1,6 @@
 /*
   libdeep - a library for deep learning
-  Copyright (C) 2015  Bob Mottram <bob@robotics.uk.to>
+  Copyright (C) 2015-2016  Bob Mottram <bob@robotics.uk.to>
 
   Redistribution and use in source and binary forms, with or without
   modification, are permitted provided that the following conditions
@@ -188,11 +188,11 @@ static void conv_update_history(deeplearn_conv * conv)
 
         /* show the learned features */
         /*
-        if (conv->current_layer == 0) {
-            features_plot_weights(conv->layer[0].autocoder,
-                                  "learned_features.png",3,
-                                  800, 800);
-                                  }*/
+		  if (conv->current_layer == 0) {
+		  features_plot_weights(conv->layer[0].autocoder,
+		  "learned_features.png",3,
+		  800, 800);
+		  }*/
 
         if (conv->history_index >= DEEPLEARN_HISTORY_SIZE) {
             for (i = 0; i < conv->history_index; i++) {
@@ -825,10 +825,10 @@ int conv_load(FILE * fp, deeplearn_conv * conv)
 }
 
 /**
-* @brief Sets the learning rate for the neural net at each convolution layer
-* @param conv Convolution object
-* @param rate the learning rate in the range 0.0 to 1.0
-*/
+ * @brief Sets the learning rate for the neural net at each convolution layer
+ * @param conv Convolution object
+ * @param rate the learning rate in the range 0.0 to 1.0
+ */
 void conv_set_learning_rate(deeplearn_conv * conv, float rate)
 {
     for (int i = 0; i < conv->no_of_layers; i++) {
@@ -837,10 +837,10 @@ void conv_set_learning_rate(deeplearn_conv * conv, float rate)
 }
 
 /**
-* @brief Sets the percentage of units which drop out during feature learning
-* @param conv Convolution object
-* @param dropout_percent Percentage of units which drop out in the range 0 to 100
-*/
+ * @brief Sets the percentage of units which drop out during feature learning
+ * @param conv Convolution object
+ * @param dropout_percent Percentage of units which drop out in the range 0 to 100
+ */
 void conv_set_dropouts(deeplearn_conv * conv, float dropout_percent)
 {
     for (int i = 0; i < conv->no_of_layers; i++) {
@@ -849,14 +849,14 @@ void conv_set_dropouts(deeplearn_conv * conv, float dropout_percent)
 }
 
 /**
-* @brief Plots the features learned by an autocoder at the given layer
-* @param conv Convolution object
-* @param layer_index Index of the layer for which to plot the features
-* @param img Image array
-* @param img_width Width of the image
-* @param img_height Height of the image
-* @return zero on success
-*/
+ * @brief Plots the features learned by an autocoder at the given layer
+ * @param conv Convolution object
+ * @param layer_index Index of the layer for which to plot the features
+ * @param img Image array
+ * @param img_width Width of the image
+ * @param img_height Height of the image
+ * @return zero on success
+ */
 int conv_plot_features(deeplearn_conv * conv, int layer_index,
                        unsigned char img[],
                        int img_width, int img_height)
