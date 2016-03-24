@@ -74,6 +74,7 @@ int autocoder_load(FILE * fp, ac * autocoder, int initialise);
 void autocoder_set_input(ac * autocoder, int index, float value);
 void autocoder_set_inputs(ac * autocoder, float inputs[]);
 float autocoder_get_hidden(ac * autocoder, int index);
+void autocoder_set_hidden(ac * autocoder, int index, float value);
 void autocoder_update(ac * autocoder);
 void autocoder_normalise_inputs(ac * autocoder);
 int autocoder_compare(ac * autocoder0, ac * autocoder1);

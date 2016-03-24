@@ -435,6 +435,17 @@ float autocoder_get_hidden(ac * autocoder, int index)
 }
 
 /**
+ * @brief Sets the value of a hidden unit
+ * @param autocoder Autocoder object
+ * @param index Array index of the hidden (encoder) unit
+ * @param value Value to set as
+ */
+void autocoder_set_hidden(ac * autocoder, int index, float value)
+{
+	autocoder->hiddens[index] = value;
+}
+
+/**
  * @brief Main update routine for training
  * @param autocoder Autocoder object
  */

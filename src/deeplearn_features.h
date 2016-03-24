@@ -116,5 +116,25 @@ int features_conv_floats_to_neurons(int samples_across,
                                     bp * net,
                                     ac * feature_autocoder,
                                     unsigned char use_dropouts);
+int features_deconv_flt_to_flt(int samples_across,
+                               int samples_down,
+                               int patch_radius,
+                               int img_width,
+                               int img_height,
+                               int img_depth,
+                               float img[],
+                               int layer_units,
+                               float layer[],
+                               ac * feature_autocoder);
+int features_deconv_img_to_flt(int samples_across,
+                               int samples_down,
+                               int patch_radius,
+                               int img_width,
+                               int img_height,
+                               int img_depth,
+                               unsigned char img[],
+                               int layer_units,
+                               float layer[],
+                               ac * feature_autocoder);
 
 #endif

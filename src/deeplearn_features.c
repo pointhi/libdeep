@@ -31,6 +31,7 @@
 
 /**
  * @brief Scans an image patch and transfers the values to an autocoder
+ * @param img image array
  * @param img_width Width of the image
  * @param img_depth Depth of the image, typically bytes per pixel
  * @param tx Top left coordinate of the patch
@@ -67,8 +68,46 @@ static int scan_img_patch(unsigned char img[],
 }
 
 /**
+ * @brief Create an image patch from autocoder hidden units.
+ *        Note that the image array should initially be cleared
+ * @param img image array
+ * @param img_width Width of the image
+ * @param img_depth Depth of the image, typically bytes per pixel
+ * @param tx Top left coordinate of the patch
+ * @param ty Top coordinate of the patch
+ * @param bx Bottom right coordinate of the patch
+ * @param by Bottom coordinate of the patch
+ * @param feature_autocoder Autocoder object
+ * @return zero on success
+ */
+static int create_img_patch(float img[],
+                            int img_width, int img_depth,
+                            int tx, int ty, int bx, int by,
+                            ac * feature_autocoder)
+{
+    int i;
+    float f;
+    
+    for (i = 0; i < feature_autocoder->NoOfHiddens; i++) {
+        f = autocoder_get_hidden(feature_autocoder, i);
+        for (int y = ty; y < by; y++) {
+            for (int x = tx; x < bx; x++) {
+                int index_img =
+                    ((y*img_width) + x) * img_depth;
+                for (int d = 0; d < img_depth; d++) {
+                    img[index_img+d] +=
+                        f * feature_autocoder->weights[index_img+d];                    
+                }
+            }
+        }       
+    }
+    return 0;
+}
+
+/**
  * @brief Scans a patch within a 2D array of floats and transfers the values
  *        to an autocoder
+ * @param inputs_floats inputs array
  * @param inputs_width Width of the floats array
  * @param inputs_depth Depth of the floats array
  * @param tx Top left coordinate of the patch
@@ -101,7 +140,7 @@ static int scan_floats_patch(float inputs_floats[],
         }
     }
 
-    /* check that the patch size is the same as the autocoder inputs */
+/* check that the patch size is the same as the autocoder inputs */
     if (index_feature_input != feature_autocoder->NoOfInputs) {
         return -1;
     }
@@ -452,6 +491,160 @@ int features_conv_img_to_flt(int samples_across,
                              use_dropouts);
         }
     }
+    return 0;
+}
+
+/**
+ * @brief Deconvolve a float image with learned features and output
+ *        the results to an array of floats
+ * @param samples_across The number of units across in the array of floats
+ *        (sampling grid resolution)
+ * @param samples_down The number of units down in the array of floats
+ *        (sampling grid resolution)
+ * @param patch_radius The radius of the patch within the float array
+ * @param img_width Width of the image
+ * @param img_height Height of the image
+ * @param img_depth Depth of the image (mono=1, RGB=3)
+ * @param img Image buffer
+ * @param layer_units Number of units in the layer array
+ * @param layer float array
+ * @param feature_autocoder An autocoder containing learned features
+ * @returns zero on success
+ */
+int features_deconv_flt_to_flt(int samples_across,
+                               int samples_down,
+                               int patch_radius,
+                               int img_width,
+                               int img_height,
+                               int img_depth,
+                               float img[],
+                               int layer_units,
+                               float layer[],
+                               ac * feature_autocoder)
+{
+    int i, no_of_learned_features = feature_autocoder->NoOfHiddens;
+
+    
+    if (feature_autocoder->NoOfInputs !=
+        patch_radius*patch_radius*4*img_depth) {
+        /* the patch size doesn't match the feature
+           learner inputs */
+        return -2;
+    }
+
+    /* clear the original image */
+    memset((void*)img, '\0', img_width*img_height*img_depth*sizeof(float));
+    
+    /* for each input image sample */
+    for (int fy = 0; fy < samples_down; fy++) {
+        for (int fx = 0; fx < samples_across; fx++) {   
+            /* starting position in the first layer,
+               where the depth is the number of encoded features */
+            int index_layer =
+                (fy * samples_across + fx) *
+                no_of_learned_features;
+
+            /* coordinates of the patch in the input image */
+            int tx=0, ty=0, bx=0, by=0;
+            if (features_patch_coords(fx, fy,
+                                      samples_across, samples_down,
+                                      patch_radius,
+                                      img_width, img_height,
+                                      &tx, &ty, &bx, &by) != 0) {
+                /* set the hidden unit values from the previous player */
+                for (int f = 0; f < no_of_learned_features; f++) {
+                    autocoder_set_hidden(feature_autocoder, f,
+                                         layer[index_layer+f]);
+                }
+                continue;
+            }
+
+            /* create the patch from the autocoder hidden units */
+            if (create_img_patch(img, img_width, img_depth,
+                                 tx, ty, bx, by,
+                                 feature_autocoder) != 0) {
+                return -4;
+            }
+        }
+    }
+    
+    return 0;
+}
+
+
+/**
+ * @brief Deconvolve an image with learned features and output
+ *        the results to an array of floats
+ * @param samples_across The number of units across in the array of floats
+ *        (sampling grid resolution)
+ * @param samples_down The number of units down in the array of floats
+ *        (sampling grid resolution)
+ * @param patch_radius The radius of the patch within the float array
+ * @param img_width Width of the image
+ * @param img_height Height of the image
+ * @param img_depth Depth of the image (mono=1, RGB=3)
+ * @param img Image buffer
+ * @param layer_units Number of units in the layer array
+ * @param layer float array
+ * @param feature_autocoder An autocoder containing learned features
+ * @returns zero on success
+ */
+int features_deconv_img_to_flt(int samples_across,
+                               int samples_down,
+                               int patch_radius,
+                               int img_width,
+                               int img_height,
+                               int img_depth,
+                               unsigned char img[],
+                               int layer_units,
+                               float layer[],
+                               ac * feature_autocoder)
+{
+    int retval, i, no_of_learned_features = feature_autocoder->NoOfHiddens;
+
+    
+    if (feature_autocoder->NoOfInputs !=
+        patch_radius*patch_radius*4*img_depth) {
+        /* the patch size doesn't match the feature
+           learner inputs */
+        return -2;
+    }
+
+    /* create a temporary floats image */
+    float * deconv_img =
+        (float*)malloc(img_width*img_height*img_depth*sizeof(float));
+    memset((void*)deconv_img, '\0', img_width*img_height*img_depth*sizeof(float));
+
+    /* clear the original image */
+    memset((void*)img, '\0', img_width*img_height*img_depth*sizeof(unsigned char));
+
+    retval =
+        features_deconv_flt_to_flt(samples_across,
+                                   samples_down,
+                                   patch_radius,
+                                   img_width,
+                                   img_height,
+                                   img_depth,
+                                   deconv_img,
+                                   layer_units, layer,
+                                   feature_autocoder);
+    if (retval != 0) {
+        free(deconv_img);
+        return retval;
+    }
+
+    for (i = 0; i < img_width*img_height*img_depth; i++) {
+        if ((deconv_img[i] > 0) && (deconv_img[i] <= 255)) {
+            img[i] = (unsigned char)deconv_img[i];
+        }
+        else {
+            if (deconv_img[i] > 255) {
+                img[i] = 255;
+            }           
+        }
+    }
+    
+    free(deconv_img);
     return 0;
 }
 
