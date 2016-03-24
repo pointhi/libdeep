@@ -48,4 +48,12 @@ int pooling_from_flt_to_flt(int depth,
                             int layer1_down,
                             float layer1[]);
 
+int unpooling_from_flt_to_flt(int depth,
+                              int layer0_across,
+                              int layer0_down,
+                              float layer0[],
+                              int layer1_across,
+                              int layer1_down,
+                              float layer1[]);
+
 #endif
