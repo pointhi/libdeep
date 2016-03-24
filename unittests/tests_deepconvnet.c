@@ -249,7 +249,7 @@ static void test_update_img()
 
 static void test_learn_test_patterns()
 {
-    int no_of_convolutions = 2;
+    int no_of_convolutions = 4;
     int no_of_deep_layers = 2;
     int inputs_across = 32;
     int inputs_down = 32;
@@ -258,7 +258,7 @@ static void test_learn_test_patterns()
     int reduction_factor = 2;
     int no_of_outputs = 5;
     deepconvnet convnet;
-    float error_threshold[] = { 1.5, 7.0, 5.0, 5.0, 33.0 };
+    float error_threshold[] = { 1.5, 7.0, 7.0, 7.0, 5.0, 5.0, 33.0 };
     float prev_error = DEEPLEARN_UNKNOWN_ERROR;
     int prev_layer = 0, ctr = 0, i, score = 0;
     unsigned int random_seed = 7423;
@@ -297,7 +297,7 @@ static void test_learn_test_patterns()
         if (training_itteration%30 == 0) {
             if (!(convnet.BPerror == DEEPLEARN_UNKNOWN_ERROR)) {
                 if ((!(prev_error == DEEPLEARN_UNKNOWN_ERROR)) &&
-                    (prev_layer == convnet.current_layer)) {
+					(prev_layer == convnet.current_layer)) {
                     if (prev_error <= convnet.BPerror) {
                         ctr++;
                         assert(ctr < 10);

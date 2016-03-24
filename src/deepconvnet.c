@@ -238,17 +238,17 @@ int deepconvnet_load(FILE * fp, deepconvnet * convnet,
  */
 static int deepconvnet_set_inputs_conv(deeplearn * learner, deeplearn_conv * conv)
 {
-    int layer_index = conv->no_of_layers-1;
-    int width = conv_layer_width(layer_index, conv, 1);
-    int height = conv_layer_height(layer_index, conv, 1);
+    int conv_outputs =
+        conv_output_width(conv) *
+        conv_output_height(conv) *
+        conv->max_features;
 
-    if (learner->net->NoOfInputs !=
-        width * height * conv->max_features) {
+    if (learner->net->NoOfInputs != conv_outputs) {
         return -1;
     }
     /* NOTE: can this be done with memcpy ? */
     for (int i = 0; i < learner->net->NoOfInputs; i++) {
-        deeplearn_set_input(learner, i, conv->layer[layer_index].pooling[i]);
+        deeplearn_set_input(learner, i, get_conv_output(conv,i));
     }
 
     return 0;
@@ -365,18 +365,18 @@ int deepconvnet_test_img(deepconvnet * convnet, unsigned char img[])
 {
     const unsigned char use_dropouts = 0;
 
-	if (conv_img(img, convnet->convolution, use_dropouts) != 0) {
-		return -1;
-	}
+    if (conv_img(img, convnet->convolution, use_dropouts) != 0) {
+        return -1;
+    }
 
-	if (deepconvnet_set_inputs_conv(convnet->learner,
-									convnet->convolution) != 0) {
-		return -2;
-	}
+    if (deepconvnet_set_inputs_conv(convnet->learner,
+                                    convnet->convolution) != 0) {
+        return -2;
+    }
 
-	/* feed forward only */
-	deeplearn_feed_forward(convnet->learner);
-	return 0;
+    /* feed forward only */
+    deeplearn_feed_forward(convnet->learner);
+    return 0;
 }
 
 /**
@@ -387,7 +387,7 @@ int deepconvnet_test_img(deepconvnet * convnet, unsigned char img[])
  */
 void deepconvnet_set_output(deepconvnet * convnet, int index, float value)
 {
-	deeplearn_set_output(convnet->learner, index, value);
+    deeplearn_set_output(convnet->learner, index, value);
 }
 
 /**
@@ -397,7 +397,7 @@ void deepconvnet_set_output(deepconvnet * convnet, int index, float value)
  */
 void deepconvnet_set_class(deepconvnet * convnet, int class_number)
 {
-	deeplearn_set_class(convnet->learner, class_number);
+    deeplearn_set_class(convnet->learner, class_number);
 }
 
 /**
@@ -408,7 +408,7 @@ void deepconvnet_set_class(deepconvnet * convnet, int class_number)
  */
 float deepconvnet_get_output(deepconvnet * convnet, int index)
 {
-	return deeplearn_get_output(convnet->learner, index);
+    return deeplearn_get_output(convnet->learner, index);
 }
 
 /**
@@ -418,7 +418,7 @@ float deepconvnet_get_output(deepconvnet * convnet, int index)
  */
 int deepconvnet_get_class(deepconvnet * convnet)
 {
-	return deeplearn_get_class(convnet->learner);
+    return deeplearn_get_class(convnet->learner);
 }
 
 /**
@@ -428,8 +428,8 @@ int deepconvnet_get_class(deepconvnet * convnet)
  */
 void deepconvnet_set_learning_rate(deepconvnet * convnet, float rate)
 {
-	conv_set_learning_rate(convnet->convolution, rate);
-	deeplearn_set_learning_rate(convnet->learner, rate);
+    conv_set_learning_rate(convnet->convolution, rate);
+    deeplearn_set_learning_rate(convnet->learner, rate);
 }
 
 /**
@@ -439,8 +439,8 @@ void deepconvnet_set_learning_rate(deepconvnet * convnet, float rate)
  */
 void deepconvnet_set_dropouts(deepconvnet * convnet, float dropout_percent)
 {
-	conv_set_dropouts(convnet->convolution, dropout_percent);
-	deeplearn_set_dropouts(convnet->learner, dropout_percent);
+    conv_set_dropouts(convnet->convolution, dropout_percent);
+    deeplearn_set_dropouts(convnet->learner, dropout_percent);
 }
 
 /**
@@ -453,67 +453,67 @@ void deepconvnet_set_dropouts(deepconvnet * convnet, float dropout_percent)
  * @return zero on success
  */
 int deepconvnet_plot_history(deepconvnet * convnet,
-							 int image_width, int image_height)
+                             int image_width, int image_height)
 {
-	int index,retval=0;
-	FILE * fp;
-	char data_filename[256];
-	char plot_filename[256];
-	char command_str[256];
-	float value;
-	float max_value = 0.01f;
+    int index,retval=0;
+    FILE * fp;
+    char data_filename[256];
+    char plot_filename[256];
+    char command_str[256];
+    float value;
+    float max_value = 0.01f;
 
-	sprintf(data_filename,"%s%s",DEEPLEARN_TEMP_DIRECTORY,
-			"libdeep_data.dat");
-	sprintf(plot_filename,"%s%s",DEEPLEARN_TEMP_DIRECTORY,
-			"libdeep_data.plot");
+    sprintf(data_filename,"%s%s",DEEPLEARN_TEMP_DIRECTORY,
+            "libdeep_data.dat");
+    sprintf(plot_filename,"%s%s",DEEPLEARN_TEMP_DIRECTORY,
+            "libdeep_data.plot");
 
-	/* save the data */
-	fp = fopen(data_filename,"w");
-	if (!fp) return -1;
-	for (index = 0; index < convnet->history_index; index++) {
-		value = convnet->history[index];
-		fprintf(fp,"%d    %.10f\n",
-				index*convnet->history_step,value);
-		/* record the maximum error value */
-		if (value > max_value) {
-			max_value = value;
-		}
-	}
-	fclose(fp);
+    /* save the data */
+    fp = fopen(data_filename,"w");
+    if (!fp) return -1;
+    for (index = 0; index < convnet->history_index; index++) {
+        value = convnet->history[index];
+        fprintf(fp,"%d    %.10f\n",
+                index*convnet->history_step,value);
+        /* record the maximum error value */
+        if (value > max_value) {
+            max_value = value;
+        }
+    }
+    fclose(fp);
 
-	/* create a plot file */
-	fp = fopen(plot_filename,"w");
-	if (!fp) return -1;
-	fprintf(fp,"%s","reset\n");
-	fprintf(fp,"set title \"%s\"\n",convnet->history_plot_title);
-	fprintf(fp,"set xrange [0:%d]\n",
-			convnet->history_index * convnet->history_step);
-	fprintf(fp,"set yrange [0:%f]\n", max_value*102/100);
-	fprintf(fp,"%s","set lmargin 9\n");
-	fprintf(fp,"%s","set rmargin 2\n");
-	fprintf(fp,"%s","set xlabel \"Time Step\"\n");
-	fprintf(fp,"%s","set ylabel \"Training Error Percent\"\n");
+    /* create a plot file */
+    fp = fopen(plot_filename,"w");
+    if (!fp) return -1;
+    fprintf(fp,"%s","reset\n");
+    fprintf(fp,"set title \"%s\"\n",convnet->history_plot_title);
+    fprintf(fp,"set xrange [0:%d]\n",
+            convnet->history_index * convnet->history_step);
+    fprintf(fp,"set yrange [0:%f]\n", max_value*102/100);
+    fprintf(fp,"%s","set lmargin 9\n");
+    fprintf(fp,"%s","set rmargin 2\n");
+    fprintf(fp,"%s","set xlabel \"Time Step\"\n");
+    fprintf(fp,"%s","set ylabel \"Training Error Percent\"\n");
 
-	fprintf(fp,"%s","set grid\n");
-	fprintf(fp,"%s","set key right top\n");
+    fprintf(fp,"%s","set grid\n");
+    fprintf(fp,"%s","set key right top\n");
 
-	fprintf(fp,"set terminal png size %d,%d\n",
-			image_width, image_height);
-	fprintf(fp,"set output \"%s\"\n", convnet->history_plot_filename);
-	fprintf(fp,"plot \"%s\" using 1:2 notitle with lines\n",
-			data_filename);
-	fclose(fp);
+    fprintf(fp,"set terminal png size %d,%d\n",
+            image_width, image_height);
+    fprintf(fp,"set output \"%s\"\n", convnet->history_plot_filename);
+    fprintf(fp,"plot \"%s\" using 1:2 notitle with lines\n",
+            data_filename);
+    fclose(fp);
 
-	/* run gnuplot using the created files */
-	sprintf(command_str,"gnuplot %s", plot_filename);
-	retval = system(command_str); /* I assume this is synchronous */
+    /* run gnuplot using the created files */
+    sprintf(command_str,"gnuplot %s", plot_filename);
+    retval = system(command_str); /* I assume this is synchronous */
 
-	/* remove temporary files */
-	sprintf(command_str,"rm %s %s", data_filename, plot_filename);
-	retval = system(command_str);
+    /* remove temporary files */
+    sprintf(command_str,"rm %s %s", data_filename, plot_filename);
+    retval = system(command_str);
 
-	return retval;
+    return retval;
 }
 
 /**
@@ -522,22 +522,22 @@ int deepconvnet_plot_history(deepconvnet * convnet,
  */
 int deepconvnet_training(deepconvnet * convnet)
 {
-	if (convnet->learner->training_complete != 0) return 0;
-	if (convnet->no_of_images == 0) return 0;
-	if (convnet->classification_number == NULL) return -1;
+    if (convnet->learner->training_complete != 0) return 0;
+    if (convnet->no_of_images == 0) return 0;
+    if (convnet->classification_number == NULL) return -1;
 
-	/* pick an image at random */
-	int training_images = convnet->no_of_images*8/10;
-	int index0 =
-		rand_num(&convnet->learner->net->random_seed)%training_images;
-	int index = convnet->training_set_index[index0];
-	unsigned char * img = convnet->images[index];
-	if (deepconvnet_update_img(convnet, img,
-							   convnet->classification_number[index]) != 0) {
-		return -2;
-	}
+    /* pick an image at random */
+    int training_images = convnet->no_of_images*8/10;
+    int index0 =
+        rand_num(&convnet->learner->net->random_seed)%training_images;
+    int index = convnet->training_set_index[index0];
+    unsigned char * img = convnet->images[index];
+    if (deepconvnet_update_img(convnet, img,
+                               convnet->classification_number[index]) != 0) {
+        return -2;
+    }
 
-	return 0;
+    return 0;
 }
 
 /**
@@ -547,27 +547,27 @@ int deepconvnet_training(deepconvnet * convnet)
  */
 float deepconvnet_get_performance(deepconvnet * convnet)
 {
-	float performance = 0;
-	int ctr = 0;
-	int test_images = convnet->no_of_images*2/10;
+    float performance = 0;
+    int ctr = 0;
+    int test_images = convnet->no_of_images*2/10;
 
-	if (convnet->no_of_images == 0) return -1;
-	if (convnet->classification_number == NULL) return -2;
+    if (convnet->no_of_images == 0) return -1;
+    if (convnet->classification_number == NULL) return -2;
 
-	for (int i = 0; i < test_images; i++) {
-		int index = convnet->test_set_index[i];
-		unsigned char * img = convnet->images[index];
-		deepconvnet_update_img(convnet, img, -1);
-		if (deeplearn_get_class(convnet->learner) ==
-			convnet->classification_number[index]) {
-			performance += 100.0f;
-		}
-		ctr++;
-	}
-	if (ctr > 0) {
-		performance /= ctr;
-	}
-	return performance;
+    for (int i = 0; i < test_images; i++) {
+        int index = convnet->test_set_index[i];
+        unsigned char * img = convnet->images[index];
+        deepconvnet_update_img(convnet, img, -1);
+        if (deeplearn_get_class(convnet->learner) ==
+            convnet->classification_number[index]) {
+            performance += 100.0f;
+        }
+        ctr++;
+    }
+    if (ctr > 0) {
+        performance /= ctr;
+    }
+    return performance;
 }
 
 /**
@@ -578,43 +578,43 @@ float deepconvnet_get_performance(deepconvnet * convnet)
  */
 int deepconvnet_create_training_test_sets(deepconvnet * convnet)
 {
-	int i, j;
+    int i, j;
 
-	/* create arrays to store randomly ordered array indexes
-	   for training and test sets */
-	int training_images = convnet->no_of_images*8/10;
-	convnet->training_set_index =
-		(int*)malloc((training_images+1)*sizeof(int));
-	if (!convnet->training_set_index) return -1;
-	i = 0;
-	while (i < training_images) {
-		int index =
-			rand_num(&convnet->learner->net->random_seed)%convnet->no_of_images;
-		for (j = 0; j < i; j++) {
-			if (convnet->training_set_index[j] == index) {
-				break;
-			}
-		}
-		if (j == i) {
-			convnet->training_set_index[i] = index;
-			i++;
-		}
-	}
-	int test_images = 0;
-	convnet->test_set_index =
-		(int*)malloc((convnet->no_of_images - training_images+1)*sizeof(int));
-	if (!convnet->test_set_index) return -2;
-	for (i = 0; i < convnet->no_of_images; i++) {
-		for (j = 0; j < training_images; j++) {
-			if (convnet->training_set_index[j] == i) {
-				break;
-			}
-		}
-		if (j == training_images) {
-			convnet->test_set_index[test_images++] = i;
-		}
-	}
-	return 0;
+    /* create arrays to store randomly ordered array indexes
+       for training and test sets */
+    int training_images = convnet->no_of_images*8/10;
+    convnet->training_set_index =
+        (int*)malloc((training_images+1)*sizeof(int));
+    if (!convnet->training_set_index) return -1;
+    i = 0;
+    while (i < training_images) {
+        int index =
+            rand_num(&convnet->learner->net->random_seed)%convnet->no_of_images;
+        for (j = 0; j < i; j++) {
+            if (convnet->training_set_index[j] == index) {
+                break;
+            }
+        }
+        if (j == i) {
+            convnet->training_set_index[i] = index;
+            i++;
+        }
+    }
+    int test_images = 0;
+    convnet->test_set_index =
+        (int*)malloc((convnet->no_of_images - training_images+1)*sizeof(int));
+    if (!convnet->test_set_index) return -2;
+    for (i = 0; i < convnet->no_of_images; i++) {
+        for (j = 0; j < training_images; j++) {
+            if (convnet->training_set_index[j] == i) {
+                break;
+            }
+        }
+        if (j == training_images) {
+            convnet->test_set_index[test_images++] = i;
+        }
+    }
+    return 0;
 }
 
 
@@ -636,42 +636,42 @@ int deepconvnet_create_training_test_sets(deepconvnet * convnet)
  * @return zero on success
  */
 int deepconvnet_read_images(char * directory,
-							deepconvnet * convnet,
-							int image_width, int image_height,
-							int no_of_convolutions,
-							int max_features_per_convolution,
-							int reduction_factor,
-							int no_of_deep_layers,
-							int no_of_outputs,
-							int output_classes,
-							float error_threshold[],
-							unsigned int * random_seed)
+                            deepconvnet * convnet,
+                            int image_width, int image_height,
+                            int no_of_convolutions,
+                            int max_features_per_convolution,
+                            int reduction_factor,
+                            int no_of_deep_layers,
+                            int no_of_outputs,
+                            int output_classes,
+                            float error_threshold[],
+                            unsigned int * random_seed)
 {
-	if (deepconvnet_init(no_of_convolutions,
-						 no_of_deep_layers,
-						 image_width, image_height, 3,
-						 max_features_per_convolution,
-						 reduction_factor,
-						 no_of_outputs, convnet,
-						 error_threshold,
-						 random_seed) != 0) {
-		return -1;
-	}
+    if (deepconvnet_init(no_of_convolutions,
+                         no_of_deep_layers,
+                         image_width, image_height, 3,
+                         max_features_per_convolution,
+                         reduction_factor,
+                         no_of_outputs, convnet,
+                         error_threshold,
+                         random_seed) != 0) {
+        return -1;
+    }
 
-	convnet->no_of_images =
-		deeplearn_load_training_images(directory, &convnet->images,
-									   &convnet->classifications,
-									   &convnet->classification_number,
-									   image_width, image_height);
-	if (convnet->no_of_images <= 0) {
-		return -2;
-	}
+    convnet->no_of_images =
+        deeplearn_load_training_images(directory, &convnet->images,
+                                       &convnet->classifications,
+                                       &convnet->classification_number,
+                                       image_width, image_height);
+    if (convnet->no_of_images <= 0) {
+        return -2;
+    }
 
-	if (deepconvnet_create_training_test_sets(convnet) != 0) {
-		return -3;
-	}
+    if (deepconvnet_create_training_test_sets(convnet) != 0) {
+        return -3;
+    }
 
-	return 0;
+    return 0;
 }
 
 /**
@@ -684,28 +684,28 @@ int deepconvnet_read_images(char * directory,
  * @return zero on success
  */
 int deepconvnet_plot_features(deepconvnet * convnet,
-							  int layer_index,
-							  char * filename,
-							  int img_width, int img_height)
+                              int layer_index,
+                              char * filename,
+                              int img_width, int img_height)
 {
-	unsigned char * img;
+    unsigned char * img;
 
-	/* allocate memory for the image */
-	img = (unsigned char*)malloc(img_width*img_height*3*sizeof(unsigned char));
-	if (!img) {
-		return -1;
-	}
+    /* allocate memory for the image */
+    img = (unsigned char*)malloc(img_width*img_height*3*sizeof(unsigned char));
+    if (!img) {
+        return -1;
+    }
 
-	int retval =
-		conv_plot_features(convnet->convolution,
-						   layer_index, img, img_width, img_height);
-	if (retval != 0) return retval;
+    int retval =
+        conv_plot_features(convnet->convolution,
+                           layer_index, img, img_width, img_height);
+    if (retval != 0) return retval;
 
-	deeplearn_write_png_file(filename,
-							 (unsigned int)img_width,
-							 (unsigned int)img_height,
-							 24, img);
+    deeplearn_write_png_file(filename,
+                             (unsigned int)img_width,
+                             (unsigned int)img_height,
+                             24, img);
 
-	free(img);
-	return 0;
+    free(img);
+    return 0;
 }

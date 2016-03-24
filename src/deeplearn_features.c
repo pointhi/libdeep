@@ -50,13 +50,11 @@ static int scan_img_patch(unsigned char img[],
         for (int x = tx; x < bx; x++) {
             int index_img =
                 ((y*img_width) + x) * img_depth;
-            for (int d = 0; d < img_depth;
-                 d++, index_feature_input++) {
+            for (int d = 0; d < img_depth; d++) {
                 /* convert from 8 bit to a neuron value */
-                float v =
-                    0.25f + (img[index_img+d]/(2*255.0f));
                 autocoder_set_input(feature_autocoder,
-                                    index_feature_input, v);
+                                    index_feature_input++,
+                                    PIXEL_TO_FLOAT(img[index_img+d]));
             }
         }
     }
@@ -94,12 +92,10 @@ static int scan_floats_patch(float inputs_floats[],
             /* depth typically corresponds to colour channels
                in the initial layer, or feature responses in
                subsequent layers */
-            for (int d = 0; d < inputs_depth;
-                 d++, index_feature_input++) {
-
+            for (int d = 0; d < inputs_depth; d++) {
                 /* set the inputs of the autocoder */
                 autocoder_set_input(feature_autocoder,
-                                    index_feature_input,
+                                    index_feature_input++,
                                     inputs_floats[index_inputs+d]);
             }
         }

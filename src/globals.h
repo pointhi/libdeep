@@ -15,4 +15,6 @@
 #define AUTOCODER_UNKNOWN      -9999
 #define AUTOCODER_DROPPED_OUT  -9999
 
+#define PIXEL_TO_FLOAT(p) (0.25f + ((p)/(2*255.0f)))
+
 #endif

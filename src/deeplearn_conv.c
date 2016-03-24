@@ -257,7 +257,7 @@ int conv_layer_width(int layer_index,
  */
 int conv_output_width(deeplearn_conv * conv)
 {
-    return conv_layer_width(conv->no_of_layers-1, conv, 1);
+    return conv_layer_width(conv->no_of_layers-1, conv, AFTER_POOLING);
 }
 
 /**
@@ -285,7 +285,7 @@ int conv_layer_height(int layer_index,
  */
 int conv_output_height(deeplearn_conv * conv)
 {
-    return conv_layer_height(conv->no_of_layers-1, conv, 1);
+    return conv_layer_height(conv->no_of_layers-1, conv, AFTER_POOLING);
 }
 
 /**
