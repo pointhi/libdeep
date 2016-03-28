@@ -188,11 +188,11 @@ static void conv_update_history(deeplearn_conv * conv)
 
         /* show the learned features */
         /*
-		  if (conv->current_layer == 0) {
-		  features_plot_weights(conv->layer[0].autocoder,
-		  "learned_features.png",3,
-		  800, 800);
-		  }*/
+          if (conv->current_layer == 0) {
+          features_plot_weights(conv->layer[0].autocoder,
+          "learned_features.png",3,
+          800, 800);
+          }*/
 
         if (conv->history_index >= DEEPLEARN_HISTORY_SIZE) {
             for (i = 0; i < conv->history_index; i++) {
@@ -337,7 +337,7 @@ int convolution_layer_units(int layer_index,
 static int conv_img_initial(unsigned char img[],
                             deeplearn_conv * conv,
                             float * BPerror,
-							unsigned char use_dropouts)
+                            unsigned char use_dropouts)
 {
     float currBPerror=0;
     int retval;
@@ -373,7 +373,7 @@ static int conv_img_initial(unsigned char img[],
                                  convolution_layer_units(0,conv),
                                  conv->layer[0].convolution,
                                  conv->layer[0].autocoder,
-								 use_dropouts);
+                                 use_dropouts);
     if (retval != 0) {
         return -2;
     }
@@ -394,11 +394,11 @@ static int conv_subsequent(deeplearn_conv * conv,
     float currBPerror=0;
     int retval;
     int patch_radius = conv_patch_radius(layer_index, conv);
-	unsigned char use_dropouts = 0;
+    unsigned char use_dropouts = 0;
 
-	if (layer_index < 1) {
-		return -3;
-	}
+    if (layer_index < 1) {
+        return -3;
+    }
 
     if (conv->enable_learning != 0) {
         /* do feature learning */
@@ -418,8 +418,8 @@ static int conv_subsequent(deeplearn_conv * conv,
             return -4;
         }
         *BPerror = *BPerror + currBPerror;
-		use_dropouts = 1;
-	}
+        use_dropouts = 1;
+    }
     /* do the convolution for this layer */
     retval =
         features_conv_flt_to_flt(conv_layer_width(layer_index,conv,BEFORE_POOLING),
@@ -432,7 +432,7 @@ static int conv_subsequent(deeplearn_conv * conv,
                                  convolution_layer_units(layer_index,conv),
                                  conv->layer[layer_index].convolution,
                                  conv->layer[layer_index].autocoder,
-								 use_dropouts);
+                                 use_dropouts);
     if (retval != 0) {
         return -5;
     }
@@ -531,6 +531,45 @@ void conv_update_training_error(int layer_index,
 }
 
 /**
+ * @brief Performs deconvolution to an image as a series of
+ *        deconvolutions and unpoolings
+ * @param start_layer the convolution layer to beging from
+ * @param conv Convolution object
+ * @param img Input image which is the output
+ * @returns zero on success
+ */
+int deconv_img(int start_layer,
+               deeplearn_conv * conv,
+               unsigned char img[])
+{
+    int max_layer = get_max_layer(conv);
+
+    if (start_layer > max_layer-1) start_layer = max_layer-1;
+    
+    for (int depth = start_layer; depth > 0; depth--) {
+        unpooling_from_flt_to_flt(conv->max_features,
+                                  conv_layer_width(depth, conv, AFTER_POOLING),
+                                  conv_layer_height(depth, conv, AFTER_POOLING),
+                                  conv->layer[depth].pooling,
+                                  conv_layer_width(depth, conv, BEFORE_POOLING),
+                                  conv_layer_height(depth, conv, BEFORE_POOLING),
+                                  conv->layer[depth].convolution);
+
+        features_deconv_flt_to_flt(
+            conv_layer_width(depth, conv, BEFORE_POOLING),
+            conv_layer_height(depth, conv, BEFORE_POOLING),
+            conv_patch_radius(depth, conv),
+            conv_layer_width(depth-1, conv, AFTER_POOLING),
+            conv_layer_height(depth-1, conv, AFTER_POOLING),
+            conv->max_features,
+            conv->layer[depth-1].pooling,
+            convolution_layer_units(depth-1, conv),
+            conv->layer[depth].convolution,
+            conv->layer[depth-1].autocoder);
+    }   
+}
+
+/**
  * @brief Performs convolution on an image as a series of
  *        convolutions and poolings
  * @param img Input image
@@ -540,7 +579,7 @@ void conv_update_training_error(int layer_index,
  */
 int conv_img(unsigned char img[],
              deeplearn_conv * conv,
-			 unsigned char use_dropouts)
+             unsigned char use_dropouts)
 {
     int retval = -1;
     int max_layer = get_max_layer(conv);

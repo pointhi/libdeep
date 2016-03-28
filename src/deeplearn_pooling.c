@@ -85,8 +85,8 @@ int pooling_from_flt_to_flt(int depth,
 /**
  * @brief Unpools the first layer into the second (inverse of max pooling)
  * @param depth Depth of the two layers
- * @param layer0_across Number of units across the first layer
- * @param layer0_down Number of units down the first layer
+ * @param pooling_layer_across Number of units across the first layer
+ * @param pooling_layer_down Number of units down the first layer
  * @param layer0 Array containing the first layer values
  * @param layer1_across Number of units across the second layer
  * @param layer1_down Number of units down the second layer
@@ -94,36 +94,36 @@ int pooling_from_flt_to_flt(int depth,
  * @returns zero on success
  */
 int unpooling_from_flt_to_flt(int depth,
-                              int layer0_across,
-                              int layer0_down,
-                              float layer0[],
-                              int layer1_across,
-                              int layer1_down,
-                              float layer1[])
+                              int pooled_layer_across,
+                              int pooled_layer_down,
+                              float pooled_layer[],
+                              int original_layer_across,
+                              int original_layer_down,
+                              float original_layer[])
 {
     /* second layer must be smaller than the first */
-    if (layer1_across*layer1_down >
-        layer0_across*layer0_down) {
+    if (original_layer_across*original_layer_down >
+        pooled_layer_across*pooled_layer_down) {
         return -1;
     }
 
     /* if layers are the same size then copy the array */
-    if (layer1_across*layer1_down ==
-        layer0_across*layer0_down) {
-        memcpy((void*)layer0,(void*)layer1,
-               layer0_across*layer0_down*depth*sizeof(float));
+    if (original_layer_across*original_layer_down ==
+        pooled_layer_across*pooled_layer_down) {
+        memcpy((void*)original_layer,(void*)pooled_layer,
+               pooled_layer_across*pooled_layer_down*depth*sizeof(float));
         return 0;
     }
 
     /*#pragma omp parallel for*/
-    for (int y0 = 0; y0 < layer0_down; y0++) {
-        int y1 = y0 * layer1_down / layer0_down;
-        for (int x0 = 0; x0 < layer0_across; x0++) {
-            int x1 = x0 * layer1_across / layer0_across;
-            int n0 = (y0*layer0_across + x0)*depth;
-            int n1 = (y1*layer1_across + x1)*depth;
+    for (int y_original = 0; y_original < original_layer_down; y_original++) {
+        int y_pooled = y_original * pooled_layer_down / original_layer_down;
+        for (int x_original = 0; x_original < original_layer_across; x_original++) {
+            int x_pooled = x_original * pooled_layer_across / original_layer_across;
+            int n_pooled = (y_pooled*pooled_layer_across + x_pooled)*depth;
+            int n_original = (y_original*original_layer_across + x_original)*depth;
             for (int d = 0; d < depth; d++) {
-                layer0[n0+d] = layer1[n1+d];
+                original_layer[n_original+d] = pooled_layer[n_pooled+d];
             }
         }
     }
