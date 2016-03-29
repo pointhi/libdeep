@@ -535,38 +535,57 @@ void conv_update_training_error(int layer_index,
  *        deconvolutions and unpoolings
  * @param start_layer the convolution layer to beging from
  * @param conv Convolution object
- * @param img Input image which is the output
+ * @param img Input image which is the output 
  * @returns zero on success
  */
 int deconv_img(int start_layer,
                deeplearn_conv * conv,
                unsigned char img[])
 {
-    int max_layer = get_max_layer(conv);
+	int max_layer = get_max_layer(conv);
+	int img_width = conv->inputs_across;
+	int img_height = conv->inputs_down;
+	int img_depth = conv->inputs_depth;
 
-    if (start_layer > max_layer-1) start_layer = max_layer-1;
+	if (start_layer > max_layer-1) start_layer = max_layer-1;
     
-    for (int depth = start_layer; depth > 0; depth--) {
-        unpooling_from_flt_to_flt(conv->max_features,
-                                  conv_layer_width(depth, conv, AFTER_POOLING),
-                                  conv_layer_height(depth, conv, AFTER_POOLING),
-                                  conv->layer[depth].pooling,
-                                  conv_layer_width(depth, conv, BEFORE_POOLING),
-                                  conv_layer_height(depth, conv, BEFORE_POOLING),
-                                  conv->layer[depth].convolution);
+	for (int layer_index = start_layer; layer_index > 0; layer_index--) {
+		/* unpool the current layer */
+		unpooling_from_flt_to_flt(conv->max_features,
+								  conv_layer_width(layer_index,
+												   conv, AFTER_POOLING),
+								  conv_layer_height(layer_index,
+													conv, AFTER_POOLING),
+								  conv->layer[layer_index].pooling,
+								  conv_layer_width(layer_index,
+												   conv, BEFORE_POOLING),
+								  conv_layer_height(layer_index,
+													conv, BEFORE_POOLING),
+								  conv->layer[layer_index].convolution);
 
-        features_deconv_flt_to_flt(
-            conv_layer_width(depth, conv, BEFORE_POOLING),
-            conv_layer_height(depth, conv, BEFORE_POOLING),
-            conv_patch_radius(depth, conv),
-            conv_layer_width(depth-1, conv, AFTER_POOLING),
-            conv_layer_height(depth-1, conv, AFTER_POOLING),
-            conv->max_features,
-            conv->layer[depth-1].pooling,
-            convolution_layer_units(depth-1, conv),
-            conv->layer[depth].convolution,
-            conv->layer[depth-1].autocoder);
-    }   
+		/* deconvolve from the current layer to the pooling of the
+		   previous layer */
+		features_deconv_flt_to_flt(
+			conv_layer_width(layer_index, conv, BEFORE_POOLING),
+			conv_layer_height(layer_index, conv, BEFORE_POOLING),
+			conv_patch_radius(layer_index, conv),
+			conv_layer_width(layer_index-1, conv, AFTER_POOLING),
+			conv_layer_height(layer_index-1, conv, AFTER_POOLING),
+			conv->max_features,
+			conv->layer[layer_index-1].pooling,
+			convolution_layer_units(layer_index-1, conv),
+			conv->layer[layer_index].convolution,
+			conv->layer[layer_index-1].autocoder);
+	}
+
+	/* convert from the first layer back to the starting image */
+	features_deconv_img_to_flt(conv_layer_width(0, conv, BEFORE_POOLING),
+							   conv_layer_height(0, conv, BEFORE_POOLING),
+							   conv_patch_radius(0, conv),
+							   img_width, img_height, img_depth, img[],
+							   convolution_layer_units(0, conv),
+							   conv->layer[0].convolution,
+							   conv->layer[0].autocoder);
 }
 
 /**
@@ -578,43 +597,43 @@ int deconv_img(int start_layer,
  * @returns zero on success
  */
 int conv_img(unsigned char img[],
-             deeplearn_conv * conv,
-             unsigned char use_dropouts)
+			 deeplearn_conv * conv,
+			 unsigned char use_dropouts)
 {
-    int retval = -1;
-    int max_layer = get_max_layer(conv);
-    float BPerror;
+	int retval = -1;
+	int max_layer = get_max_layer(conv);
+	float BPerror;
 
-    for (int i = 0; i < max_layer; i++) {
-        conv_enable_learning(i, conv);
+	for (int i = 0; i < max_layer; i++) {
+		conv_enable_learning(i, conv);
 
-        BPerror = 0;
-        if (i == 0) {
-            retval = conv_img_initial(img, conv, &BPerror, use_dropouts);
-        }
-        else {
-            retval = conv_subsequent(conv, i, &BPerror);
-        }
-        if (retval != 0) {
-            return retval;
-        }
+		BPerror = 0;
+		if (i == 0) {
+			retval = conv_img_initial(img, conv, &BPerror, use_dropouts);
+		}
+		else {
+			retval = conv_subsequent(conv, i, &BPerror);
+		}
+		if (retval != 0) {
+			return retval;
+		}
 
-        conv_update_training_error(i, BPerror, conv);
+		conv_update_training_error(i, BPerror, conv);
 
-        /* pooling */
-        retval =
-            pooling_from_flt_to_flt(conv->max_features,
-                                    conv_layer_width(i,conv,BEFORE_POOLING),
-                                    conv_layer_height(i,conv,BEFORE_POOLING),
-                                    conv->layer[i].convolution,
-                                    conv_layer_width(i,conv,AFTER_POOLING),
-                                    conv_layer_height(i,conv,AFTER_POOLING),
-                                    conv->layer[i].pooling);
-        if (retval != 0) {
-            return -6;
-        }
-    }
-    return 0;
+		/* pooling */
+		retval =
+			pooling_from_flt_to_flt(conv->max_features,
+									conv_layer_width(i,conv,BEFORE_POOLING),
+									conv_layer_height(i,conv,BEFORE_POOLING),
+									conv->layer[i].convolution,
+									conv_layer_width(i,conv,AFTER_POOLING),
+									conv_layer_height(i,conv,AFTER_POOLING),
+									conv->layer[i].pooling);
+		if (retval != 0) {
+			return -6;
+		}
+	}
+	return 0;
 }
 
 /**
@@ -626,70 +645,70 @@ int conv_img(unsigned char img[],
  * @param img_height Height of the image in pixels
  * @return zero on success
  */
-int conv_plot_history(deeplearn_conv * conv,
-                      char * filename, char * title,
-                      int img_width, int img_height)
-{
-    int index,retval=0;
-    FILE * fp;
-    char data_filename[256];
-    char plot_filename[256];
-    char command_str[256];
-    float value;
-    float max_value = 0.01f;
+	int conv_plot_history(deeplearn_conv * conv,
+						  char * filename, char * title,
+						  int img_width, int img_height)
+	{
+		int index,retval=0;
+		FILE * fp;
+		char data_filename[256];
+		char plot_filename[256];
+		char command_str[256];
+		float value;
+		float max_value = 0.01f;
 
-    sprintf(data_filename,"%s%s",DEEPLEARN_TEMP_DIRECTORY,
-            "libdeep_conv_data.dat");
-    sprintf(plot_filename,"%s%s",DEEPLEARN_TEMP_DIRECTORY,
-            "libdeep_conv_data.plot");
+		sprintf(data_filename,"%s%s",DEEPLEARN_TEMP_DIRECTORY,
+				"libdeep_conv_data.dat");
+		sprintf(plot_filename,"%s%s",DEEPLEARN_TEMP_DIRECTORY,
+				"libdeep_conv_data.plot");
 
-    /* save the data */
-    fp = fopen(data_filename,"w");
-    if (!fp) return -1;
-    for (index = 0; index < conv->history_index; index++) {
-        value = conv->history[index];
-        fprintf(fp,"%d    %.10f\n",
-                index*conv->history_step,value);
-        /* record the maximum error value */
-        if (value > max_value) {
-            max_value = value;
-        }
-    }
-    fclose(fp);
+		/* save the data */
+		fp = fopen(data_filename,"w");
+		if (!fp) return -1;
+		for (index = 0; index < conv->history_index; index++) {
+			value = conv->history[index];
+			fprintf(fp,"%d    %.10f\n",
+					index*conv->history_step,value);
+			/* record the maximum error value */
+			if (value > max_value) {
+				max_value = value;
+			}
+		}
+		fclose(fp);
 
-    /* create a plot file */
-    fp = fopen(plot_filename,"w");
-    if (!fp) return -1;
-    fprintf(fp,"%s","reset\n");
-    fprintf(fp,"set title \"%s\"\n",title);
-    fprintf(fp,"set xrange [0:%d]\n",
-            conv->history_index*conv->history_step);
-    fprintf(fp,"set yrange [0:%f]\n",max_value*102/100);
-    fprintf(fp,"%s","set lmargin 9\n");
-    fprintf(fp,"%s","set rmargin 2\n");
-    fprintf(fp,"%s","set xlabel \"Time Step\"\n");
-    fprintf(fp,"%s","set ylabel \"Training Error Percent\"\n");
+		/* create a plot file */
+		fp = fopen(plot_filename,"w");
+		if (!fp) return -1;
+		fprintf(fp,"%s","reset\n");
+		fprintf(fp,"set title \"%s\"\n",title);
+		fprintf(fp,"set xrange [0:%d]\n",
+				conv->history_index*conv->history_step);
+		fprintf(fp,"set yrange [0:%f]\n",max_value*102/100);
+		fprintf(fp,"%s","set lmargin 9\n");
+		fprintf(fp,"%s","set rmargin 2\n");
+		fprintf(fp,"%s","set xlabel \"Time Step\"\n");
+		fprintf(fp,"%s","set ylabel \"Training Error Percent\"\n");
 
-    fprintf(fp,"%s","set grid\n");
-    fprintf(fp,"%s","set key right top\n");
+		fprintf(fp,"%s","set grid\n");
+		fprintf(fp,"%s","set key right top\n");
 
-    fprintf(fp,"set terminal png size %d,%d\n",
-            img_width, img_height);
-    fprintf(fp,"set output \"%s\"\n", filename);
-    fprintf(fp,"plot \"%s\" using 1:2 notitle with lines\n",
-            data_filename);
-    fclose(fp);
+		fprintf(fp,"set terminal png size %d,%d\n",
+				img_width, img_height);
+		fprintf(fp,"set output \"%s\"\n", filename);
+		fprintf(fp,"plot \"%s\" using 1:2 notitle with lines\n",
+				data_filename);
+		fclose(fp);
 
-    /* run gnuplot using the created files */
-    sprintf(command_str,"gnuplot %s", plot_filename);
-    retval = system(command_str); /* I assume this is synchronous */
+		/* run gnuplot using the created files */
+		sprintf(command_str,"gnuplot %s", plot_filename);
+		retval = system(command_str); /* I assume this is synchronous */
 
-    /* remove temporary files */
-    sprintf(command_str,"rm %s %s", data_filename,plot_filename);
-    retval = system(command_str);
+		/* remove temporary files */
+		sprintf(command_str,"rm %s %s", data_filename,plot_filename);
+		retval = system(command_str);
 
-    return retval;
-}
+		return retval;
+	}
 
 /**
  * @brief Saves the given convolution object to a file
@@ -697,11 +716,11 @@ int conv_plot_history(deeplearn_conv * conv,
  * @param conv Convolution object
  * @return zero value on success
  */
-int conv_save(FILE * fp, deeplearn_conv * conv)
-{
-    if (fwrite(&conv->reduction_factor,
-               sizeof(int), 1, fp) == 0) {
-        return -1;
+	int conv_save(FILE * fp, deeplearn_conv * conv)
+	{
+		if (fwrite(&conv->reduction_factor,
+				   sizeof(int), 1, fp) == 0) {
+			return -1;
     }
     if (fwrite(&conv->pooling_factor,
                sizeof(int), 1, fp) == 0) {

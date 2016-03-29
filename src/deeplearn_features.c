@@ -512,16 +512,16 @@ int features_conv_img_to_flt(int samples_across,
  * @returns zero on success
  */
 int features_deconv_flt_to_flt(int samples_across,
-                               int samples_down,
-                               int patch_radius,
-                               int img_width,
-                               int img_height,
-                               int img_depth,
-                               float img[],
-                               int layer_units,
-                               float layer[],
-                               ac * feature_autocoder)
-{
+							   int samples_down,
+							   int patch_radius,
+							   int img_width,
+							   int img_height,
+							   int img_depth,
+							   float img[],
+							   int layer_units,
+							   float layer[],
+							   ac * feature_autocoder)
+{	
     int i, no_of_learned_features = feature_autocoder->NoOfHiddens;
 
     

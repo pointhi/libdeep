@@ -120,7 +120,7 @@ static void test_conv_image()
         BPerror = conv.BPerror;
     }
 
-    /* move to hte next layer */
+    /* move to the next layer */
     conv.BPerror = -1;
     conv.current_layer++;
 
