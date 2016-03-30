@@ -582,7 +582,7 @@ int deconv_img(int start_layer,
 	features_deconv_img_to_flt(conv_layer_width(0, conv, BEFORE_POOLING),
 							   conv_layer_height(0, conv, BEFORE_POOLING),
 							   conv_patch_radius(0, conv),
-							   img_width, img_height, img_depth, img[],
+							   img_width, img_height, img_depth, img,
 							   convolution_layer_units(0, conv),
 							   conv->layer[0].convolution,
 							   conv->layer[0].autocoder);
