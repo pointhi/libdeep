@@ -586,6 +586,7 @@ int deconv_img(int start_layer,
 							   convolution_layer_units(0, conv),
 							   conv->layer[0].convolution,
 							   conv->layer[0].autocoder);
+	return 0;
 }
 
 /**

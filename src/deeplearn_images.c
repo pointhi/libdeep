@@ -1,43 +1,43 @@
 /*
- libdeep - a library for deep learning
- Copyright (C) 2013-2015  Bob Mottram <bob@robotics.uk.to>
+  libdeep - a library for deep learning
+  Copyright (C) 2013-2015  Bob Mottram <bob@robotics.uk.to>
 
- Redistribution and use in source and binary forms, with or without
- modification, are permitted provided that the following conditions
- are met:
- 1. Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
- 2. Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
- 3. Neither the name of the University nor the names of its contributors
-    may be used to endorse or promote products derived from this software
-    without specific prior written permission.
- .
- THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
- A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE HOLDERS OR
- CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
- EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
- PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
- PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
- LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
- NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+  Redistribution and use in source and binary forms, with or without
+  modification, are permitted provided that the following conditions
+  are met:
+  1. Redistributions of source code must retain the above copyright
+  notice, this list of conditions and the following disclaimer.
+  2. Redistributions in binary form must reproduce the above copyright
+  notice, this list of conditions and the following disclaimer in the
+  documentation and/or other materials provided with the distribution.
+  3. Neither the name of the University nor the names of its contributors
+  may be used to endorse or promote products derived from this software
+  without specific prior written permission.
+  .
+  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+  ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+  A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE HOLDERS OR
+  CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+  EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+  PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+  PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+  LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 #include "deeplearn_images.h"
 
 /**
-* @brief Reads a PNG file into a buffer
-* @param filename Filename of the image
-* @param width Returned width of the image in pixels
-* @param height Returned height of the image in pixels
-* @param bitsperpixel Returned number of bits per pixel
-* @param buffer Pointer to buffer which contains the image data
-* @returns 0 on success
-*/
+ * @brief Reads a PNG file into a buffer
+ * @param filename Filename of the image
+ * @param width Returned width of the image in pixels
+ * @param height Returned height of the image in pixels
+ * @param bitsperpixel Returned number of bits per pixel
+ * @param buffer Pointer to buffer which contains the image data
+ * @returns 0 on success
+ */
 int deeplearn_read_png_file(char * filename,
                             unsigned int * width,
                             unsigned int * height,
@@ -59,14 +59,14 @@ int deeplearn_read_png_file(char * filename,
 }
 
 /**
-* @brief Saves an image buffer to a PNG formatted image
-* @param filename Filename of the image
-* @param width Width of the image in pixels
-* @param height Height of the image in pixels
-* @param bitsperpixel Number of bits per pixel
-* @param buffer Image buffer
-* @return 0 on success
-*/
+ * @brief Saves an image buffer to a PNG formatted image
+ * @param filename Filename of the image
+ * @param width Width of the image in pixels
+ * @param height Height of the image in pixels
+ * @param bitsperpixel Number of bits per pixel
+ * @param buffer Image buffer
+ * @return 0 on success
+ */
 int deeplearn_write_png_file(char * filename,
                              unsigned int width, unsigned int height,
                              unsigned int bitsperpixel,
@@ -83,9 +83,9 @@ int deeplearn_write_png_file(char * filename,
         error = lodepng_encode24_file(filename, image, width, height);
     }
     if (bitsperpixel == 8) {
-        image = (unsigned char*)malloc(width*height*3);
+        image = (unsigned char*)malloc(width*height*3*sizeof(unsigned char));
         if (image) {
-            for (i = 0; i < width*height; i++) {
+            for (i = 0; i < width*height; i+=3) {
                 image[i*3] = buffer[i];
                 image[i*3+1] = buffer[i];
                 image[i*3+2] = buffer[i];
@@ -103,12 +103,12 @@ int deeplearn_write_png_file(char * filename,
 }
 
 /**
-* @brief Returns the number of images within the given directory having
-*        a given extension
-* @param images_directory The directory to search within
-* @param extension Filename extension (eg. "png")
-* @return Number of images found
-*/
+ * @brief Returns the number of images within the given directory having
+ *        a given extension
+ * @param images_directory The directory to search within
+ * @param extension Filename extension (eg. "png")
+ * @return Number of images found
+ */
 static int number_of_images(char * images_directory,
                             char * extension)
 {
@@ -141,14 +141,14 @@ static int number_of_images(char * images_directory,
 }
 
 /**
-* @brief Downsample a colour image to a mono fixed size image
-* @param img Original image buffer (3 bytes per pixel)
-* @param width Width of the original image in pixels
-* @param height Height of the original image in pixels
-* @param downsampled Downsampled image buffer (1 byte per pixel)
-* @param downsampled_width Downsampled image width in pixels
-* @param downsampled_height Downsampled image height in pixels
-*/
+ * @brief Downsample a colour image to a mono fixed size image
+ * @param img Original image buffer (3 bytes per pixel)
+ * @param width Width of the original image in pixels
+ * @param height Height of the original image in pixels
+ * @param downsampled Downsampled image buffer (1 byte per pixel)
+ * @param downsampled_width Downsampled image width in pixels
+ * @param downsampled_height Downsampled image height in pixels
+ */
 void deeplearn_downsample(unsigned char img[],
                           int width, int height,
                           unsigned char downsampled[],
@@ -172,17 +172,17 @@ void deeplearn_downsample(unsigned char img[],
 }
 
 /**
-* @brief Loads a set of training images and automatically creates
-*        classification descriptions from the filenames and
-*        classification numbers
-* @param images_directory The directory to search for images
-* @param images Array which will be used to store the images (1 byte per pixel)
-* @param classifications Description of each image, taken from the filename
-* @param classification_number Class number of each image
-* @param width Standardised width of the images in pixels
-* @param height Standardised height of the images in pixels
-* @return The number of images loaded
-*/
+ * @brief Loads a set of training images and automatically creates
+ *        classification descriptions from the filenames and
+ *        classification numbers
+ * @param images_directory The directory to search for images
+ * @param images Array which will be used to store the images (1 byte per pixel)
+ * @param classifications Description of each image, taken from the filename
+ * @param classification_number Class number of each image
+ * @param width Standardised width of the images in pixels
+ * @param height Standardised height of the images in pixels
+ * @return The number of images loaded
+ */
 int deeplearn_load_training_images(char * images_directory,
                                    unsigned char *** images,
                                    char *** classifications,
@@ -283,13 +283,13 @@ int deeplearn_load_training_images(char * images_directory,
 }
 
 /**
-* @brief Plots a number of mono images within a single image
-* @param images Array of images (1 byte per pixel)
-* @param no_of_images The number of images in the array
-* @param image_width Standardised image width within the array
-* @param image_height Standardised image height within the array
-* @param filename Filename to save as
-*/
+ * @brief Plots a number of mono images within a single image
+ * @param images Array of images (1 byte per pixel)
+ * @param no_of_images The number of images in the array
+ * @param image_width Standardised image width within the array
+ * @param image_height Standardised image height within the array
+ * @param filename Filename to save as
+ */
 /* plots mono images */
 void bp_plot_images(unsigned char **images,
                     int no_of_images,

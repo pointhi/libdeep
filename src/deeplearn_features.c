@@ -522,7 +522,7 @@ int features_deconv_flt_to_flt(int samples_across,
 							   float layer[],
 							   ac * feature_autocoder)
 {	
-    int i, no_of_learned_features = feature_autocoder->NoOfHiddens;
+    int no_of_learned_features = feature_autocoder->NoOfHiddens;
 
     
     if (feature_autocoder->NoOfInputs !=
@@ -600,7 +600,7 @@ int features_deconv_img_to_flt(int samples_across,
                                float layer[],
                                ac * feature_autocoder)
 {
-    int retval, i, no_of_learned_features = feature_autocoder->NoOfHiddens;
+    int retval, i;
 
     
     if (feature_autocoder->NoOfInputs !=

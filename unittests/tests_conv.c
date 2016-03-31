@@ -72,12 +72,12 @@ static void test_conv_image()
     float BPerror = -1;
     char plot_filename[256];
     char plot_title[256];
-	unsigned char use_dropouts = 0;
+    unsigned char use_dropouts = 0;
 
-	/* load image from file */
-	assert(deeplearn_read_png_file((char*)"Lenna.png",
-								   &img_width, &img_height,
-								   &bitsperpixel, &img)==0);
+    /* load image from file */
+    assert(deeplearn_read_png_file((char*)"Lenna.png",
+                                   &img_width, &img_height,
+                                   &bitsperpixel, &img)==0);
 
     img2 = (unsigned char*)malloc(128*128*3*sizeof(unsigned char));
     assert(img2);
@@ -267,6 +267,85 @@ static void test_conv_save_load()
     printf("Ok\n");
 }
 
+static void test_deconv_image()
+{
+    printf("test_deconv_image...");
+
+    unsigned int img_width = 10;
+    unsigned int img_height = 10;
+    unsigned int bitsperpixel = 0;
+    int no_of_layers = 3;
+    int max_features = 20;
+    int reduction_factor = 6;
+    int pooling_factor = 2;
+    float error_threshold[] = {0.0, 0.0, 0.0};
+    unsigned int random_seed = 648326;
+    unsigned char * img, * img2;
+    deeplearn_conv conv;
+    char conv_filename[256];
+    unsigned char use_dropouts = 0;
+    const int downsampled_width=128;
+    int downsampled_size_bytes = downsampled_width*downsampled_width*3*sizeof(unsigned char);
+
+    /* load image from file */
+    assert(deeplearn_read_png_file((char*)"Lenna.png",
+                                   &img_width, &img_height,
+                                   &bitsperpixel, &img)==0);
+
+    if (bitsperpixel != 24) {
+        printf("unexpected image depth\n");
+        free(img);
+        assert(bitsperpixel == 24);
+    }
+    
+    img2 = (unsigned char*)malloc(downsampled_size_bytes);
+    assert(img2);
+    deeplearn_downsample(img, img_width, img_height,
+                         img2, downsampled_width, downsampled_width);
+    free(img);
+    img = img2;
+    img_width = downsampled_width;
+    img_height = downsampled_width;
+
+    img2 = (unsigned char*)malloc(downsampled_size_bytes);
+    assert(img2);
+
+    assert(deeplearn_write_png_file("/tmp/test_deconv_image_original.png",
+                                    downsampled_width, downsampled_width, 3*8, img)==0);
+
+    assert(conv_init(no_of_layers,
+                     img_width, img_height,
+                     bitsperpixel/8, max_features,
+                     reduction_factor, pooling_factor,
+                     &conv, error_threshold,
+                     &random_seed) == 0);
+
+    int conv0_size =
+        conv.layer[0].units_across *
+        conv.layer[0].units_down * max_features;
+
+    for (int step = 1; step < 5; step++) { 
+        for (int i = 0; i < 50; i++) {
+            /* prevent moving along from the first layer */
+            for (int j = 0; j < conv0_size; j++) {
+                conv.layer[0].convolution[j] = -9999;
+            }
+
+            assert(conv_img(img, &conv, use_dropouts) == 0);
+        }
+        assert(deconv_img(0, &conv, img2) == 0);
+        sprintf(conv_filename,"/tmp/test_deconv_image_%d.png", step);
+        assert(deeplearn_write_png_file(conv_filename,
+                                        downsampled_width, downsampled_width, 3*8, img2)==0);
+    }
+
+    conv_free(&conv);
+    free(img);
+    free(img2);
+
+    printf("Ok\n");
+}
+
 int run_tests_conv()
 {
     printf("\nRunning convolution tests\n");
@@ -274,6 +353,7 @@ int run_tests_conv()
     test_conv_init();
     test_conv_image();
     test_conv_save_load();
+    test_deconv_image();
 
     printf("All convolution tests completed\n");
     return 1;

@@ -105,7 +105,10 @@ int conv_init(int no_of_layers,
 void conv_free(deeplearn_conv * conv);
 int conv_img(unsigned char img[],
              deeplearn_conv * conv,
-			 unsigned char use_dropouts);
+             unsigned char use_dropouts);
+int deconv_img(int start_layer,
+               deeplearn_conv * conv,
+               unsigned char img[]);
 int conv_plot_history(deeplearn_conv * conv,
                       char * filename, char * title,
                       int img_width, int img_height);
