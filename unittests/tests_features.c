@@ -54,8 +54,8 @@ static void test_learn_from_image()
 
     img2 = (unsigned char*)malloc(128*128*3*sizeof(unsigned char));
     assert(img2);
-    deeplearn_downsample(img, img_width, img_height,
-                         img2, 128, 128);
+    deeplearn_downsample_colour_to_mono(img, img_width, img_height,
+                                        img2, 128, 128);
     free(img);
     img = img2;
     img_width = 128;
@@ -133,8 +133,8 @@ static void test_learn_from_flt()
 
     img2 = (unsigned char*)malloc(128*128*3*sizeof(unsigned char));
     assert(img2);
-    deeplearn_downsample(img, img_width, img_height,
-                         img2, 128, 128);
+    deeplearn_downsample_colour_to_mono(img, img_width, img_height,
+                                        img2, 128, 128);
     free(img);
     img = img2;
     img_width = 128;
@@ -216,9 +216,9 @@ static void test_features_conv_img_to_flt()
     int no_of_inputs = patch_radius*patch_radius*4*img_depth;
     int no_of_hiddens = max_features;
     unsigned int random_seed = 2389;
-	unsigned char use_dropouts = 0;
+    unsigned char use_dropouts = 0;
 
-	printf("test_features_conv_img_to_flt...");
+    printf("test_features_conv_img_to_flt...");
 
     assert(autocoder_init(&feature_autocoder,
                           no_of_inputs, no_of_hiddens,
@@ -241,7 +241,7 @@ static void test_features_conv_img_to_flt()
                                  img_depth,
                                  img, layer0_units,
                                  layer0, &feature_autocoder,
-								 use_dropouts);
+                                 use_dropouts);
     if (retval != 0) {
         printf("\nretval = %d\n", retval);
     }

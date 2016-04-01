@@ -46,6 +46,7 @@ int deeplearn_read_png_file(char * filename,
 {
     unsigned error;
     unsigned w=0, h=0;
+
     error = lodepng_decode24_file(buffer, &w, &h, filename);
     if (error) {
         printf("read_png_file: error %u: %s\n", error, lodepng_error_text(error));
@@ -85,7 +86,7 @@ int deeplearn_write_png_file(char * filename,
     if (bitsperpixel == 8) {
         image = (unsigned char*)malloc(width*height*3*sizeof(unsigned char));
         if (image) {
-            for (i = 0; i < width*height; i+=3) {
+            for (i = 0; i < width*height; i++) {
                 image[i*3] = buffer[i];
                 image[i*3+1] = buffer[i];
                 image[i*3+2] = buffer[i];
@@ -149,11 +150,11 @@ static int number_of_images(char * images_directory,
  * @param downsampled_width Downsampled image width in pixels
  * @param downsampled_height Downsampled image height in pixels
  */
-void deeplearn_downsample(unsigned char img[],
-                          int width, int height,
-                          unsigned char downsampled[],
-                          int downsampled_width,
-                          int downsampled_height)
+void deeplearn_downsample_colour_to_mono(unsigned char img[],
+                                         int width, int height,
+                                         unsigned char downsampled[],
+                                         int downsampled_width,
+                                         int downsampled_height)
 {
     int x,y,n2,xx,yy,n=0;
 
@@ -167,6 +168,39 @@ void deeplearn_downsample(unsigned char img[],
             n2 = ((yy*width) + xx)*3;
             /* update downsampled image */
             downsampled[n] = (img[n2]+img[n2+1]+img[n2+2])/3;
+        }
+    }
+}
+
+/**
+ * @brief Downsample a colour image to a fixed size image
+ * @param img Original image buffer (3 bytes per pixel)
+ * @param width Width of the original image in pixels
+ * @param height Height of the original image in pixels
+ * @param downsampled Downsampled image buffer (3 bytes per pixel)
+ * @param downsampled_width Downsampled image width in pixels
+ * @param downsampled_height Downsampled image height in pixels
+ */
+void deeplearn_downsample_colour(unsigned char img[],
+                                 int width, int height,
+                                 unsigned char downsampled[],
+                                 int downsampled_width,
+                                 int downsampled_height)
+{
+    int x,y,n2,xx,yy,n=0;
+
+    for (y = 0; y < downsampled_height; y++) {
+        /* y coordinate in the original image */
+        yy = y * height / downsampled_height;
+        for (x = 0; x < downsampled_width; x++, n+=3) {
+            /* x coordinate in the original image */
+            xx = x * width / downsampled_width;
+            /* index within the original image */
+            n2 = ((yy*width) + xx)*3;
+            /* update downsampled image */
+            downsampled[n] = img[n2];
+            downsampled[n+1] = img[n2+1];
+            downsampled[n+2] = img[n2+2];
         }
     }
 }
@@ -244,8 +278,8 @@ int deeplearn_load_training_images(char * images_directory,
                         downsampled =
                             (unsigned char*)malloc(width*height*
                                                    sizeof(unsigned char));
-                        deeplearn_downsample(img, (int)im_width, (int)im_height,
-                                             downsampled, width, height);
+                        deeplearn_downsample_colour_to_mono(img, (int)im_width, (int)im_height,
+                                                            downsampled, width, height);
 
                         (*images)[no_of_images] = downsampled;
 
