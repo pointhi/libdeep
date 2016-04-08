@@ -10,6 +10,10 @@ LIBDIR=lib
 ifeq ($(shell if [ -d /usr/lib64 ]; then echo "found"; fi;), "found")
 LIBDIR = lib64
 endif
+.PHONY: check-syntax
+
+check-syntax:
+	gcc -shared -Wl,-soname,${SONAME} -std=c99 -pedantic -fPIC -O3 -o ${LIBNAME} -fsyntax-only src/*.c -Isrc -lm -fopenmp
 all:
 	gcc -shared -Wl,-soname,${SONAME} -std=c99 -pedantic -fPIC -O3 -o ${LIBNAME} src/*.c -Isrc -lm -fopenmp
 debug:
