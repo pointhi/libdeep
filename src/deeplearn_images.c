@@ -49,13 +49,13 @@ void deeplearn_float_to_img(float float_img[],
 {
     int img_depth_bytes = img_depth_bits/8;
     
-    for (int i = 0; img_width*img_height; i++) {
+    for (int i = 0; i < img_width*img_height; i++) {
         for (int j = 0; j < img_depth_bytes; j++) {
             int k = j*float_img_depth/img_depth_bytes;
-            img[i*img_depth_bytes + j] =
-                (unsigned char)(float_img[i*float_img_depth + k]*255);
-        }
-    } 
+			img[i*img_depth_bytes + j] =
+				(unsigned char)(float_img[i*float_img_depth + k]*255);
+		}
+	} 
 }
 
 /**
