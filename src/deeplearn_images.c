@@ -30,6 +30,35 @@
 #include "deeplearn_images.h"
 
 /**
+ * @brief Converts a float image to one which can be displayed
+ *        The float image is assumed to contain normalised values
+ *        in the range 0.0 - 1.0
+ * @param float_img An image array of floats
+ * @param float_img_depth Depth of the floats image
+ * @param img_width Width of the image
+ * @param img_height Height of the image
+ * @param img returned image with the same resolution
+ * @param img_depth_bits Depth of the returned image
+ */
+void deeplearn_float_to_img(float float_img[],
+                            int float_img_depth,
+                            int img_width,
+                            int img_height,
+                            unsigned char img[],
+                            int img_depth_bits)
+{
+    int img_depth_bytes = img_depth_bits/8;
+    
+    for (int i = 0; img_width*img_height; i++) {
+        for (int j = 0; j < img_depth_bytes; j++) {
+            int k = j*float_img_depth/img_depth_bytes;
+            img[i*img_depth_bytes + j] =
+                (unsigned char)(float_img[i*float_img_depth + k]*255);
+        }
+    } 
+}
+
+/**
  * @brief Reads a PNG file into a buffer
  * @param filename Filename of the image
  * @param width Returned width of the image in pixels

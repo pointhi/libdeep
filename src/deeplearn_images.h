@@ -38,7 +38,6 @@
 #include <dirent.h>
 #include <assert.h>
 
-
 #include <unistd.h>
 #include <stdio.h>
 #include <stdarg.h>
@@ -74,5 +73,11 @@ void deeplearn_downsample_colour(unsigned char img[],
                                  unsigned char downsampled[],
                                  int downsampled_width,
                                  int downsampled_height);
+void deeplearn_float_to_img(float float_img[],
+                            int float_img_depth,
+                            int img_width,
+                            int img_height,
+                            unsigned char img[],
+                            int img_depth_bits);
 
 #endif
