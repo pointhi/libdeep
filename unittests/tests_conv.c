@@ -36,7 +36,7 @@ static void test_conv_init()
     unsigned int img_height = 512;
     unsigned int bitsperpixel = 24;
     int no_of_layers = 3;
-	int max_features = 20;
+    int max_features = 20;
     int reduction_factor = 4;
     int pooling_factor = 2;
     float error_threshold[] = {0.0, 0.0, 0.0};
@@ -286,6 +286,8 @@ static void test_deconv_image()
     unsigned char use_dropouts = 0;
     const int downsampled_width=128;
     int downsampled_size_bytes = downsampled_width*downsampled_width*1*sizeof(unsigned char);
+    unsigned char * img_pooled;
+    int img_pooled_width, img_pooled_height;
 
     /* load image from file */
     assert(deeplearn_read_png_file((char*)"Lenna.png",
@@ -324,6 +326,12 @@ static void test_deconv_image()
         conv.layer[0].units_across *
         conv.layer[0].units_down * max_features;
 
+    img_pooled_width = conv_layer_width(0,&conv,1);
+    img_pooled_height = conv_layer_height(0,&conv,1);
+    img_pooled = (unsigned char*)malloc(img_pooled_width*img_pooled_height*
+                                        3*sizeof(unsigned char));
+    memset((void*)img_pooled, '\0', sizeof(img_pooled));
+    
     for (int step = 1; step < 5; step++) { 
         for (int i = 0; i < 50; i++) {
             /* prevent moving along from the first layer */
@@ -337,12 +345,20 @@ static void test_deconv_image()
         sprintf(conv_filename,"/tmp/test_deconv_image_%d.png", step);
         assert(deeplearn_write_png_file(conv_filename,
                                         downsampled_width, downsampled_width, 8, img2)==0);
+        /* save the convolution image */
+        deeplearn_float_to_img((&conv)->layer[0].pooling,
+                               max_features, img_pooled_width, img_pooled_height,
+                               img_pooled, 24);
+        sprintf(conv_filename,"/tmp/test_conv_image_%d_pooled.png", step);
+        assert(deeplearn_write_png_file(conv_filename,
+                                        img_pooled_width, img_pooled_height, 24, img_pooled)==0);
     }
 
     conv_free(&conv);
     free(img);
     free(img2);
-
+    free(img_pooled);
+    
     printf("Ok\n");
 }
 

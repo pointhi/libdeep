@@ -12,10 +12,10 @@ LIBDIR = lib64
 endif
 .PHONY: check-syntax
 
-check-syntax:
-	gcc -shared -Wl,-soname,${SONAME} -std=c99 -pedantic -fPIC -O3 -o ${LIBNAME} -fsyntax-only src/*.c -Isrc -lm -fopenmp
 all:
 	gcc -shared -Wl,-soname,${SONAME} -std=c99 -pedantic -fPIC -O3 -o ${LIBNAME} src/*.c -Isrc -lm -fopenmp
+check-syntax:
+	gcc -shared -Wl,-soname,${SONAME} -std=c99 -pedantic -fPIC -O3 -o ${LIBNAME} -fsyntax-only src/*.c -Isrc -lm -fopenmp
 debug:
 	gcc -shared -Wl,-soname,${SONAME} -std=c99 -pedantic -fPIC -g -o ${LIBNAME} src/*.c -Isrc -lm -fopenmp
 source:

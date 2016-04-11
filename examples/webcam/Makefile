@@ -1,11 +1,11 @@
 
 .PHONY: check-syntax
 
-check-syntax:
-	gcc -o webcam webcam.c -lSDL -ldeep -lm -fopenmp -fsyntax-only
-
 all:
 	gcc -o webcam webcam.c -lSDL -ldeep -lm -fopenmp
+
+check-syntax:
+	gcc -o webcam webcam.c -lSDL -ldeep -lm -fopenmp -fsyntax-only
 
 debug:
 	gcc -g -o webcam webcam.c -lSDL -ldeep -lm -fopenmp
