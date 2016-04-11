@@ -36,7 +36,7 @@ static void test_conv_init()
     unsigned int img_height = 512;
     unsigned int bitsperpixel = 24;
     int no_of_layers = 3;
-    int max_features = 20;
+	int max_features = 20;
     int reduction_factor = 4;
     int pooling_factor = 2;
     float error_threshold[] = {0.0, 0.0, 0.0};

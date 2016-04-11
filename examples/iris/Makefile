@@ -1,4 +1,9 @@
 
+.PHONY: check-syntax
+
+check-syntax:
+	gcc -Wall -ansi -pedantic -o irisclassifier iris.c -ldeep -lm -fopenmp -fsyntax-only
+
 all:
 	gcc -Wall -ansi -pedantic -o irisclassifier iris.c -ldeep -lm -fopenmp
 
