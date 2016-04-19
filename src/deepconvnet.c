@@ -241,7 +241,7 @@ static int deepconvnet_set_inputs_conv(deeplearn * learner, deeplearn_conv * con
     int conv_outputs =
         conv_output_width(conv) *
         conv_output_height(conv) *
-        conv->max_features;
+        conv_layer_features(conv, conv->no_of_layers-1);
 
     if (learner->net->NoOfInputs != conv_outputs) {
         return -1;

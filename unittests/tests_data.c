@@ -229,7 +229,7 @@ static void test_read_images()
     int image_width = 512;
     int image_height = 512;
     int no_of_convolutions = 2;
-    int max_features_per_convolution = 20;
+    int max_features = 20;
     int reduction_factor = 4;
     int no_of_deep_layers = 2;
     int no_of_outputs = 8;
@@ -240,7 +240,7 @@ static void test_read_images()
     assert(deepconvnet_read_images((char*)".", &convnet,
                                    image_width, image_height,
                                    no_of_convolutions,
-                                   max_features_per_convolution,
+                                   max_features,
                                    reduction_factor,
                                    no_of_deep_layers,
                                    no_of_outputs,

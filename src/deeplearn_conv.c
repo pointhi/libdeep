@@ -102,7 +102,7 @@ int conv_init(int no_of_layers,
         conv->layer[i].units_down = down;
         conv->layer[i].pooling_factor = pooling_factor;
         conv->layer[i].convolution =
-            (float*)malloc(sizeof(float)*across*down*max_features);
+            (float*)malloc(sizeof(float)*across*down*conv_layer_features(conv, i));
         if (!conv->layer[i].convolution) return -2;
 
         /* ensure that the random seed is different for each
@@ -112,9 +112,7 @@ int conv_init(int no_of_layers,
         /* create an autocoder for feature learning on this layer */
         conv->layer[i].autocoder = (ac*)malloc(sizeof(ac));
 
-        /* the maximum number of learned features is the same
-           for each layer */
-        int depth = max_features;
+        int depth = conv_layer_features(conv, i);
         if (i == 0) {
             /* on the first layer the depth is the same as the
                inputs or image */
@@ -129,7 +127,8 @@ int conv_init(int no_of_layers,
 
         /* initialise the autocoder for this layer */
         if (autocoder_init(conv->layer[i].autocoder,
-                           patch_pixels*depth, max_features,
+                           patch_pixels*depth,
+                           conv_layer_features(conv, i),
                            *random_seed) != 0) {
             return -3;
         }
@@ -143,7 +142,7 @@ int conv_init(int no_of_layers,
         /* create a pooling array */
         conv->layer[i].pooling =
             (float*)malloc(sizeof(float)*across*down*
-                           max_features);
+                           conv_layer_features(conv, i));
         if (!conv->layer[i].pooling) return -4;
     }
     return 0;
@@ -161,6 +160,18 @@ void conv_free(deeplearn_conv * conv)
         autocoder_free(conv->layer[i].autocoder);
         free(conv->layer[i].autocoder);
     }
+}
+
+/**
+ * @brief Returns the number of features for the given convolution layer
+ * @param conv Preprocessing object
+ * @param layer_index Index of the layer
+ * @return Number of features in the given layer
+ */
+int conv_layer_features(deeplearn_conv * conv, int layer_index)
+{
+    return conv->max_features -
+        ((conv->max_features/2) * layer_index / conv->no_of_layers);
 }
 
 /**
@@ -298,7 +309,7 @@ int conv_outputs(deeplearn_conv * conv)
 {
     return conv_output_width(conv)*
         conv_output_height(conv)*
-        conv->max_features;
+        conv_layer_features(conv, conv->no_of_layers-1);
 }
 
 /**
@@ -323,7 +334,7 @@ int convolution_layer_units(int layer_index,
 {
     return conv->layer[layer_index].units_across*
         conv->layer[layer_index].units_down*
-        conv->max_features;
+        conv_layer_features(conv, layer_index);
 }
 
 /**
@@ -408,7 +419,7 @@ static int conv_subsequent(deeplearn_conv * conv,
                                     patch_radius,
                                     conv_layer_width(layer_index-1,conv,AFTER_POOLING),
                                     conv_layer_height(layer_index-1,conv,AFTER_POOLING),
-                                    conv->max_features,
+                                    conv_layer_features(conv, layer_index),
                                     conv->layer[layer_index-1].pooling,
                                     convolution_layer_units(layer_index,conv),
                                     conv->layer[layer_index].autocoder,
@@ -427,7 +438,7 @@ static int conv_subsequent(deeplearn_conv * conv,
                                  patch_radius,
                                  conv_layer_width(layer_index-1,conv,AFTER_POOLING),
                                  conv_layer_height(layer_index-1,conv,AFTER_POOLING),
-                                 conv->max_features,
+                                 conv_layer_features(conv, layer_index),
                                  conv->layer[layer_index-1].pooling,
                                  convolution_layer_units(layer_index,conv),
                                  conv->layer[layer_index].convolution,
@@ -542,51 +553,51 @@ int deconv_img(int start_layer,
                deeplearn_conv * conv,
                unsigned char img[])
 {
-	int max_layer = get_max_layer(conv);
-	int img_width = conv->inputs_across;
-	int img_height = conv->inputs_down;
-	int img_depth = conv->inputs_depth;
+    int max_layer = get_max_layer(conv);
+    int img_width = conv->inputs_across;
+    int img_height = conv->inputs_down;
+    int img_depth = conv->inputs_depth;
 
-	if (start_layer > max_layer-1) start_layer = max_layer-1;
+    if (start_layer > max_layer-1) start_layer = max_layer-1;
     
-	for (int layer_index = start_layer; layer_index > 0; layer_index--) {
-		/* unpool the current layer */
-		unpooling_from_flt_to_flt(conv->max_features,
-								  conv_layer_width(layer_index,
-												   conv, AFTER_POOLING),
-								  conv_layer_height(layer_index,
-													conv, AFTER_POOLING),
-								  conv->layer[layer_index].pooling,
-								  conv_layer_width(layer_index,
-												   conv, BEFORE_POOLING),
-								  conv_layer_height(layer_index,
-													conv, BEFORE_POOLING),
-								  conv->layer[layer_index].convolution);
+    for (int layer_index = start_layer; layer_index > 0; layer_index--) {
+        /* unpool the current layer */
+        unpooling_from_flt_to_flt(conv_layer_features(conv, layer_index),
+                                  conv_layer_width(layer_index,
+                                                   conv, AFTER_POOLING),
+                                  conv_layer_height(layer_index,
+                                                    conv, AFTER_POOLING),
+                                  conv->layer[layer_index].pooling,
+                                  conv_layer_width(layer_index,
+                                                   conv, BEFORE_POOLING),
+                                  conv_layer_height(layer_index,
+                                                    conv, BEFORE_POOLING),
+                                  conv->layer[layer_index].convolution);
 
-		/* deconvolve from the current layer to the pooling of the
-		   previous layer */
-		features_deconv_flt_to_flt(
-			conv_layer_width(layer_index, conv, BEFORE_POOLING),
-			conv_layer_height(layer_index, conv, BEFORE_POOLING),
-			conv_patch_radius(layer_index, conv),
-			conv_layer_width(layer_index-1, conv, AFTER_POOLING),
-			conv_layer_height(layer_index-1, conv, AFTER_POOLING),
-			conv->max_features,
-			conv->layer[layer_index-1].pooling,
-			convolution_layer_units(layer_index-1, conv),
-			conv->layer[layer_index].convolution,
-			conv->layer[layer_index-1].autocoder);
-	}
+        /* deconvolve from the current layer to the pooling of the
+           previous layer */
+        features_deconv_flt_to_flt(
+            conv_layer_width(layer_index, conv, BEFORE_POOLING),
+            conv_layer_height(layer_index, conv, BEFORE_POOLING),
+            conv_patch_radius(layer_index, conv),
+            conv_layer_width(layer_index-1, conv, AFTER_POOLING),
+            conv_layer_height(layer_index-1, conv, AFTER_POOLING),
+            conv_layer_features(conv, layer_index),
+            conv->layer[layer_index-1].pooling,
+            convolution_layer_units(layer_index-1, conv),
+            conv->layer[layer_index].convolution,
+            conv->layer[layer_index-1].autocoder);
+    }
 
-	/* convert from the first layer back to the starting image */
-	features_deconv_img_to_flt(conv_layer_width(0, conv, BEFORE_POOLING),
-							   conv_layer_height(0, conv, BEFORE_POOLING),
-							   conv_patch_radius(0, conv),
-							   img_width, img_height, img_depth, img,
-							   convolution_layer_units(0, conv),
-							   conv->layer[0].convolution,
-							   conv->layer[0].autocoder);
-	return 0;
+    /* convert from the first layer back to the starting image */
+    features_deconv_img_to_flt(conv_layer_width(0, conv, BEFORE_POOLING),
+                               conv_layer_height(0, conv, BEFORE_POOLING),
+                               conv_patch_radius(0, conv),
+                               img_width, img_height, img_depth, img,
+                               convolution_layer_units(0, conv),
+                               conv->layer[0].convolution,
+                               conv->layer[0].autocoder);
+    return 0;
 }
 
 /**
@@ -598,43 +609,43 @@ int deconv_img(int start_layer,
  * @returns zero on success
  */
 int conv_img(unsigned char img[],
-			 deeplearn_conv * conv,
-			 unsigned char use_dropouts)
+             deeplearn_conv * conv,
+             unsigned char use_dropouts)
 {
-	int retval = -1;
-	int max_layer = get_max_layer(conv);
-	float BPerror;
+    int retval = -1;
+    int max_layer = get_max_layer(conv);
+    float BPerror;
 
-	for (int i = 0; i < max_layer; i++) {
-		conv_enable_learning(i, conv);
+    for (int i = 0; i < max_layer; i++) {
+        conv_enable_learning(i, conv);
 
-		BPerror = 0;
-		if (i == 0) {
-			retval = conv_img_initial(img, conv, &BPerror, use_dropouts);
-		}
-		else {
-			retval = conv_subsequent(conv, i, &BPerror);
-		}
-		if (retval != 0) {
-			return retval;
-		}
+        BPerror = 0;
+        if (i == 0) {
+            retval = conv_img_initial(img, conv, &BPerror, use_dropouts);
+        }
+        else {
+            retval = conv_subsequent(conv, i, &BPerror);
+        }
+        if (retval != 0) {
+            return retval;
+        }
 
-		conv_update_training_error(i, BPerror, conv);
+        conv_update_training_error(i, BPerror, conv);
 
-		/* pooling */
-		retval =
-			pooling_from_flt_to_flt(conv->max_features,
-									conv_layer_width(i,conv,BEFORE_POOLING),
-									conv_layer_height(i,conv,BEFORE_POOLING),
-									conv->layer[i].convolution,
-									conv_layer_width(i,conv,AFTER_POOLING),
-									conv_layer_height(i,conv,AFTER_POOLING),
-									conv->layer[i].pooling);
-		if (retval != 0) {
-			return -6;
-		}
-	}
-	return 0;
+        /* pooling */
+        retval =
+            pooling_from_flt_to_flt(conv_layer_features(conv, i),
+                                    conv_layer_width(i,conv,BEFORE_POOLING),
+                                    conv_layer_height(i,conv,BEFORE_POOLING),
+                                    conv->layer[i].convolution,
+                                    conv_layer_width(i,conv,AFTER_POOLING),
+                                    conv_layer_height(i,conv,AFTER_POOLING),
+                                    conv->layer[i].pooling);
+        if (retval != 0) {
+            return -6;
+        }
+    }
+    return 0;
 }
 
 /**
@@ -646,70 +657,70 @@ int conv_img(unsigned char img[],
  * @param img_height Height of the image in pixels
  * @return zero on success
  */
-	int conv_plot_history(deeplearn_conv * conv,
-						  char * filename, char * title,
-						  int img_width, int img_height)
-	{
-		int index,retval=0;
-		FILE * fp;
-		char data_filename[256];
-		char plot_filename[256];
-		char command_str[256];
-		float value;
-		float max_value = 0.01f;
+int conv_plot_history(deeplearn_conv * conv,
+                      char * filename, char * title,
+                      int img_width, int img_height)
+{
+    int index,retval=0;
+    FILE * fp;
+    char data_filename[256];
+    char plot_filename[256];
+    char command_str[256];
+    float value;
+    float max_value = 0.01f;
 
-		sprintf(data_filename,"%s%s",DEEPLEARN_TEMP_DIRECTORY,
-				"libdeep_conv_data.dat");
-		sprintf(plot_filename,"%s%s",DEEPLEARN_TEMP_DIRECTORY,
-				"libdeep_conv_data.plot");
+    sprintf(data_filename,"%s%s",DEEPLEARN_TEMP_DIRECTORY,
+            "libdeep_conv_data.dat");
+    sprintf(plot_filename,"%s%s",DEEPLEARN_TEMP_DIRECTORY,
+            "libdeep_conv_data.plot");
 
-		/* save the data */
-		fp = fopen(data_filename,"w");
-		if (!fp) return -1;
-		for (index = 0; index < conv->history_index; index++) {
-			value = conv->history[index];
-			fprintf(fp,"%d    %.10f\n",
-					index*conv->history_step,value);
-			/* record the maximum error value */
-			if (value > max_value) {
-				max_value = value;
-			}
-		}
-		fclose(fp);
+    /* save the data */
+    fp = fopen(data_filename,"w");
+    if (!fp) return -1;
+    for (index = 0; index < conv->history_index; index++) {
+        value = conv->history[index];
+        fprintf(fp,"%d    %.10f\n",
+                index*conv->history_step,value);
+        /* record the maximum error value */
+        if (value > max_value) {
+            max_value = value;
+        }
+    }
+    fclose(fp);
 
-		/* create a plot file */
-		fp = fopen(plot_filename,"w");
-		if (!fp) return -1;
-		fprintf(fp,"%s","reset\n");
-		fprintf(fp,"set title \"%s\"\n",title);
-		fprintf(fp,"set xrange [0:%d]\n",
-				conv->history_index*conv->history_step);
-		fprintf(fp,"set yrange [0:%f]\n",max_value*102/100);
-		fprintf(fp,"%s","set lmargin 9\n");
-		fprintf(fp,"%s","set rmargin 2\n");
-		fprintf(fp,"%s","set xlabel \"Time Step\"\n");
-		fprintf(fp,"%s","set ylabel \"Training Error Percent\"\n");
+    /* create a plot file */
+    fp = fopen(plot_filename,"w");
+    if (!fp) return -1;
+    fprintf(fp,"%s","reset\n");
+    fprintf(fp,"set title \"%s\"\n",title);
+    fprintf(fp,"set xrange [0:%d]\n",
+            conv->history_index*conv->history_step);
+    fprintf(fp,"set yrange [0:%f]\n",max_value*102/100);
+    fprintf(fp,"%s","set lmargin 9\n");
+    fprintf(fp,"%s","set rmargin 2\n");
+    fprintf(fp,"%s","set xlabel \"Time Step\"\n");
+    fprintf(fp,"%s","set ylabel \"Training Error Percent\"\n");
 
-		fprintf(fp,"%s","set grid\n");
-		fprintf(fp,"%s","set key right top\n");
+    fprintf(fp,"%s","set grid\n");
+    fprintf(fp,"%s","set key right top\n");
 
-		fprintf(fp,"set terminal png size %d,%d\n",
-				img_width, img_height);
-		fprintf(fp,"set output \"%s\"\n", filename);
-		fprintf(fp,"plot \"%s\" using 1:2 notitle with lines\n",
-				data_filename);
-		fclose(fp);
+    fprintf(fp,"set terminal png size %d,%d\n",
+            img_width, img_height);
+    fprintf(fp,"set output \"%s\"\n", filename);
+    fprintf(fp,"plot \"%s\" using 1:2 notitle with lines\n",
+            data_filename);
+    fclose(fp);
 
-		/* run gnuplot using the created files */
-		sprintf(command_str,"gnuplot %s", plot_filename);
-		retval = system(command_str); /* I assume this is synchronous */
+    /* run gnuplot using the created files */
+    sprintf(command_str,"gnuplot %s", plot_filename);
+    retval = system(command_str); /* I assume this is synchronous */
 
-		/* remove temporary files */
-		sprintf(command_str,"rm %s %s", data_filename,plot_filename);
-		retval = system(command_str);
+    /* remove temporary files */
+    sprintf(command_str,"rm %s %s", data_filename,plot_filename);
+    retval = system(command_str);
 
-		return retval;
-	}
+    return retval;
+}
 
 /**
  * @brief Saves the given convolution object to a file
@@ -717,11 +728,11 @@ int conv_img(unsigned char img[],
  * @param conv Convolution object
  * @return zero value on success
  */
-	int conv_save(FILE * fp, deeplearn_conv * conv)
-	{
-		if (fwrite(&conv->reduction_factor,
-				   sizeof(int), 1, fp) == 0) {
-			return -1;
+int conv_save(FILE * fp, deeplearn_conv * conv)
+{
+    if (fwrite(&conv->reduction_factor,
+               sizeof(int), 1, fp) == 0) {
+        return -1;
     }
     if (fwrite(&conv->pooling_factor,
                sizeof(int), 1, fp) == 0) {
@@ -921,9 +932,9 @@ int conv_plot_features(deeplearn_conv * conv, int layer_index,
                        int img_width, int img_height)
 {
     int patch_radius = conv_patch_radius(layer_index, conv);
-    int patch_depth = conv->max_features;
-    int fx = (int)sqrt(conv->max_features);
-    int fy = conv->max_features/fx;
+    int patch_depth = conv_layer_features(conv, layer_index);
+    int fx = (int)sqrt(conv_layer_features(conv, layer_index));
+    int fy = conv_layer_features(conv, layer_index)/fx;
     ac * autocoder = conv->layer[layer_index].autocoder;
 
     if (layer_index >= conv->no_of_layers) return -100;
@@ -941,7 +952,8 @@ int conv_plot_features(deeplearn_conv * conv, int layer_index,
         int img_by = img_ty + (img_height/fy) - 2;
         for (int x = 0; x < fx; x++) {
             int feature_index = (y*fx + x);
-            if (feature_index >= conv->max_features) continue;
+            if (feature_index >=
+                conv_layer_features(conv, layer_index)) continue;
             int img_tx = x * img_width / fx;
             int img_bx = img_tx + (img_width/fx) - 2;
 
