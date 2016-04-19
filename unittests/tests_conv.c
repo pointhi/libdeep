@@ -285,7 +285,7 @@ static void test_deconv_image()
     char conv_filename[256];
     unsigned char use_dropouts = 0;
     const int downsampled_width=128;
-    int downsampled_size_bytes = downsampled_width*downsampled_width*1*sizeof(unsigned char);
+    int downsampled_size_bytes = downsampled_width*downsampled_width*3*sizeof(unsigned char);
     unsigned char * img_pooled;
     unsigned char * img_feats;
     int img_pooled_width, img_pooled_height;
@@ -304,8 +304,8 @@ static void test_deconv_image()
     
     img2 = (unsigned char*)malloc(downsampled_size_bytes);
     assert(img2);
-    deeplearn_downsample_colour_to_mono(img, img_width, img_height,
-                                        img2, downsampled_width, downsampled_width);
+    deeplearn_downsample_colour(img, img_width, img_height,
+								img2, downsampled_width, downsampled_width);
     free(img);
     img = img2;
     img_width = downsampled_width;
@@ -315,11 +315,11 @@ static void test_deconv_image()
     assert(img2);
 
     assert(deeplearn_write_png_file("/tmp/test_deconv_image_original.png",
-                                    downsampled_width, downsampled_width, 8, img)==0);
+                                    downsampled_width, downsampled_width, 24, img)==0);
 
     assert(conv_init(no_of_layers,
                      img_width, img_height,
-                     1, max_features,
+                     3, max_features,
                      reduction_factor, pooling_factor,
                      &conv, error_threshold,
                      &random_seed) == 0);
@@ -349,7 +349,7 @@ static void test_deconv_image()
         assert(deconv_img(0, &conv, img2) == 0);
         sprintf(conv_filename,"/tmp/test_deconv_image_%d.png", step);
         assert(deeplearn_write_png_file(conv_filename,
-                                        downsampled_width, downsampled_width, 8, img2)==0);
+                                        downsampled_width, downsampled_width, 24, img2)==0);
         /* save the convolution image */
         deeplearn_float_to_img((&conv)->layer[0].pooling,
                                max_features, img_pooled_width, img_pooled_height,
