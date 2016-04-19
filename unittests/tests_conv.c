@@ -275,7 +275,7 @@ static void test_deconv_image()
     unsigned int img_height = 10;
     unsigned int bitsperpixel = 0;
     int no_of_layers = 3;
-    int max_features = 20;
+    int max_features = 128;
     int reduction_factor = 6;
     int pooling_factor = 2;
     float error_threshold[] = {0.0, 0.0, 0.0};
@@ -287,7 +287,9 @@ static void test_deconv_image()
     const int downsampled_width=128;
     int downsampled_size_bytes = downsampled_width*downsampled_width*1*sizeof(unsigned char);
     unsigned char * img_pooled;
+    unsigned char * img_feats;
     int img_pooled_width, img_pooled_height;
+    int img_feats_width=320, img_feats_height=320;
 
     /* load image from file */
     assert(deeplearn_read_png_file((char*)"Lenna.png",
@@ -331,6 +333,9 @@ static void test_deconv_image()
     img_pooled = (unsigned char*)malloc(img_pooled_width*img_pooled_height*
                                         3*sizeof(unsigned char));
     memset((void*)img_pooled, '\0', sizeof(img_pooled));
+    img_feats = (unsigned char*)malloc(img_feats_width*img_feats_height*
+									   3*sizeof(unsigned char));
+    memset((void*)img_feats, '\0', sizeof(img_feats));
     
     for (int step = 1; step < 5; step++) { 
         for (int i = 0; i < 50; i++) {
@@ -352,12 +357,17 @@ static void test_deconv_image()
         sprintf(conv_filename,"/tmp/test_conv_image_%d_pooled.png", step);
         assert(deeplearn_write_png_file(conv_filename,
                                         img_pooled_width, img_pooled_height, 24, img_pooled)==0);
+        conv_plot_features(&conv, 0, img_feats, img_feats_width, img_feats_height);
+        sprintf(conv_filename,"/tmp/test_conv_image_%d_feats.png", step);
+        assert(deeplearn_write_png_file(conv_filename,
+                                        img_feats_width, img_feats_height, 24, img_feats)==0);
     }
 
     conv_free(&conv);
     free(img);
     free(img2);
     free(img_pooled);
+    free(img_feats);
     
     printf("Ok\n");
 }
