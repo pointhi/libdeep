@@ -392,9 +392,9 @@ static int conv_img_initial(unsigned char img[],
 }
 
 /**
- * @brief Convolution between the input image and the first layer
+ * @brief Subsequent convolution after the first layer
  * @param conv Preprocessing object
- * @param layer_index Index of the convolution layer
+ * @param layer_index Index of the convolution layer (> 0)
  * @param BPerror Returned total backprop error from feature learning
  * @return zero on success
  */
