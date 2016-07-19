@@ -348,19 +348,53 @@ static void test_deconv_image()
 		}
 		printf("%d ", step);
 		fflush(NULL);
-		assert(deconv_img(0, &conv, img2) == 0);
-		sprintf(conv_filename,"/tmp/test_deconv_image_%d.png", step);
-		assert(deeplearn_write_png_file(conv_filename,
-										downsampled_width, downsampled_width, 24, img2)==0);
-		/* save the convolution image */
-		deeplearn_float_to_img((&conv)->layer[0].pooling,
-							   conv_layer_features(&conv, 0), img_pooled_width, img_pooled_height,
-							   img_pooled, 24);
-		sprintf(conv_filename,"/tmp/test_conv_image_%d_pooled.png", step);
-		assert(deeplearn_write_png_file(conv_filename,
-										img_pooled_width, img_pooled_height, 24, img_pooled)==0);
+		/*
+		  assert(deconv_img(0, &conv, img2) == 0);
+		  sprintf(conv_filename,"/tmp/test_deconv_image_%d.png", step);
+		  assert(deeplearn_write_png_file(conv_filename,
+		  downsampled_width, downsampled_width, 24, img2)==0);
+		  deeplearn_float_to_img((&conv)->layer[0].pooling,
+		  conv_layer_features(&conv, 0), img_pooled_width, img_pooled_height,
+		  img_pooled, 24);
+		  sprintf(conv_filename,"/tmp/test_conv_image_%d_pooled.png", step);
+		  assert(deeplearn_write_png_file(conv_filename,
+		  img_pooled_width, img_pooled_height, 24, img_pooled)==0);
+		*/
 		conv_plot_features(&conv, 0, img_feats, img_feats_width, img_feats_height);
-		sprintf(conv_filename,"/tmp/test_conv_image_%d_feats.png", step);
+		sprintf(conv_filename,"/tmp/test_conv0_image_%d_feats.png", step);
+		assert(deeplearn_write_png_file(conv_filename,
+										img_feats_width, img_feats_height, 24, img_feats)==0);
+	}
+	
+    int conv1_size =
+        conv.layer[1].units_across *
+        conv.layer[1].units_down * conv_layer_features(&conv, 1);
+
+	for (int step = 1; step < 5; step++) { 
+        for (int i = 0; i < 10; i++) {
+			/* prevent moving along from the first layer */
+			for (int j = 0; j < conv1_size; j++) {
+				conv.layer[1].convolution[j] = -9999;
+			}
+
+			assert(conv_img(img, &conv, use_dropouts) == 0);
+		}
+		printf("%d ", step);
+		fflush(NULL);
+		/*		  
+				  assert(deconv_img(0, &conv, img2) == 0);
+				  sprintf(conv_filename,"/tmp/test_deconv_image_%d.png", step);
+				  assert(deeplearn_write_png_file(conv_filename,
+				  downsampled_width, downsampled_width, 24, img2)==0);
+				  deeplearn_float_to_img((&conv)->layer[0].pooling,
+				  conv_layer_features(&conv, 0), img_pooled_width, img_pooled_height,
+				  img_pooled, 24);
+				  sprintf(conv_filename,"/tmp/test_conv_image_%d_pooled.png", step);
+				  assert(deeplearn_write_png_file(conv_filename,
+				  img_pooled_width, img_pooled_height, 24, img_pooled)==0);
+		*/
+		conv_plot_features(&conv, 1, img_feats, img_feats_width, img_feats_height);
+		sprintf(conv_filename,"/tmp/test_conv1_image_%d_feats.png", step);
 		assert(deeplearn_write_png_file(conv_filename,
 										img_feats_width, img_feats_height, 24, img_feats)==0);
 	}
