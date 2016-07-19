@@ -6,13 +6,13 @@
  modification, are permitted provided that the following conditions
  are met:
  1. Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
+	notice, this list of conditions and the following disclaimer.
  2. Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
+	notice, this list of conditions and the following disclaimer in the
+	documentation and/or other materials provided with the distribution.
  3. Neither the name of the University nor the names of its contributors
-    may be used to endorse or promote products derived from this software
-    without specific prior written permission.
+	may be used to endorse or promote products derived from this software
+	without specific prior written permission.
  .
  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
@@ -45,73 +45,81 @@
 #include "deeplearn_conv.h"
 
 typedef struct {
-    deeplearn_conv *convolution;
-    deeplearn * learner;
-    int training_complete;
-    int current_layer;
+	/* convolution layers */
+	deeplearn_conv *convolution;
 
-    /* training/test images */
-    int no_of_images;
-    unsigned char ** images;
-    char ** classifications;
-    int * classification_number;
+	/* deep learning layers after convolution */
+	deeplearn * learner;
 
-    unsigned int training_ctr;
-    unsigned int history_plot_interval;
-    char history_plot_filename[256];
-    char history_plot_title[256];
-    float BPerror;
+	int training_complete;
 
-    float history[DEEPLEARN_HISTORY_SIZE];
-    int history_index, history_ctr, history_step;
+	/* current layer being trained */
+	int current_layer;
 
-    /* array index numbers for training and test set */
-    int * training_set_index;
-    int * test_set_index;
+	/* training/test images */
+	int no_of_images;
+	unsigned char ** images;
+	char ** classifications;
+	int * classification_number;
+
+	unsigned int training_ctr;
+	unsigned int history_plot_interval;
+	char history_plot_filename[256];
+	char history_plot_title[256];
+
+	/* current backprop error */
+	float BPerror;
+
+	float history[DEEPLEARN_HISTORY_SIZE];
+	int history_index, history_ctr, history_step;
+
+	/* array index numbers for training and test set */
+	int * training_set_index;
+	int * test_set_index;
 } deepconvnet;
 
 int deepconvnet_init(int no_of_convolutions,
-                     int no_of_deep_layers,
-                     int inputs_across,
-                     int inputs_down,
-                     int inputs_depth,
-                     int max_features,
-                     int reduction_factor,
-                     int no_of_outputs,
-                     deepconvnet * convnet,
-                     float error_threshold[],
-                     unsigned int * random_seed);
+					 int no_of_deep_layers,
+					 int inputs_across,
+					 int inputs_down,
+					 int inputs_depth,
+					 int max_features,
+					 int reduction_factor,
+					 int no_of_outputs,
+					 deepconvnet * convnet,
+					 float error_threshold[],
+					 unsigned int * random_seed);
 void deepconvnet_free(deepconvnet * convnet);
 int deepconvnet_save(FILE * fp, deepconvnet * convnet);
 int deepconvnet_load(FILE * fp, deepconvnet * convnet,
-                     unsigned int * random_seed);
+					 unsigned int * random_seed);
 int deepconvnet_update_img(deepconvnet * convnet, unsigned char img[], int class_number);
 int deepconvnet_test_img(deepconvnet * convnet, unsigned char img[]);
 void deepconvnet_set_learning_rate(deepconvnet * convnet, float rate);
 void deepconvnet_set_dropouts(deepconvnet * convnet, float dropout_percent);
 int deepconvnet_read_images(char * directory,
-                            deepconvnet * convnet,
-                            int image_width, int image_height,
-                            int no_of_convolutions,
-                            int max_features_per_convolution,
-                            int reduction_factor,
-                            int no_of_deep_layers,
-                            int no_of_outputs,
-                            int output_classes,
-                            float error_threshold[],
-                            unsigned int * random_seed);
+							deepconvnet * convnet,
+							int image_width, int image_height,
+							int no_of_convolutions,
+							int max_features_per_convolution,
+							int reduction_factor,
+							int no_of_deep_layers,
+							int no_of_outputs,
+							int output_classes,
+							float error_threshold[],
+							unsigned int * random_seed);
 int deepconvnet_training(deepconvnet * convnet);
 int deepconvnet_plot_history(deepconvnet * convnet,
-                             int image_width, int image_height);
+							 int image_width, int image_height);
 float deepconvnet_get_performance(deepconvnet * convnet);
 void deepconvnet_set_output(deepconvnet * convnet, int index, float value);
 float deepconvnet_get_output(deepconvnet * convnet, int index);
 void deepconvnet_set_class(deepconvnet * convnet, int class_number);
 int deepconvnet_get_class(deepconvnet * convnet);
 int deepconvnet_plot_features(deepconvnet * convnet,
-                              int layer_index,
-                              char * filename,
-                              int img_width, int img_height);
+							  int layer_index,
+							  char * filename,
+							  int img_width, int img_height);
 void deepconvnet_set_learning_rate(deepconvnet * convnet, float rate);
 int deepconvnet_is_training(deepconvnet * convnet);
 
