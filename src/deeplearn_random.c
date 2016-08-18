@@ -40,7 +40,11 @@ int rand_num(unsigned int * seed)
         ((unsigned long long)(*seed) * 279470273UL) % 4294967291UL;
 
     /* avoid the singularity */
-    if (v==0) v = (int)time(NULL);
+    if (v==0) {
+		v++;
+		while (((unsigned long long)(*seed) * 279470273UL) % 4294967291UL == 0)
+			v++;
+	}
 
     *seed = v;
     return abs((int)v);
