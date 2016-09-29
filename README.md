@@ -13,6 +13,12 @@ On Debian based systems:
 sudo apt-get install build-essential gnuplot doxygen
 ```
 
+On Arch based systems:
+
+``` bash
+sudo pacman -S gcc gnuplot doxygen
+```
+
 On Fedora based systems:
 
 ```bash

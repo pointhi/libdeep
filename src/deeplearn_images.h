@@ -30,7 +30,7 @@
 #ifndef DEEPLEARN_IMAGES_H
 #define DEEPLEARN_IMAGES_H
 
-#define _SVID_SOURCE
+#define _DEFAULT_SOURCE
 
 #include <stdio.h>
 #include <stdlib.h>
