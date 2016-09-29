@@ -25,6 +25,7 @@ install:
 	cp src/*.h ${DESTDIR}${PREFIX}/include/${APP}
 	install -m 755 ${LIBNAME} ${DESTDIR}${PREFIX}/${LIBDIR}
 	ln -sf ${DESTDIR}${PREFIX}/${LIBDIR}/${LIBNAME} ${DESTDIR}${PREFIX}/${LIBDIR}/${SONAME}
+	ln -sf ${DESTDIR}${PREFIX}/${LIBDIR}/${LIBNAME} ${DESTDIR}/${LIBDIR}/${SONAME}
 	ln -sf ${DESTDIR}${PREFIX}/${LIBDIR}/${LIBNAME} ${DESTDIR}${PREFIX}/${LIBDIR}/${APP}.so
 	ldconfig
 	mkdir -m 755 -p ${DESTDIR}${PREFIX}/share/man/man1
@@ -34,6 +35,7 @@ uninstall:
 	rm -f ${PREFIX}/${LIBDIR}/${LIBNAME}
 	rm -f ${PREFIX}/${LIBDIR}/${APP}.so
 	rm -f ${PREFIX}/${LIBDIR}/${SONAME}
+	rm -f /${LIBDIR}/${SONAME}
 	rm -rf ${PREFIX}/include/${APP}
 	ldconfig
 instlib:
