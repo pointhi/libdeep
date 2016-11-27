@@ -41,11 +41,13 @@
 #include "tests_conv.h"
 #include "tests_deepconvnet.h"
 #include "tests_autocoder.h"
+#include "tests_dnc.h"
 
 int main(int argc, char* argv[])
 {
-	system("rm training.png");
+    system("rm training.png");
 
+    run_tests_dnc();
     run_tests_autocoder();
     run_tests_backprop();
     run_tests_images();
@@ -56,7 +58,7 @@ int main(int argc, char* argv[])
     run_tests_pooling();
     run_tests_features();
     run_tests_conv();
-	run_tests_deepconvnet();
+    run_tests_deepconvnet();
 
     printf("\nAll tests completed\n");
 
