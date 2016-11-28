@@ -1,60 +1,60 @@
 /*
- libdeep - a library for deep learning
- Copyright (C) 2013-2015  Bob Mottram <bob@robotics.uk.to>
+  libdeep - a library for deep learning
+  Copyright (C) 2013-2015  Bob Mottram <bob@robotics.uk.to>
 
- Redistribution and use in source and binary forms, with or without
- modification, are permitted provided that the following conditions
- are met:
- 1. Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
- 2. Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
- 3. Neither the name of the University nor the names of its contributors
-    may be used to endorse or promote products derived from this software
-    without specific prior written permission.
- .
- THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
- A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE HOLDERS OR
- CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
- EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
- PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
- PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
- LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
- NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+  Redistribution and use in source and binary forms, with or without
+  modification, are permitted provided that the following conditions
+  are met:
+  1. Redistributions of source code must retain the above copyright
+  notice, this list of conditions and the following disclaimer.
+  2. Redistributions in binary form must reproduce the above copyright
+  notice, this list of conditions and the following disclaimer in the
+  documentation and/or other materials provided with the distribution.
+  3. Neither the name of the University nor the names of its contributors
+  may be used to endorse or promote products derived from this software
+  without specific prior written permission.
+  .
+  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+  ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+  A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE HOLDERS OR
+  CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+  EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+  PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+  PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+  LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 #include "deeplearn.h"
 
 /**
-* @brief Returns a training error threshold for the given layer
-* @param learner Deep learner object
-* @param index Layer index
-* @returns Training error threshold (percentage value)
-*/
+ * @brief Returns a training error threshold for the given layer
+ * @param learner Deep learner object
+ * @param index Layer index
+ * @returns Training error threshold (percentage value)
+ */
 float deeplearn_get_error_threshold(deeplearn * learner, int index)
 {
     return(learner->error_threshold[index]);
 }
 
 /**
-* @brief Sets a training error threshold
-* @param learner Deep learner object
-* @param index Layer index
-* @param value Threshold value as a percentage
-*/
+ * @brief Sets a training error threshold
+ * @param learner Deep learner object
+ * @param index Layer index
+ * @param value Threshold value as a percentage
+ */
 void deeplearn_set_error_threshold(deeplearn * learner, int index, float value)
 {
     learner->error_threshold[index] = value;
 }
 
 /**
-* @brief Update the learning history
-* @param learner Deep learner object
-*/
+ * @brief Update the learning history
+ * @param learner Deep learner object
+ */
 static void deeplearn_update_history(deeplearn * learner)
 {
     int i;
@@ -85,16 +85,16 @@ static void deeplearn_update_history(deeplearn * learner)
 }
 
 /**
-* @brief Initialise a deep learner
-* @param learner Deep learner object
-* @param no_of_inputs The number of input fields
-* @param no_of_hiddens The number of hidden units within each layer
-* @param hidden_layers The number of hidden layers
-* @param no_of_outputs The number of output units
-* @param error_threshold Minimum training error for each hidden layer plus
-*        the output layer
-* @param random_seed Random number generator seed
-*/
+ * @brief Initialise a deep learner
+ * @param learner Deep learner object
+ * @param no_of_inputs The number of input fields
+ * @param no_of_hiddens The number of hidden units within each layer
+ * @param hidden_layers The number of hidden layers
+ * @param no_of_outputs The number of output units
+ * @param error_threshold Minimum training error for each hidden layer plus
+ *        the output layer
+ * @param random_seed Random number generator seed
+ */
 int deeplearn_init(deeplearn * learner,
                    int no_of_inputs,
                    int no_of_hiddens,
@@ -234,19 +234,19 @@ int deeplearn_init(deeplearn * learner,
 }
 
 /**
-* @brief Feeds the input values through the network towards the outputs
-* @param learner Deep learner object
-*/
+ * @brief Feeds the input values through the network towards the outputs
+ * @param learner Deep learner object
+ */
 void deeplearn_feed_forward(deeplearn * learner)
 {
     bp_feed_forward(learner->net);
 }
 
 /**
-* @brief Returns true if currently training the final layer
-* @param learner Deep learner object
-* @returns True if training the last layer
-*/
+ * @brief Returns true if currently training the final layer
+ * @param learner Deep learner object
+ * @returns True if training the last layer
+ */
 int deeplearn_training_last_layer(deeplearn * learner)
 {
     return (learner->current_hidden_layer >=
@@ -254,10 +254,10 @@ int deeplearn_training_last_layer(deeplearn * learner)
 }
 
 /**
-* @brief Copy autocoder hidden units to a hidden layer of the deep learner
-* @param learner Deep learner object
-* @param hidden_layer Index of the layer to be copied
-*/
+ * @brief Copy autocoder hidden units to a hidden layer of the deep learner
+ * @param learner Deep learner object
+ * @param hidden_layer Index of the layer to be copied
+ */
 void copy_autocoder_to_hidden_layer(deeplearn * learner, int hidden_layer)
 {
     ac * autocoder = learner->autocoder[hidden_layer];
@@ -272,11 +272,11 @@ void copy_autocoder_to_hidden_layer(deeplearn * learner, int hidden_layer)
 }
 
 /**
-* @brief Trains the autocoder for a given hidden layer
-* @param net Backprop object
-* @param autocoder Autocoder object
-* @param current_layer Index of the current hidden layer
-*/
+ * @brief Trains the autocoder for a given hidden layer
+ * @param net Backprop object
+ * @param autocoder Autocoder object
+ * @param current_layer Index of the current hidden layer
+ */
 void deeplearn_pretrain(bp * net, ac * autocoder, int current_layer)
 {
     bp_feed_forward_layers(net, current_layer);
@@ -300,11 +300,11 @@ void deeplearn_pretrain(bp * net, ac * autocoder, int current_layer)
 }
 
 /**
-* @brief Performs training initially using autocoders
-*        for each hidden
-*        layer and eventually for the entire network.
-* @param learner Deep learner object
-*/
+ * @brief Performs training initially using autocoders
+ *        for each hidden
+ *        layer and eventually for the entire network.
+ * @param learner Deep learner object
+ */
 void deeplearn_update(deeplearn * learner)
 {
     float minimum_error_percent = 0;
@@ -314,7 +314,7 @@ void deeplearn_update(deeplearn * learner)
     if (learner->training_complete == 1) return;
 
     /* get the maximum backprop error after which a layer
-        will be considered to have been trained */
+       will be considered to have been trained */
     minimum_error_percent =
         learner->error_threshold[current_layer];
 
@@ -354,24 +354,24 @@ void deeplearn_update(deeplearn * learner)
         }
     }
     else {
-		bp_update(learner->net,0);
+        bp_update(learner->net,0);
 
-		/* update the backprop error value */
-		learner->BPerror = learner->net->BPerrorPercent;
+        /* update the backprop error value */
+        learner->BPerror = learner->net->BPerrorPercent;
 
-		/* set the training completed flag */
-		if (learner->BPerror < minimum_error_percent) {
-			learner->training_complete = 1;
-		}
-	}
+        /* set the training completed flag */
+        if (learner->BPerror < minimum_error_percent) {
+            learner->training_complete = 1;
+        }
+    }
 
-	/* record the history of error values */
-	deeplearn_update_history(learner);
+    /* record the history of error values */
+    deeplearn_update_history(learner);
 
-	/* increment the number of itterations */
-	if (learner->net->itterations < UINT_MAX) {
-		learner->net->itterations++;
-	}
+    /* increment the number of itterations */
+    if (learner->net->itterations < UINT_MAX) {
+        learner->net->itterations++;
+    }
 }
 
 /**
@@ -380,24 +380,24 @@ void deeplearn_update(deeplearn * learner)
  */
 void deeplearn_update_continuous(deeplearn * learner)
 {
-	int i;
+    int i;
 
-	learner->BPerror = 0;
+    learner->BPerror = 0;
 
-	for (i = 0; i < learner->net->HiddenLayers; i++) {
-		/* train the autocoder for this layer */
-		deeplearn_pretrain(learner->net, learner->autocoder[i], i);
+    for (i = 0; i < learner->net->HiddenLayers; i++) {
+        /* train the autocoder for this layer */
+        deeplearn_pretrain(learner->net, learner->autocoder[i], i);
 
-		/* update the backprop error value */
-		learner->BPerror += learner->autocoder[i]->BPerrorPercent;
+        /* update the backprop error value */
+        learner->BPerror += learner->autocoder[i]->BPerrorPercent;
 
-		copy_autocoder_to_hidden_layer(learner, i);
-	}
+        copy_autocoder_to_hidden_layer(learner, i);
+    }
 
-	learner->BPerror /= learner->net->HiddenLayers;
+    learner->BPerror /= learner->net->HiddenLayers;
 
-	/* record the history of error values */
-	deeplearn_update_history(learner);
+    /* record the history of error values */
+    deeplearn_update_history(learner);
 }
 
 /**
@@ -406,80 +406,80 @@ void deeplearn_update_continuous(deeplearn * learner)
  */
 void deeplearn_free(deeplearn * learner)
 {
-	/* clear any data */
-	deeplearndata * sample = learner->data;
-	deeplearndata * prev_sample;
-	int i;
+    /* clear any data */
+    deeplearndata * sample = learner->data;
+    deeplearndata * prev_sample;
+    int i;
 
-	free(learner->input_range_min);
-	free(learner->input_range_max);
-	free(learner->output_range_min);
-	free(learner->output_range_max);
-	if (learner->field_length != 0) {
-		free(learner->field_length);
-	}
+    free(learner->input_range_min);
+    free(learner->input_range_max);
+    free(learner->output_range_min);
+    free(learner->output_range_max);
+    if (learner->field_length != 0) {
+        free(learner->field_length);
+    }
 
-	while (sample != 0) {
-		prev_sample = sample;
-		sample = (deeplearndata *)sample->next;
-		if (prev_sample != 0) {
-			if (prev_sample->inputs_text != 0) {
-				/* clear any input text strings */
-				for (i = 0; i < learner->no_of_input_fields; i++) {
-					if (prev_sample->inputs_text[i] != 0) {
-						free(prev_sample->inputs_text[i]);
-					}
-				}
-				free(prev_sample->inputs_text);
-			}
-			/* clear numerical fields */
-			free(prev_sample->inputs);
-			free(prev_sample->outputs);
-			free(prev_sample);
-		}
-	}
+    while (sample != 0) {
+        prev_sample = sample;
+        sample = (deeplearndata *)sample->next;
+        if (prev_sample != 0) {
+            if (prev_sample->inputs_text != 0) {
+                /* clear any input text strings */
+                for (i = 0; i < learner->no_of_input_fields; i++) {
+                    if (prev_sample->inputs_text[i] != 0) {
+                        free(prev_sample->inputs_text[i]);
+                    }
+                }
+                free(prev_sample->inputs_text);
+            }
+            /* clear numerical fields */
+            free(prev_sample->inputs);
+            free(prev_sample->outputs);
+            free(prev_sample);
+        }
+    }
 
-	/* free training samples */
-	deeplearndata_meta * training_sample = learner->training_data;
-	deeplearndata_meta * prev_training_sample;
-	while (training_sample != 0) {
-		prev_training_sample = training_sample;
-		training_sample = (deeplearndata_meta *)training_sample->next;
-		free(prev_training_sample);
-	}
+    /* free training samples */
+    deeplearndata_meta * training_sample = learner->training_data;
+    deeplearndata_meta * prev_training_sample;
+    while (training_sample != 0) {
+        prev_training_sample = training_sample;
+        training_sample = (deeplearndata_meta *)training_sample->next;
+        free(prev_training_sample);
+    }
 
-	/* free labeled training samples */
-	deeplearndata_meta * training_sample_labeled = learner->training_data_labeled;
-	deeplearndata_meta * prev_training_sample_labeled;
-	while (training_sample_labeled != 0) {
-		prev_training_sample_labeled = training_sample_labeled;
-		training_sample_labeled = (deeplearndata_meta *)training_sample_labeled->next;
-		free(prev_training_sample_labeled);
-	}
+    /* free labeled training samples */
+    deeplearndata_meta * training_sample_labeled = learner->training_data_labeled;
+    deeplearndata_meta * prev_training_sample_labeled;
+    while (training_sample_labeled != 0) {
+        prev_training_sample_labeled = training_sample_labeled;
+        training_sample_labeled = (deeplearndata_meta *)training_sample_labeled->next;
+        free(prev_training_sample_labeled);
+    }
 
-	/* free test samples */
-	deeplearndata_meta * test_sample = learner->test_data;
-	deeplearndata_meta * prev_test_sample;
-	while (test_sample != 0) {
-		prev_test_sample = test_sample;
-		test_sample = (deeplearndata_meta *)test_sample->next;
-		free(prev_test_sample);
-	}
+    /* free test samples */
+    deeplearndata_meta * test_sample = learner->test_data;
+    deeplearndata_meta * prev_test_sample;
+    while (test_sample != 0) {
+        prev_test_sample = test_sample;
+        test_sample = (deeplearndata_meta *)test_sample->next;
+        free(prev_test_sample);
+    }
 
-	/* free the error thresholds */
-	free(learner->error_threshold);
+    /* free the error thresholds */
+    free(learner->error_threshold);
 
-	/* free the autocoder */
-	for (int i = 0; i < learner->net->HiddenLayers; i++) {
-		autocoder_free(learner->autocoder[i]);
-		free(learner->autocoder[i]);
-		learner->autocoder[i] = 0;
-	}
-	free(learner->autocoder);
+    /* free the autocoder */
+    for (int i = 0; i < learner->net->HiddenLayers; i++) {
+        autocoder_free(learner->autocoder[i]);
+        free(learner->autocoder[i]);
+        learner->autocoder[i] = 0;
+    }
+    free(learner->autocoder);
 
-	/* free the learner */
-	bp_free(learner->net);
-	free(learner->net);
+    /* free the learner */
+    bp_free(learner->net);
+    free(learner->net);
 }
 
 /**
@@ -490,7 +490,7 @@ void deeplearn_free(deeplearn * learner)
  */
 void deeplearn_set_input(deeplearn * learner, int index, float value)
 {
-	bp_set_input(learner->net, index, value);
+    bp_set_input(learner->net, index, value);
 }
 
 /**
@@ -501,40 +501,40 @@ void deeplearn_set_input(deeplearn * learner, int index, float value)
  */
 void deeplearn_set_input_text(deeplearn * learner, char * text)
 {
-	bp_set_input_text(learner->net, text);
+    bp_set_input_text(learner->net, text);
 }
 
 /**
  * @brief Sets inputs from the given data sample.
- * The sample can contain arbitrary floating point values, so these
- * need to be normalised into a 0.25-0.75 range
+ *        The sample can contain arbitrary floating point values, so these
+ *        need to be normalised into a 0.25-0.75 range
  * @param learner Deep learner object
  */
 void deeplearn_set_inputs(deeplearn * learner, deeplearndata * sample)
 {
-	float value, range, normalised;
-	int pos = 0;
+    float value, range, normalised;
+    int pos = 0;
 
-	for (int i = 0; i < learner->no_of_input_fields; i++) {
-		if (learner->field_length[i] > 0) {
-			/* text value */
-			enc_text_to_binary(sample->inputs_text[i],
-							   learner->net->inputs,
-							   learner->net->NoOfInputs,
-							   pos, learner->field_length[i]/CHAR_BITS);
-			pos += learner->field_length[i];
-		}
-		else {
-			/* numerical */
-			value = sample->inputs[i];
-			range = learner->input_range_max[i] - learner->input_range_min[i];
-			if (range > 0) {
-				normalised = (((value - learner->input_range_min[i])/range)*0.5) + 0.25;
-				deeplearn_set_input(learner, pos, normalised);
-			}
-			pos++;
-		}
-	}
+    for (int i = 0; i < learner->no_of_input_fields; i++) {
+        if (learner->field_length[i] > 0) {
+            /* text value */
+            enc_text_to_binary(sample->inputs_text[i],
+                               learner->net->inputs,
+                               learner->net->NoOfInputs,
+                               pos, learner->field_length[i]/CHAR_BITS);
+            pos += learner->field_length[i];
+        }
+        else {
+            /* numerical */
+            value = sample->inputs[i];
+            range = learner->input_range_max[i] - learner->input_range_min[i];
+            if (range > 0) {
+                normalised = (((value - learner->input_range_min[i])/range)*0.5) + 0.25;
+                deeplearn_set_input(learner, pos, normalised);
+            }
+            pos++;
+        }
+    }
 }
 
 /**
@@ -547,38 +547,38 @@ void deeplearn_set_inputs(deeplearn * learner, deeplearndata * sample)
  */
 int deeplearn_set_input_field(deeplearn * learner, int fieldindex, float value)
 {
-	int i, pos=0;
+    int i, pos=0;
 
-	if (learner->no_of_input_fields == 0) {
-		/* No fields are defined
-		   Assume you meant fieldindex to be the input index */
-		bp_set_input(learner->net, fieldindex, value);
-		return -1;
-	}
+    if (learner->no_of_input_fields == 0) {
+        /* No fields are defined
+           Assume you meant fieldindex to be the input index */
+        bp_set_input(learner->net, fieldindex, value);
+        return -1;
+    }
 
-	if (learner->field_length == 0) {
-		/* no field length array defined */
-		return -2;
-	}
+    if (learner->field_length == 0) {
+        /* no field length array defined */
+        return -2;
+    }
 
-	if (learner->field_length[fieldindex] > 0) {
-		/* this is a text field */
-		return -3;
-	}
+    if (learner->field_length[fieldindex] > 0) {
+        /* this is a text field */
+        return -3;
+    }
 
-	/* get the offset (first input unit index) of the input field */
-	for (i = 0; i < fieldindex; i++) {
-		if (learner->field_length[i] == 0) {
-			pos++;
-		}
-		else {
-			pos += learner->field_length[i];
-		}
-	}
+    /* get the offset (first input unit index) of the input field */
+    for (i = 0; i < fieldindex; i++) {
+        if (learner->field_length[i] == 0) {
+            pos++;
+        }
+        else {
+            pos += learner->field_length[i];
+        }
+    }
 
-	/* set the value */
-	bp_set_input(learner->net, pos, value);
-	return 0;
+    /* set the value */
+    bp_set_input(learner->net, pos, value);
+    return 0;
 }
 
 /**
@@ -591,39 +591,39 @@ int deeplearn_set_input_field(deeplearn * learner, int fieldindex, float value)
  */
 int deeplearn_set_input_field_text(deeplearn * learner, int fieldindex, char * text)
 {
-	int i, pos=0;
+    int i, pos=0;
 
-	if (learner->no_of_input_fields == 0) {
-		/* No fields are defined */
-		return -1;
-	}
+    if (learner->no_of_input_fields == 0) {
+        /* No fields are defined */
+        return -1;
+    }
 
-	if (learner->field_length == 0) {
-		/* no field length array defined */
-		return -2;
-	}
+    if (learner->field_length == 0) {
+        /* no field length array defined */
+        return -2;
+    }
 
-	if (learner->field_length[fieldindex] == 0) {
-		/* this is a text field */
-		return -3;
-	}
+    if (learner->field_length[fieldindex] == 0) {
+        /* this is a text field */
+        return -3;
+    }
 
-	/* get the offset (first input unit index) of the input field */
-	for (i = 0; i < fieldindex; i++) {
-		if (learner->field_length[i] == 0) {
-			pos++;
-		}
-		else {
-			pos += learner->field_length[i];
-		}
-	}
+    /* get the offset (first input unit index) of the input field */
+    for (i = 0; i < fieldindex; i++) {
+        if (learner->field_length[i] == 0) {
+            pos++;
+        }
+        else {
+            pos += learner->field_length[i];
+        }
+    }
 
-	/* set the value */
-	enc_text_to_binary(text,
-					   learner->net->inputs,
-					   learner->net->NoOfInputs, pos,
-					   learner->field_length[fieldindex]/CHAR_BITS);
-	return 0;
+    /* set the value */
+    enc_text_to_binary(text,
+                       learner->net->inputs,
+                       learner->net->NoOfInputs, pos,
+                       learner->field_length[fieldindex]/CHAR_BITS);
+    return 0;
 }
 
 /**
@@ -634,26 +634,26 @@ int deeplearn_set_input_field_text(deeplearn * learner, int fieldindex, char * t
  */
 void deeplearn_set_output(deeplearn * learner, int index, float value)
 {
-	bp_set_output(learner->net, index, value);
+    bp_set_output(learner->net, index, value);
 }
 
 /**
  * @brief Sets outputs from the given data sample.
- * The sample can contain arbitrary floating point values, so these
- * need to be normalised into a 0.25-0.75 range
+ *        The sample can contain arbitrary floating point values, so these
+ *        need to be normalised into a 0.25-0.75 range
  * @param learner Deep learner object
  * @param sample The data sample from which to obtain the output values
  */
 void deeplearn_set_outputs(deeplearn * learner, deeplearndata * sample)
 {
-	for (int i = 0; i < learner->net->NoOfOutputs; i++) {
-		float value = sample->outputs[i];
-		float range = learner->output_range_max[i] - learner->output_range_min[i];
-		if (range > 0) {
-			float normalised = (((value - learner->output_range_min[i])/range)*0.5) + 0.25;
-			deeplearn_set_output(learner, i, normalised);
-		}
-	}
+    for (int i = 0; i < learner->net->NoOfOutputs; i++) {
+        float value = sample->outputs[i];
+        float range = learner->output_range_max[i] - learner->output_range_min[i];
+        if (range > 0) {
+            float normalised = (((value - learner->output_range_min[i])/range)*0.5) + 0.25;
+            deeplearn_set_output(learner, i, normalised);
+        }
+    }
 }
 
 /**
@@ -663,14 +663,14 @@ void deeplearn_set_outputs(deeplearn * learner, deeplearndata * sample)
  */
 void deeplearn_get_outputs(deeplearn * learner, float * outputs)
 {
-	for (int i = 0; i < learner->net->NoOfOutputs; i++) {
-		float value = deeplearn_get_output(learner, i);
-		float range = learner->output_range_max[i] - learner->output_range_min[i];
-		if (range > 0) {
-			outputs[i] =
-				(((value - 0.25f)/0.5f)*range) + learner->output_range_min[i];
-		}
-	}
+    for (int i = 0; i < learner->net->NoOfOutputs; i++) {
+        float value = deeplearn_get_output(learner, i);
+        float range = learner->output_range_max[i] - learner->output_range_min[i];
+        if (range > 0) {
+            outputs[i] =
+                (((value - 0.25f)/0.5f)*range) + learner->output_range_min[i];
+        }
+    }
 }
 
 /**
@@ -681,7 +681,7 @@ void deeplearn_get_outputs(deeplearn * learner, float * outputs)
  */
 float deeplearn_get_output(deeplearn * learner, int index)
 {
-	return bp_get_output(learner->net, index);
+    return bp_get_output(learner->net, index);
 }
 
 /**
@@ -691,15 +691,15 @@ float deeplearn_get_output(deeplearn * learner, int index)
  */
 int deeplearn_get_class(deeplearn * learner)
 {
-	int i, class = -9999;
-	float max = -1;
-	for (i = 0; i < learner->net->NoOfOutputs; i++) {
-		if (bp_get_output(learner->net, i) > max) {
-			max = bp_get_output(learner->net, i);
-			class = i;
-		}
-	}
-	return class;
+    int i, class = -9999;
+    float max = -1;
+    for (i = 0; i < learner->net->NoOfOutputs; i++) {
+        if (bp_get_output(learner->net, i) > max) {
+            max = bp_get_output(learner->net, i);
+            class = i;
+        }
+    }
+    return class;
 }
 
 /**
@@ -709,15 +709,15 @@ int deeplearn_get_class(deeplearn * learner)
  */
 void deeplearn_set_class(deeplearn * learner, int class)
 {
-	int i;
-	for (i = 0; i < learner->net->NoOfOutputs; i++) {
-		if (i != class) {
-			bp_set_output(learner->net, i, 0.25f);
-		}
-		else {
-			bp_set_output(learner->net, i, 0.75f);
-		}
-	}
+    int i;
+    for (i = 0; i < learner->net->NoOfOutputs; i++) {
+        if (i != class) {
+            bp_set_output(learner->net, i, 0.25f);
+        }
+        else {
+            bp_set_output(learner->net, i, 0.75f);
+        }
+    }
 }
 
 /**
@@ -726,77 +726,77 @@ void deeplearn_set_class(deeplearn * learner, int class)
  * @param learner Deep learner object
  * @return zero value on success
  */
-	int deeplearn_save(FILE * fp, deeplearn * learner)
-	{
-		if (fwrite(&learner->training_complete, sizeof(int), 1, fp) == 0) {
-			return -1;
-		}
-		if (fwrite(&learner->itterations, sizeof(unsigned int), 1, fp) == 0) {
-			return -2;
-		}
-		if (fwrite(&learner->current_hidden_layer, sizeof(int), 1, fp) == 0) {
-			return -3;
-		}
-		if (fwrite(&learner->BPerror, sizeof(float), 1, fp) == 0) {
-			return -4;
-		}
-		if (fwrite(&learner->no_of_input_fields, sizeof(int), 1, fp) == 0) {
-			return -5;
-		}
-		if (learner->no_of_input_fields > 0) {
-			if (fwrite(learner->field_length, sizeof(int),
-					   learner->no_of_input_fields, fp) == 0) {
-				return -6;
-			}
-		}
+int deeplearn_save(FILE * fp, deeplearn * learner)
+{
+    if (fwrite(&learner->training_complete, sizeof(int), 1, fp) == 0) {
+        return -1;
+    }
+    if (fwrite(&learner->itterations, sizeof(unsigned int), 1, fp) == 0) {
+        return -2;
+    }
+    if (fwrite(&learner->current_hidden_layer, sizeof(int), 1, fp) == 0) {
+        return -3;
+    }
+    if (fwrite(&learner->BPerror, sizeof(float), 1, fp) == 0) {
+        return -4;
+    }
+    if (fwrite(&learner->no_of_input_fields, sizeof(int), 1, fp) == 0) {
+        return -5;
+    }
+    if (learner->no_of_input_fields > 0) {
+        if (fwrite(learner->field_length, sizeof(int),
+                   learner->no_of_input_fields, fp) == 0) {
+            return -6;
+        }
+    }
 
-		if (bp_save(fp, learner->net) != 0) {
-			return -7;
-		}
+    if (bp_save(fp, learner->net) != 0) {
+        return -7;
+    }
 
-		for (int i = 0; i < learner->net->HiddenLayers; i++) {
-			if (autocoder_save(fp, learner->autocoder[i]) != 0) {
-				return -8;
-			}
-		}
+    for (int i = 0; i < learner->net->HiddenLayers; i++) {
+        if (autocoder_save(fp, learner->autocoder[i]) != 0) {
+            return -8;
+        }
+    }
 
-		/* save error thresholds */
-		if (fwrite(learner->error_threshold, sizeof(float),
-				   learner->net->HiddenLayers+1, fp) == 0) {
-			return -9;
-		}
+    /* save error thresholds */
+    if (fwrite(learner->error_threshold, sizeof(float),
+               learner->net->HiddenLayers+1, fp) == 0) {
+        return -9;
+    }
 
-		/* save ranges */
-		if (fwrite(learner->input_range_min, sizeof(float), learner->net->NoOfInputs, fp) == 0) {
-			return -10;
-		}
-		if (fwrite(learner->input_range_max, sizeof(float), learner->net->NoOfInputs, fp) == 0) {
-			return -11;
-		}
-		if (fwrite(learner->output_range_min, sizeof(float), learner->net->NoOfOutputs, fp) == 0) {
-			return -12;
-		}
-		if (fwrite(learner->output_range_max, sizeof(float), learner->net->NoOfOutputs, fp) == 0) {
-			return -13;
-		}
+    /* save ranges */
+    if (fwrite(learner->input_range_min, sizeof(float), learner->net->NoOfInputs, fp) == 0) {
+        return -10;
+    }
+    if (fwrite(learner->input_range_max, sizeof(float), learner->net->NoOfInputs, fp) == 0) {
+        return -11;
+    }
+    if (fwrite(learner->output_range_min, sizeof(float), learner->net->NoOfOutputs, fp) == 0) {
+        return -12;
+    }
+    if (fwrite(learner->output_range_max, sizeof(float), learner->net->NoOfOutputs, fp) == 0) {
+        return -13;
+    }
 
-		/* save the history */
-		if (fwrite(&learner->history_index, sizeof(int), 1, fp) == 0) {
-			return -14;
-		}
-		if (fwrite(&learner->history_ctr, sizeof(int), 1, fp) == 0) {
-			return -15;
-		}
-		if (fwrite(&learner->history_step, sizeof(int), 1, fp) == 0) {
-			return -16;
-		}
-		if (fwrite(learner->history, sizeof(float),
-				   learner->history_index, fp) == 0) {
-			return -17;
-		}
+    /* save the history */
+    if (fwrite(&learner->history_index, sizeof(int), 1, fp) == 0) {
+        return -14;
+    }
+    if (fwrite(&learner->history_ctr, sizeof(int), 1, fp) == 0) {
+        return -15;
+    }
+    if (fwrite(&learner->history_step, sizeof(int), 1, fp) == 0) {
+        return -16;
+    }
+    if (fwrite(learner->history, sizeof(float),
+               learner->history_index, fp) == 0) {
+        return -17;
+    }
 
-		return 0;
-	}
+    return 0;
+}
 
 /**
  * @brief Loads a deep learner object from file
@@ -805,99 +805,99 @@ void deeplearn_set_class(deeplearn * learner, int class)
  * @param random_seed Random number generator seed
  * @return zero value on success
  */
-	int deeplearn_load(FILE * fp, deeplearn * learner,
-					   unsigned int * random_seed)
-	{
-		/* no training/test data yet */
-		learner->data = 0;
-		learner->data_samples = 0;
-		learner->training_data = 0;
-		learner->training_data_samples = 0;
-		learner->training_data_labeled = 0;
-		learner->training_data_labeled_samples = 0;
-		learner->test_data = 0;
-		learner->test_data_samples = 0;
+int deeplearn_load(FILE * fp, deeplearn * learner,
+                   unsigned int * random_seed)
+{
+    /* no training/test data yet */
+    learner->data = 0;
+    learner->data_samples = 0;
+    learner->training_data = 0;
+    learner->training_data_samples = 0;
+    learner->training_data_labeled = 0;
+    learner->training_data_labeled_samples = 0;
+    learner->test_data = 0;
+    learner->test_data_samples = 0;
 
-		if (fread(&learner->training_complete, sizeof(int), 1, fp) == 0) {
-			return -1;
-		}
-		if (fread(&learner->itterations, sizeof(unsigned int), 1, fp) == 0) {
-			return -2;
-		}
-		if (fread(&learner->current_hidden_layer, sizeof(int), 1, fp) == 0) {
-			return -3;
-		}
-		if (fread(&learner->BPerror, sizeof(float), 1, fp) == 0) {
-			return -4;
-		}
-		if (fread(&learner->no_of_input_fields, sizeof(int), 1, fp) == 0) {
-			return -5;
-		}
-		learner->field_length = 0;
-		if (learner->no_of_input_fields > 0) {
-			learner->field_length = (int*)malloc(learner->no_of_input_fields*sizeof(int));
-			if (fread(learner->field_length, sizeof(int), learner->no_of_input_fields, fp) == 0) {
-				return -6;
-			}
-		}
+    if (fread(&learner->training_complete, sizeof(int), 1, fp) == 0) {
+        return -1;
+    }
+    if (fread(&learner->itterations, sizeof(unsigned int), 1, fp) == 0) {
+        return -2;
+    }
+    if (fread(&learner->current_hidden_layer, sizeof(int), 1, fp) == 0) {
+        return -3;
+    }
+    if (fread(&learner->BPerror, sizeof(float), 1, fp) == 0) {
+        return -4;
+    }
+    if (fread(&learner->no_of_input_fields, sizeof(int), 1, fp) == 0) {
+        return -5;
+    }
+    learner->field_length = 0;
+    if (learner->no_of_input_fields > 0) {
+        learner->field_length = (int*)malloc(learner->no_of_input_fields*sizeof(int));
+        if (fread(learner->field_length, sizeof(int), learner->no_of_input_fields, fp) == 0) {
+            return -6;
+        }
+    }
 
-		learner->net = (bp*)malloc(sizeof(bp));
-		if (bp_load(fp, learner->net, random_seed) != 0) {
-			return -7;
-		}
+    learner->net = (bp*)malloc(sizeof(bp));
+    if (bp_load(fp, learner->net, random_seed) != 0) {
+        return -7;
+    }
 
-		learner->autocoder = (ac**)malloc(sizeof(ac*)*learner->net->HiddenLayers);
-		if (!learner->autocoder) {
-			return -8;
-		}
-		for (int i = 0; i < learner->net->HiddenLayers; i++) {
-			learner->autocoder[i] = (ac*)malloc(sizeof(ac));
-			if (autocoder_load(fp, learner->autocoder[i], 1) != 0) {
-				return -9;
-			}
-		}
+    learner->autocoder = (ac**)malloc(sizeof(ac*)*learner->net->HiddenLayers);
+    if (!learner->autocoder) {
+        return -8;
+    }
+    for (int i = 0; i < learner->net->HiddenLayers; i++) {
+        learner->autocoder[i] = (ac*)malloc(sizeof(ac));
+        if (autocoder_load(fp, learner->autocoder[i], 1) != 0) {
+            return -9;
+        }
+    }
 
-		/* load error thresholds */
-		learner->error_threshold =
-			(float*)malloc((learner->net->HiddenLayers+1)*
-						   sizeof(float));
-		if (fread(learner->error_threshold, sizeof(float),
-				  learner->net->HiddenLayers+1, fp) == 0) {
-			return -10;
-		}
+    /* load error thresholds */
+    learner->error_threshold =
+        (float*)malloc((learner->net->HiddenLayers+1)*
+                       sizeof(float));
+    if (fread(learner->error_threshold, sizeof(float),
+              learner->net->HiddenLayers+1, fp) == 0) {
+        return -10;
+    }
 
-		/* load ranges */
-		learner->input_range_min = (float*)malloc(learner->net->NoOfInputs*sizeof(float));
-		if (!learner->input_range_min) {
-			return -15;
-		}
-		learner->input_range_max = (float*)malloc(learner->net->NoOfInputs*sizeof(float));
-		if (!learner->input_range_max) {
-			return -16;
-		}
-		learner->output_range_min = (float*)malloc(learner->net->NoOfOutputs*sizeof(float));
-		if (!learner->output_range_min) {
-			return -17;
-		}
-		learner->output_range_max = (float*)malloc(learner->net->NoOfOutputs*sizeof(float));
-		if (!learner->output_range_max) {
-			return -18;
-		}
-		if (fread(learner->input_range_min, sizeof(float), learner->net->NoOfInputs, fp) == 0) {
-			return -19;
-		}
-		if (fread(learner->input_range_max, sizeof(float), learner->net->NoOfInputs, fp) == 0) {
-			return -20;
-		}
-		if (fread(learner->output_range_min, sizeof(float), learner->net->NoOfOutputs, fp) == 0) {
-			return -21;
-		}
-		if (fread(learner->output_range_max, sizeof(float), learner->net->NoOfOutputs, fp) == 0) {
-			return -22;
-		}
+    /* load ranges */
+    learner->input_range_min = (float*)malloc(learner->net->NoOfInputs*sizeof(float));
+    if (!learner->input_range_min) {
+        return -15;
+    }
+    learner->input_range_max = (float*)malloc(learner->net->NoOfInputs*sizeof(float));
+    if (!learner->input_range_max) {
+        return -16;
+    }
+    learner->output_range_min = (float*)malloc(learner->net->NoOfOutputs*sizeof(float));
+    if (!learner->output_range_min) {
+        return -17;
+    }
+    learner->output_range_max = (float*)malloc(learner->net->NoOfOutputs*sizeof(float));
+    if (!learner->output_range_max) {
+        return -18;
+    }
+    if (fread(learner->input_range_min, sizeof(float), learner->net->NoOfInputs, fp) == 0) {
+        return -19;
+    }
+    if (fread(learner->input_range_max, sizeof(float), learner->net->NoOfInputs, fp) == 0) {
+        return -20;
+    }
+    if (fread(learner->output_range_min, sizeof(float), learner->net->NoOfOutputs, fp) == 0) {
+        return -21;
+    }
+    if (fread(learner->output_range_max, sizeof(float), learner->net->NoOfOutputs, fp) == 0) {
+        return -22;
+    }
 
-		/* load the history */
-		if (fread(&learner->history_index, sizeof(int), 1, fp) == 0) {
+    /* load the history */
+    if (fread(&learner->history_index, sizeof(int), 1, fp) == 0) {
         return -11;
     }
     if (fread(&learner->history_ctr, sizeof(int), 1, fp) == 0) {
@@ -915,12 +915,12 @@ void deeplearn_set_class(deeplearn * learner, int class)
 }
 
 /**
-* @brief Compares two deep learners and returns a greater
-*        than zero value if they are the same
-* @param learner1 First deep learner object
-* @param learner2 Second deep learner object
-* @return Greater than zero if the two learners are the same
-*/
+ * @brief Compares two deep learners and returns a greater
+ *        than zero value if they are the same
+ * @param learner1 First deep learner object
+ * @param learner2 Second deep learner object
+ * @return Greater than zero if the two learners are the same
+ */
 int deeplearn_compare(deeplearn * learner1,
                       deeplearn * learner2)
 {
@@ -991,14 +991,14 @@ int deeplearn_compare(deeplearn * learner1,
 }
 
 /**
-* @brief Uses gnuplot to plot the training error for the given learner
-* @param learner Deep learner object
-* @param filename Filename for the image to save as
-* @param title Title of the graph
-* @param image_width Width of the image in pixels
-* @param image_height Height of the image in pixels
-* @return zero on success
-*/
+ * @brief Uses gnuplot to plot the training error for the given learner
+ * @param learner Deep learner object
+ * @param filename Filename for the image to save as
+ * @param title Title of the graph
+ * @param image_width Width of the image in pixels
+ * @param image_height Height of the image in pixels
+ * @return zero on success
+ */
 int deeplearn_plot_history(deeplearn * learner,
                            char * filename, char * title,
                            int image_width, int image_height)
@@ -1065,14 +1065,14 @@ int deeplearn_plot_history(deeplearn * learner,
 }
 
 /**
-* @brief Updates the input units from a patch within a larger image
-* @param learner Deep learner object
-* @param img Image buffer (1 byte per pixel)
-* @param image_width Width of the image in pixels
-* @param image_height Height of the image in pixels
-* @param tx Top left x coordinate of the patch
-* @param ty Top left y coordinate of the patch
-*/
+ * @brief Updates the input units from a patch within a larger image
+ * @param learner Deep learner object
+ * @param img Image buffer (1 byte per pixel)
+ * @param image_width Width of the image in pixels
+ * @param image_height Height of the image in pixels
+ * @param tx Top left x coordinate of the patch
+ * @param ty Top left y coordinate of the patch
+ */
 void deeplearn_inputs_from_image_patch(deeplearn * learner,
                                        unsigned char * img,
                                        int image_width, int image_height,
@@ -1084,12 +1084,12 @@ void deeplearn_inputs_from_image_patch(deeplearn * learner,
 }
 
 /**
-* @brief Updates the input units from an image
-* @param learner Deep learner object
-* @param img Image buffer (1 byte per pixel)
-* @param image_width Width of the image in pixels
-* @param image_height Height of the image in pixels
-*/
+ * @brief Updates the input units from an image
+ * @param learner Deep learner object
+ * @param img Image buffer (1 byte per pixel)
+ * @param image_width Width of the image in pixels
+ * @param image_height Height of the image in pixels
+ */
 void deeplearn_inputs_from_image(deeplearn * learner,
                                  unsigned char * img,
                                  int image_width, int image_height)
@@ -1098,10 +1098,10 @@ void deeplearn_inputs_from_image(deeplearn * learner,
 }
 
 /**
-* @brief Sets the learning rate
-* @param learner Deep learner object
-* @param rate the learning rate in the range 0.0 to 1.0
-*/
+ * @brief Sets the learning rate
+ * @param learner Deep learner object
+ * @param rate the learning rate in the range 0.0 to 1.0
+ */
 void deeplearn_set_learning_rate(deeplearn * learner, float rate)
 {
     learner->net->learningRate = rate;
@@ -1112,10 +1112,10 @@ void deeplearn_set_learning_rate(deeplearn * learner, float rate)
 }
 
 /**
-* @brief Sets the percentage of units which drop out during training
-* @param learner Deep learner object
-* @param dropout_percent Percentage of units which drop out in the range 0 to 100
-*/
+ * @brief Sets the percentage of units which drop out during training
+ * @param learner Deep learner object
+ * @param dropout_percent Percentage of units which drop out in the range 0 to 100
+ */
 void deeplearn_set_dropouts(deeplearn * learner, float dropout_percent)
 {
     learner->net->DropoutPercent = dropout_percent;
@@ -1126,11 +1126,11 @@ void deeplearn_set_dropouts(deeplearn * learner, float dropout_percent)
 }
 
 /**
-* @brief Exports a trained network as a standalone C program
-* @param learner Deep learner object
-* @param filename The C source file to be produced
-* @returns zero on success
-*/
+ * @brief Exports a trained network as a standalone C program
+ * @param learner Deep learner object
+ * @param filename The C source file to be produced
+ * @returns zero on success
+ */
 static int deeplearn_export_c(deeplearn * learner, char * filename)
 {
     FILE * fp;
@@ -1425,11 +1425,11 @@ static int deeplearn_export_c(deeplearn * learner, char * filename)
 }
 
 /**
-* @brief Exports a trained network as a standalone python class
-* @param learner Deep learner object
-* @param filename The python source file to be produced
-* @returns zero on success
-*/
+ * @brief Exports a trained network as a standalone python class
+ * @param learner Deep learner object
+ * @param filename The python source file to be produced
+ * @returns zero on success
+ */
 static int deeplearn_export_python(deeplearn * learner, char * filename)
 {
     FILE * fp;
@@ -1689,12 +1689,12 @@ static int deeplearn_export_python(deeplearn * learner, char * filename)
 }
 
 /**
-* @brief Exports a trained network as a standalone program
-*        file types supported are .c and .py
-* @param learner Deep learner object
-* @param filename The source file to be produced
-* @returns zero on success
-*/
+ * @brief Exports a trained network as a standalone program
+ *        file types supported are .c and .py
+ * @param learner Deep learner object
+ * @param filename The source file to be produced
+ * @returns zero on success
+ */
 int deeplearn_export(deeplearn * learner, char * filename)
 {
     int length = strlen(filename);
