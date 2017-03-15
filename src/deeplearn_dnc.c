@@ -93,7 +93,7 @@ static void deeplearn_dnc_free_memory(deeplearn_dnc * learner)
 static int deeplearn_dnc_init_memory_usage(deeplearn_dnc * learner)
 {
     /* The memory usage array is downsampled by the block size */
-    int i, head, memory_usage_size = learner->memory.size;
+    int i;
 
     /* memory usage */
     learner->memory.usage =
@@ -544,7 +544,7 @@ int deeplearn_dnc_training_last_layer(deeplearn_dnc * learner)
  */
 void deeplearn_dnc_clear_memory(deeplearn_dnc * learner)
 {
-    int i, memory_usage_size = learner->memory.size;
+    int i;
 
     /* clear all address vectors */
     for (i = 0; i < learner->memory.size; i++)
@@ -621,7 +621,7 @@ unsigned int deeplearn_dnc_content_lookup(unsigned int current_address,
                                           unsigned char forward)
 {
     /* TODO this is probably not correct. See the pdf */
-    unsigned int next_address;
+    unsigned int next_address=0;
 
     if (forward != 0)
         memcpy((void*)key, (void*)&memory->address[next_address][0],
