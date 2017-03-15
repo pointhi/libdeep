@@ -65,7 +65,9 @@ static int deeplearn_dnc_init_memory(deeplearn_dnc * learner, int memory_size,
     }
 
     /* clear the memory address pointers */
-    memset((void*)&learner->memory.address_ptr[0], '\0', sizeof(unsigned int)*(DEEPLEARNDNC_READ_HEADS + DEEPLEARNDNC_WRITE_HEADS));
+    memset((void*)&learner->memory.address_ptr[0], '\0',
+           sizeof(unsigned int) *
+           (DEEPLEARNDNC_READ_HEADS + DEEPLEARNDNC_WRITE_HEADS));
 
     return 0;
 }
@@ -98,14 +100,18 @@ static int deeplearn_dnc_init_memory_usage(deeplearn_dnc * learner)
     /* memory usage */
     learner->memory.usage =
         (float*)malloc(learner->memory.size * sizeof(float));
-    if (learner->memory.usage == NULL) return 1;
 
+    if (learner->memory.usage == NULL)
+        return 1;
 
     /* temporal matrix of memory usage. This encodes which address was used
        after which previous address for each read and write head */
     learner->memory.usage_temporal =
         (float**)malloc(learner->memory.size * learner->memory.size * sizeof(float*));
-    if (learner->memory.usage_temporal == NULL) return 2;
+
+    if (learner->memory.usage_temporal == NULL)
+        return 2;
+
     for (i = 0; i < learner->memory.size * learner->memory.size; i++) {
         learner->memory.usage_temporal[i] =
             (float*)malloc((DEEPLEARNDNC_READ_HEADS + DEEPLEARNDNC_WRITE_HEADS) *
@@ -141,16 +147,26 @@ static int deeplearn_dnc_init_heads(deeplearn_dnc * learner)
 
     for (i = 0; i < DEEPLEARNDNC_READ_HEADS; i++) {
         learner->read_head[i].key = (float*)malloc(learner->memory.width * sizeof(float));
-        if (learner->read_head[i].key == NULL) return 1;
+
+        if (learner->read_head[i].key == NULL)
+            return 1;
     }
 
     for (i = 0; i < DEEPLEARNDNC_WRITE_HEADS; i++) {
         learner->write_head[i].write = (float*)malloc(learner->memory.width * sizeof(float));
-        if (learner->write_head[i].write == NULL) return 2;
+
+        if (learner->write_head[i].write == NULL)
+            return 2;
+
         learner->write_head[i].erase = (float*)malloc(learner->memory.width * sizeof(float));
-        if (learner->write_head[i].erase == NULL) return 3;
+
+        if (learner->write_head[i].erase == NULL)
+            return 3;
+
         learner->write_head[i].key = (float*)malloc(learner->memory.width * sizeof(float));
-        if (learner->write_head[i].key == NULL) return 4;
+
+        if (learner->write_head[i].key == NULL)
+            return 4;
     }
 
     return 0;
@@ -217,16 +233,24 @@ int deeplearn_dnc_init(deeplearn_dnc * learner,
         ((DEEPLEARNDNC_READ_HEADS + (DEEPLEARNDNC_WRITE_HEADS*3)) * memory_width);
 
     learner->controller = (deeplearn*)malloc(sizeof(deeplearn));
-    if (learner->controller == NULL) return 1000;
+
+    if (learner->controller == NULL)
+        return 1000;
 
     retval = deeplearn_dnc_init_memory(learner, memory_size, memory_width);
-    if (retval != 0) return 2000 + retval;
+
+    if (retval != 0)
+        return 2000 + retval;
 
     retval = deeplearn_dnc_init_memory_usage(learner);
-    if (retval != 0) return 3000 + retval;
+
+    if (retval != 0)
+        return 3000 + retval;
 
     retval = deeplearn_dnc_init_heads(learner);
-    if (retval != 0) return 4000 + retval;
+
+    if (retval != 0)
+        return 4000 + retval;
 
     retval = deeplearn_init(learner->controller,
                             controller_inputs,
@@ -235,7 +259,9 @@ int deeplearn_dnc_init(deeplearn_dnc * learner,
                             controller_outputs,
                             error_threshold,
                             random_seed);
-    if (retval != 0) return 5000 + retval;
+
+    if (retval != 0)
+        return 5000 + retval;
 
     return 0;
 }
@@ -545,26 +571,42 @@ int deeplearn_dnc_training_last_layer(deeplearn_dnc * learner)
 void deeplearn_dnc_clear_memory(deeplearn_dnc * learner)
 {
     int i;
+    deeplearn_dnc_memory * memory = &learner->memory;
 
     /* clear all address vectors */
-    for (i = 0; i < learner->memory.size; i++)
-        memset((void*)learner->memory.address[i], '\0',
-               learner->memory.width * sizeof(float));
+    for (i = 0; i < memory->size; i++)
+        memset((void*)memory->address[i], '\0',
+               memory->width * sizeof(float));
 
     /* clear the memory usage */
-    memset((void*)learner->memory.usage, '\0',
-           learner->memory.size * sizeof(float*));
+    memset((void*)memory->usage, '\0',
+           memory->size * sizeof(float*));
 
     /* clear the temporal matrix */
-    for (i = 0; i < learner->memory.size * learner->memory.size; i++)
-        memset((void*)learner->memory.usage_temporal[i], '\0',
+    for (i = 0; i < memory->size * memory->size; i++)
+        memset((void*)memory->usage_temporal[i], '\0',
                DEEPLEARNDNC_READ_HEADS + DEEPLEARNDNC_WRITE_HEADS *
                sizeof(float));
 
     /* clear the memory address pointers */
-    memset((void*)&learner->memory.address_ptr[0], '\0',
+    memset((void*)&memory->address_ptr[0], '\0',
            sizeof(unsigned int)*
            (DEEPLEARNDNC_READ_HEADS + DEEPLEARNDNC_WRITE_HEADS));
+}
+
+
+/**
+ * @brief Returns similarity score at the given matrix location
+ * @param memory The memory to be used
+ * @param index Index within the memory
+ * @param head The read/write head
+ * @returns Similarity value
+ */
+static float deeplearn_dnc_update_similarity(deeplearn_dnc_memory * memory,
+                                             unsigned int index,
+                                             unsigned int head)
+{
+    return 1.0f + (memory->usage_temporal[index][head]);
 }
 
 /**
@@ -594,12 +636,14 @@ void deeplearn_dnc_update_similarity_scores(unsigned int current_address,
             /* Attention 2: adjust score by the transition matrix */
             if (forward != 0)
                 similarity *=
-                    (1.0f + (memory->usage_temporal[current_address*memory->size +
-                                                    addr][head]));
+                    deeplearn_dnc_update_similarity(memory,
+                                                    current_address*memory->size + addr,
+                                                    head);
             else
                 similarity *=
-                    (1.0f + (memory->usage_temporal[current_address*addr +
-                                                    memory->size][head]));
+                    deeplearn_dnc_update_similarity(memory,
+                                                    current_address*addr + memory->size,
+                                                    head);
         }
 
         /* Attention 3: adjust depending upon usage weighting */
