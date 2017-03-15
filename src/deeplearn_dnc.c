@@ -1,6 +1,6 @@
 /*
   libdeep - a library for deep learning
-  Copyright (C) 2016  Bob Mottram <bob@freedombone.net>
+  Copyright (C) 2016-2017  Bob Mottram <bob@freedombone.net>
 
   Differentiable Neural Computer (DNC)
   A neural Turing Machine architecture based on the paper:
@@ -47,21 +47,26 @@ static int deeplearn_dnc_init_memory(deeplearn_dnc * learner, int memory_size,
 {
     int i;
 
-    learner->memory.size =
-        (unsigned int)((memory_size/
-                       DEEPLEARNDNC_USAGE_BLOCK_SIZE)*
-                       DEEPLEARNDNC_USAGE_BLOCK_SIZE);
+    learner->memory.size = (unsigned int)memory_size;
     learner->memory.width = (unsigned int)memory_width;
     learner->memory.address =
         (float**)malloc(learner->memory.size * sizeof(float*));
     if (learner->memory.address == NULL) return 1;
 
+    learner->memory.similarity_score =
+        (float*)malloc(learner->memory.size * sizeof(float));
+    if (learner->memory.similarity_score == NULL) return 2;
+
     /* allocate memory vectors */
     for (i = 0; i < learner->memory.size; i++) {
         learner->memory.address[i] =
             (float*)malloc(learner->memory.width * sizeof(float));
-        if (learner->memory.address[i] == NULL) return 2;
+        if (learner->memory.address[i] == NULL) return 3;
     }
+
+    /* clear the memory address pointers */
+    memset((void*)&learner->memory.address_ptr[0], '\0', sizeof(unsigned int)*(DEEPLEARNDNC_READ_HEADS + DEEPLEARNDNC_WRITE_HEADS));
+
     return 0;
 }
 
@@ -77,6 +82,7 @@ static void deeplearn_dnc_free_memory(deeplearn_dnc * learner)
         free(learner->memory.address[i]);
     }
     free(learner->memory.address);
+    free(learner->memory.similarity_score);
 }
 
 /**
@@ -87,19 +93,24 @@ static void deeplearn_dnc_free_memory(deeplearn_dnc * learner)
 static int deeplearn_dnc_init_memory_usage(deeplearn_dnc * learner)
 {
     /* The memory usage array is downsampled by the block size */
-    int i, memory_usage_size = learner->memory.size / DEEPLEARNDNC_USAGE_BLOCK_SIZE;
+    int i, head, memory_usage_size = learner->memory.size;
 
     /* memory usage */
     learner->memory.usage =
-        (float*)malloc(memory_usage_size * sizeof(float));
+        (float*)malloc(learner->memory.size * sizeof(float));
     if (learner->memory.usage == NULL) return 1;
+
 
     /* temporal matrix of memory usage. This encodes which address was used
        after which previous address for each read and write head */
-    for (i = 0; i < DEEPLEARNDNC_READ_HEADS + DEEPLEARNDNC_WRITE_HEADS; i++) {
+    learner->memory.usage_temporal =
+        (float**)malloc(learner->memory.size * learner->memory.size * sizeof(float*));
+    if (learner->memory.usage_temporal == NULL) return 2;
+    for (i = 0; i < learner->memory.size * learner->memory.size; i++) {
         learner->memory.usage_temporal[i] =
-            (float*)malloc(memory_usage_size * memory_usage_size * sizeof(float));
-        if (learner->memory.usage_temporal[i] == NULL) return 2;
+            (float*)malloc((DEEPLEARNDNC_READ_HEADS + DEEPLEARNDNC_WRITE_HEADS) *
+                           sizeof(float));
+        if (learner->memory.usage_temporal[i] == NULL) return 3;
     }
 
     return 0;
@@ -114,8 +125,9 @@ static void deeplearn_dnc_free_memory_usage(deeplearn_dnc * learner)
     int i;
 
     free(learner->memory.usage);
-    for (i = 0; i < DEEPLEARNDNC_READ_HEADS + DEEPLEARNDNC_WRITE_HEADS; i++)
+    for (i = 0; i < learner->memory.size * learner->memory.size; i++)
         free(learner->memory.usage_temporal[i]);
+    free(learner->memory.usage_temporal);
 }
 
 /**
@@ -196,11 +208,16 @@ int deeplearn_dnc_init(deeplearn_dnc * learner,
         (memory_width*DEEPLEARNDNC_WRITE_HEADS) +
         ((memory_width+3)*DEEPLEARNDNC_READ_HEADS);
 
-    learner->no_of_inputs = no_of_inputs;
-    learner->no_of_outputs = no_of_outputs;
+    learner->no_of_inputs =
+        no_of_inputs +
+        (DEEPLEARNDNC_READ_HEADS * memory_width);
+
+    learner->no_of_outputs =
+        no_of_outputs +
+        ((DEEPLEARNDNC_READ_HEADS + (DEEPLEARNDNC_WRITE_HEADS*3)) * memory_width);
 
     learner->controller = (deeplearn*)malloc(sizeof(deeplearn));
-    if (learner->controller==NULL) return 1000;
+    if (learner->controller == NULL) return 1000;
 
     retval = deeplearn_dnc_init_memory(learner, memory_size, memory_width);
     if (retval != 0) return 2000 + retval;
@@ -221,25 +238,6 @@ int deeplearn_dnc_init(deeplearn_dnc * learner,
     if (retval != 0) return 5000 + retval;
 
     return 0;
-}
-
-/**
- * @brief Performs an update of the neural network without learning
- * @param learner The DNC object
- */
-void deeplearn_dnc_feed_forward(deeplearn_dnc * learner)
-{
-    deeplearn_dnc_update_read_heads(learner);
-    deeplearn_feed_forward(learner->controller);
-}
-
-/**
- * @brief Performs an update of the neural network with learning
- * @param learner The DNC object
- */
-void deeplearn_dnc_update(deeplearn_dnc * learner)
-{
-    deeplearn_update(learner->controller);
 }
 
 /**
@@ -546,7 +544,7 @@ int deeplearn_dnc_training_last_layer(deeplearn_dnc * learner)
  */
 void deeplearn_dnc_clear_memory(deeplearn_dnc * learner)
 {
-    int i, memory_usage_size = learner->memory.size / DEEPLEARNDNC_USAGE_BLOCK_SIZE;
+    int i, memory_usage_size = learner->memory.size;
 
     /* clear all address vectors */
     for (i = 0; i < learner->memory.size; i++)
@@ -555,11 +553,156 @@ void deeplearn_dnc_clear_memory(deeplearn_dnc * learner)
 
     /* clear the memory usage */
     memset((void*)learner->memory.usage, '\0',
-           memory_usage_size * sizeof(float*));
+           learner->memory.size * sizeof(float*));
 
     /* clear the temporal matrix */
-    memset((void*)learner->memory.usage_temporal, '\0',
-           memory_usage_size * memory_usage_size * sizeof(float*));
+    for (i = 0; i < learner->memory.size * learner->memory.size; i++)
+        memset((void*)learner->memory.usage_temporal[i], '\0',
+               DEEPLEARNDNC_READ_HEADS + DEEPLEARNDNC_WRITE_HEADS *
+               sizeof(float));
+
+    /* clear the memory address pointers */
+    memset((void*)&learner->memory.address_ptr[0], '\0',
+           sizeof(unsigned int)*
+           (DEEPLEARNDNC_READ_HEADS + DEEPLEARNDNC_WRITE_HEADS));
+}
+
+/**
+ * @brief Updates similarity scores for each address
+ * @param current_address The current address index
+ * @param key The key to search with
+ * @param memory The memory to be used
+ * @param forward Non zero if reading forwards in sequence
+ */
+void deeplearn_dnc_update_similarity_scores(unsigned int current_address,
+                                            float * key,
+                                            deeplearn_dnc_memory * memory,
+                                            unsigned char forward)
+{
+#pragma omp parallel for
+    for (unsigned int addr = 0; addr < memory->size; addr++) {
+        /* Attention 1: similarity score for each address */
+        float similarity = 0;
+        for (unsigned int i = 0; i < memory->width; i++)
+            similarity += (key[i] - memory->address[addr][i]);
+
+        /* adjust the similarity score for the temporal movements
+           of each read/write head separately */
+        for (unsigned int head = 0;
+             head < DEEPLEARNDNC_READ_HEADS + DEEPLEARNDNC_WRITE_HEADS;
+             head++) {
+            /* Attention 2: adjust score by the transition matrix */
+            if (forward != 0)
+                similarity *=
+                    (1.0f + (memory->usage_temporal[current_address*memory->size +
+                                                    addr][head]));
+            else
+                similarity *=
+                    (1.0f + (memory->usage_temporal[current_address*addr +
+                                                    memory->size][head]));
+        }
+
+        /* Attention 3: adjust depending upon usage weighting */
+        memory->similarity_score[addr] = similarity * (1.0f - memory->usage[addr]);
+    }
+}
+
+/**
+ * @brief Dumps content at the current address into the given key
+ * @param current_address The current address index
+ * @param key The key to be updated
+ * @param memory The memory to be used
+ * @param forward Non zero if reading forwards in sequence
+ * @return The next address
+ */
+unsigned int deeplearn_dnc_content_lookup(unsigned int current_address,
+                                          float * key,
+                                          deeplearn_dnc_memory * memory,
+                                          unsigned char forward)
+{
+    /* TODO this is probably not correct. See the pdf */
+    unsigned int next_address;
+
+    if (forward != 0)
+        memcpy((void*)key, (void*)&memory->address[next_address][0],
+                memory->width * sizeof(float));
+    else
+        for (unsigned int i = 0; i < memory->width; i++)
+            key[memory->width-i-1] = memory->address[next_address][i];
+
+    return next_address;
+}
+
+/**
+ * @brief Updates memory usage
+ * @param previous_address The previous address index
+ * @param current_address The current address index
+ * @param memory The memory to be searched
+ * @param write Non zero if this is a write operation
+ */
+void deeplearn_dnc_memory_update(unsigned int previous_address,
+                                 unsigned int current_address,
+                                 deeplearn_dnc_memory * memory,
+                                 unsigned char write)
+{
+    unsigned int i, temporal_index;
+
+    /* Attention 2: temporal matrix */
+    for (unsigned int head = 0;
+         head < DEEPLEARNDNC_READ_HEADS + DEEPLEARNDNC_WRITE_HEADS;
+         head++) {
+
+        temporal_index = previous_address*memory->size + current_address;
+        /* minimum weight */
+        if (memory->usage_temporal[temporal_index][head] < 0.01f)
+            memory->usage_temporal[temporal_index][head] = 0.01f;
+
+        /* increase weight for this transition */
+        memory->usage_temporal[temporal_index][head] *= 1.1f;
+
+        /* maximum limit */
+        if (memory->usage_temporal[temporal_index][head] > 0.5f)
+            memory->usage_temporal[temporal_index][head] = 0.5f;
+
+        /* decay weights towards zero */
+        for (i = 0; i < memory->size*memory->size; i++)
+            if (i != temporal_index)
+                memory->usage_temporal[i][head] *= 0.9f;
+    }
+
+    /* Attention 3: usage */
+
+    if (memory->usage[current_address] < 0.01f)
+        memory->usage[current_address] = 0.01f;
+
+    memory->usage[current_address] *= 1.1f;
+
+    if (memory->usage[current_address] > 0.5f)
+        memory->usage[current_address] = 0.5f;
+
+    /* decay weights towards zero */
+    for (i = 0; i < memory->size; i++)
+        if (i != current_address)
+            memory->usage[i] *= 0.9f;
+}
+
+/**
+ * @brief Returns the memory address with the highest similarity score
+ * @param memory The memory to be used
+ * @returns Address with the highest similarity score
+ */
+unsigned int deeplearn_dnc_next_address(deeplearn_dnc_memory * memory)
+{
+    float max = -1;
+    unsigned int next_address = 0;
+
+    for (unsigned int addr = 0; addr < memory->size; addr++)
+        if (memory->similarity_score[addr] > max) {
+            max = memory->similarity_score[addr];
+            next_address = addr;
+        }
+
+    return next_address;
 }
 
 /**
@@ -568,6 +711,43 @@ void deeplearn_dnc_clear_memory(deeplearn_dnc * learner)
  */
 void deeplearn_dnc_update_read_heads(deeplearn_dnc * learner)
 {
+    unsigned char forward;
+    int i, j, nn_outputs_index = 0;
+    float fwd, back;
+    unsigned int curr_address, next_address;
+
+    for (i = 0; i < DEEPLEARNDNC_READ_HEADS; i++) {
+        /* get the read key from the neural net outputs */
+        for (j = 0; j < (int)learner->memory.width; j++) {
+            learner->read_head[i].key[j] =
+                deeplearn_get_output(learner->controller, nn_outputs_index++);
+        }
+
+        /* read direction */
+        fwd = deeplearn_get_output(learner->controller, nn_outputs_index++);
+        back = deeplearn_get_output(learner->controller, nn_outputs_index++);
+        forward = 0;
+        if (fwd > back) forward = 1;
+
+        curr_address = learner->memory.address_ptr[i];
+
+        /* update the scores for this read key */
+        deeplearn_dnc_update_similarity_scores(curr_address,
+                                               &learner->read_head[i].key[0],
+                                               &learner->memory, forward);
+
+        /* read memory from the current address back into the neural net */
+        next_address =
+            deeplearn_dnc_next_address(&learner->memory);
+
+        /* read the next address back into the neural net inputs */
+
+        /* update */
+        deeplearn_dnc_memory_update(learner->memory.address_ptr[i],
+                                    next_address,
+                                    &learner->memory, 0);
+        learner->memory.address_ptr[i] = next_address;
+    }
 }
 
 /**
@@ -576,4 +756,59 @@ void deeplearn_dnc_update_read_heads(deeplearn_dnc * learner)
  */
 void deeplearn_dnc_update_write_heads(deeplearn_dnc * learner)
 {
+    int i, j, nn_outputs_index = (DEEPLEARNDNC_READ_HEADS+2) * learner->memory.width;
+    unsigned char forward;
+    float fwd, back;
+
+    for (i = 0; i < DEEPLEARNDNC_WRITE_HEADS; i++) {
+        /* write key */
+        for (j = 0; j < (int)learner->memory.width; j++) {
+            learner->write_head[i].key[j] =
+                deeplearn_get_output(learner->controller, nn_outputs_index++);
+        }
+
+        /* read direction */
+        fwd = deeplearn_get_output(learner->controller, nn_outputs_index++);
+        back = deeplearn_get_output(learner->controller, nn_outputs_index++);
+        forward = 0;
+        if (fwd > back) forward = 1;
+
+        /* read memory using the key */
+        unsigned int next_address =
+            deeplearn_dnc_content_lookup(learner->memory.address_ptr[i + DEEPLEARNDNC_READ_HEADS],
+                                         &learner->write_head[i].key[0],
+                                         &learner->memory, forward);
+
+        deeplearn_dnc_memory_update(learner->memory.address_ptr[i + DEEPLEARNDNC_READ_HEADS],
+                                    next_address, &learner->memory, 1);
+        for (j = 0; j < (int)learner->memory.width; j++) {
+            /* TODO */
+            /* write vector */
+            learner->memory.address[next_address][j] =
+                deeplearn_get_output(learner->controller, nn_outputs_index++);
+            /* erase vector */
+        }
+        learner->memory.address_ptr[i + DEEPLEARNDNC_READ_HEADS] = next_address;
+    }
+}
+
+/**
+ * @brief Performs an update of the neural network without learning
+ * @param learner The DNC object
+ */
+void deeplearn_dnc_feed_forward(deeplearn_dnc * learner)
+{
+    deeplearn_dnc_update_read_heads(learner);
+    deeplearn_feed_forward(learner->controller);
+    deeplearn_dnc_update_write_heads(learner);
+}
+
+/**
+ * @brief Performs an update of the neural network with learning
+ * @param learner The DNC object
+ */
+void deeplearn_dnc_update(deeplearn_dnc * learner)
+{
+    deeplearn_dnc_feed_forward(learner);
+    deeplearn_update(learner->controller);
 }

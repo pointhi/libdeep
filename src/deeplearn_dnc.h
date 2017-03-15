@@ -1,6 +1,6 @@
 /*
  libdeep - a library for deep learning
- Copyright (C) 2016  Bob Mottram <bob@freedombone.net>
+ Copyright (C) 2016-2017  Bob Mottram <bob@freedombone.net>
 
  Differentiable Neural Computer (DNC)
  A neural Turing Machine architecture based on the paper:
@@ -39,8 +39,6 @@
 #define DEEPLEARNDNC_READ_HEADS       2
 #define DEEPLEARNDNC_WRITE_HEADS      1
 
-#define DEEPLEARNDNC_USAGE_BLOCK_SIZE 4
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <limits.h>
@@ -52,11 +50,27 @@
 #include "deeplearn.h"
 
 struct deepl_dnc_memory {
+    /* the number of addresses within the memory */
     unsigned int size;
+
+    /* the width of each address */
     unsigned int width;
+
+    /* The address space consisting of size * vectors with the given width */
     float ** address;
+
+    /* memory recently used */
     float * usage;
-    float * usage_temporal[DEEPLEARNDNC_READ_HEADS + DEEPLEARNDNC_WRITE_HEADS];
+
+    /* array used for key matching */
+    float * similarity_score;
+
+    /* address usage for each head
+       dimension: size*size*(DEEPLEARNDNC_READ_HEADS + DEEPLEARNDNC_WRITE_HEADS) */
+    float ** usage_temporal;
+
+    /* the current addresses for each head */
+    unsigned int address_ptr[DEEPLEARNDNC_READ_HEADS + DEEPLEARNDNC_WRITE_HEADS];
 };
 typedef struct deepl_dnc_memory deeplearn_dnc_memory;
 
@@ -67,9 +81,9 @@ struct deepl_dnc_read_head {
 typedef struct deepl_dnc_read_head deeplearn_dnc_read_head;
 
 struct deepl_dnc_write_head {
+    float * key;
     float * write;
     float * erase;
-    float * key;
 };
 typedef struct deepl_dnc_write_head deeplearn_dnc_write_head;
 
@@ -128,5 +142,13 @@ void deeplearn_dnc_update_continuous(deeplearn_dnc * learner);
 int deeplearn_dnc_training_last_layer(deeplearn_dnc * learner);
 void deeplearn_dnc_update_read_heads(deeplearn_dnc * learner);
 void deeplearn_dnc_update_write_heads(deeplearn_dnc * learner);
+void deeplearn_dnc_memory_update(unsigned int previous_address,
+                                 unsigned int current_address,
+                                 deeplearn_dnc_memory * memory,
+                                 unsigned char write);
+void deeplearn_dnc_update_similarity_scores(unsigned int current_address,
+                                            float * key,
+                                            deeplearn_dnc_memory * memory,
+                                            unsigned char forward);
 
 #endif
