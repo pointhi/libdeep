@@ -56,7 +56,7 @@ deeplearn learner;
 static void facerec_training()
 {
     int no_of_inputs = image_width*image_height;
-    int no_of_hiddens = 6*6;
+    int no_of_hiddens = 10*10;
     int hidden_layers=4;
     int no_of_outputs=5*5;
     int itt,i,index;
@@ -66,7 +66,7 @@ static void facerec_training()
     char weights_filename[256];
     int weights_image_width = 480;
     int weights_image_height = 800;
-    float error_threshold[] = { 15.0f, 7.5f, 9.0f, 9.0f, 9.5f};
+    float error_threshold[] = { 9.5f, 7.5f, 9.0f, 9.0f, 9.5f};
     const int logging_interval = 7000;
 
     sprintf(weights_filename,"%s","weights.png");
