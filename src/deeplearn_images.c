@@ -48,14 +48,14 @@ void deeplearn_float_to_img(float float_img[],
                             int img_depth_bits)
 {
     int img_depth_bytes = img_depth_bits/8;
-    
+
     for (int i = 0; i < img_width*img_height; i++) {
         for (int j = 0; j < img_depth_bytes; j++) {
             int k = j*float_img_depth/img_depth_bytes;
-			img[i*img_depth_bytes + j] =
-				(unsigned char)(float_img[i*float_img_depth + k]*255);
-		}
-	} 
+            img[i*img_depth_bytes + j] =
+                (unsigned char)(float_img[i*float_img_depth + k]*255);
+        }
+    }
 }
 
 /**
@@ -259,7 +259,7 @@ int deeplearn_load_training_images(char * images_directory,
     unsigned int im_bitsperpixel=0;
     unsigned char * img, * downsampled;
     char * extension = "png";
-    char filename[256];
+    char filename[512];
     char * classification;
 
     /* how many images are there? */
