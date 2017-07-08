@@ -66,7 +66,7 @@ static void facerec_training()
     char weights_filename[256];
     int weights_image_width = 480;
     int weights_image_height = 800;
-    float error_threshold[] = { 7.5f, 7.5f, 9.0f, 9.0f, 6.0f};
+    float error_threshold[] = { 15.0f, 7.5f, 9.0f, 9.0f, 9.5f};
     const int logging_interval = 7000;
 
     sprintf(weights_filename,"%s","weights.png");
@@ -104,6 +104,7 @@ static void facerec_training()
                                    filename, title,
                                    1024, 480);
             /* plot the weights */
+            /*
             if ((&learner)->autocoder[learner.current_hidden_layer] != 0) {
                 if (learner.current_hidden_layer==0) {
                     bp_plot_weights((&learner)->autocoder[learner.current_hidden_layer],
@@ -120,6 +121,7 @@ static void facerec_training()
                                     0);
                 }
             }
+            */
         }
     }
 
@@ -165,11 +167,13 @@ static void facerec_training()
                                    1024, 480);
             /* plot the weights */
             if ((&learner)->autocoder!=0) {
+                /*
                 bp_plot_weights((&learner)->autocoder[learner.current_hidden_layer],
                                 weights_filename,
                                 weights_image_width,
                                 weights_image_height,
                                 image_width);
+                */
             }
         }
     }
