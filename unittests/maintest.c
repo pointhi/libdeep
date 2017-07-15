@@ -41,13 +41,11 @@
 #include "tests_conv.h"
 #include "tests_deepconvnet.h"
 #include "tests_autocoder.h"
-#include "tests_dnc.h"
 
 int main(int argc, char* argv[])
 {
     system("rm training.png");
 
-    run_tests_dnc();
     run_tests_autocoder();
     run_tests_backprop();
     run_tests_images();
