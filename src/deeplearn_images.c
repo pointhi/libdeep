@@ -106,12 +106,12 @@ int deeplearn_write_png_file(char * filename,
     unsigned int i;
     unsigned char * image = buffer;
 
-    if (bitsperpixel == 32) {
+    if (bitsperpixel == 32)
         error = lodepng_encode32_file(filename, image, width, height);
-    }
-    if (bitsperpixel == 24) {
+
+    if (bitsperpixel == 24)
         error = lodepng_encode24_file(filename, image, width, height);
-    }
+
     if (bitsperpixel == 8) {
         image = (unsigned char*)malloc(width*height*3*sizeof(unsigned char));
         if (image) {
@@ -159,9 +159,8 @@ static int number_of_images(char * images_directory,
                 if ((namelist[ctr]->d_name[len-4]=='.') &&
                     (namelist[ctr]->d_name[len-3]==extension[0]) &&
                     (namelist[ctr]->d_name[len-2]==extension[1]) &&
-                    (namelist[ctr]->d_name[len-1]==extension[2])) {
+                    (namelist[ctr]->d_name[len-1]==extension[2]))
                     no_of_images++;
-                }
             }
             free(namelist[ctr]);
         }
@@ -264,9 +263,8 @@ int deeplearn_load_training_images(char * images_directory,
 
     /* how many images are there? */
     no_of_images = number_of_images(images_directory, extension);
-    if (no_of_images == 0) {
+    if (no_of_images == 0)
         return 0;
-    }
 
     /* allocate an array for the images */
     *images =
