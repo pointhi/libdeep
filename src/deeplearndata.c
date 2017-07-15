@@ -58,16 +58,15 @@ int deeplearndata_add(deeplearndata ** datalist,
     int i;
     deeplearndata * data;
     data = (deeplearndata*)malloc(sizeof(deeplearndata));
-    if (!data) {
+    if (!data)
         return -1;
-    }
 
     /* create arrays to store the data */
     data->inputs =
       (float*)malloc(no_of_input_fields*sizeof(float));
-    if (!data->inputs) {
+    if (!data->inputs)
         return -2;
-    }
+
     data->inputs_text = 0;
     if (inputs_text != 0) {
         data->inputs_text =
@@ -84,9 +83,8 @@ int deeplearndata_add(deeplearndata ** datalist,
     }
     data->outputs =
       (float*)malloc(no_of_outputs*sizeof(float));
-    if (!data->outputs) {
+    if (!data->outputs)
         return -3;
-    }
 
     /* copy the data */
     memcpy((void*)data->inputs, inputs, no_of_input_fields*sizeof(float));
@@ -101,19 +99,18 @@ int deeplearndata_add(deeplearndata ** datalist,
             input_range_max[i] = inputs[i];
         }
     }
+
     data->labeled = 1;
     for (i = 0; i < no_of_outputs; i++) {
         if ((int)outputs[i] != DEEPLEARN_UNKNOWN_VALUE) {
-            if (outputs[i] < output_range_min[i]) {
+            if (outputs[i] < output_range_min[i])
                 output_range_min[i] = outputs[i];
-            }
-            if (outputs[i] > output_range_max[i]) {
+
+            if (outputs[i] > output_range_max[i])
                 output_range_max[i] = outputs[i];
-            }
         }
-        else {
+        else
             data->labeled = 0;
-        }
     }
 
     data->flags = 0;
@@ -206,14 +203,13 @@ deeplearndata * deeplearndata_get_training(deeplearn * learner, int index)
 */
 deeplearndata * deeplearndata_get_training_labeled(deeplearn * learner, int index)
 {
-    if ((index < 0) || (index >= learner->indexed_training_data_labeled_samples)) {
+    if ((index < 0) || (index >= learner->indexed_training_data_labeled_samples))
         return 0;
-    }
 
     deeplearndata_meta * meta = learner->indexed_training_data_labeled[index];
-    if (meta == 0) {
+    if (meta == 0)
         return 0;
-    }
+
     return meta->sample;
 }
 
@@ -224,14 +220,13 @@ deeplearndata * deeplearndata_get_training_labeled(deeplearn * learner, int inde
 */
 deeplearndata * deeplearndata_get_test(deeplearn * learner, int index)
 {
-    if ((index < 0) || (index >= learner->indexed_test_data_samples)) {
+    if ((index < 0) || (index >= learner->indexed_test_data_samples))
         return 0;
-    }
 
     deeplearndata_meta * meta = learner->indexed_test_data[index];
-    if (meta == 0) {
+    if (meta == 0)
         return 0;
-    }
+
     return meta->sample;
 }
 
@@ -242,11 +237,9 @@ deeplearndata * deeplearndata_get_test(deeplearn * learner, int index)
 */
 deeplearndata * deeplearndata_get(deeplearn * learner, int index)
 {
-
     /* range checking of the index */
-    if ((index < 0) || (index >= learner->indexed_data_samples)) {
+    if ((index < 0) || (index >= learner->indexed_data_samples))
       return 0;
-    }
 
     deeplearndata * ptr = learner->indexed_data[index];
     return ptr;
@@ -324,14 +317,12 @@ int deeplearndata_add_training_sample(deeplearn * learner, deeplearndata * sampl
 {
     deeplearndata_meta * data;
 
-    if (sample == 0) {
+    if (sample == 0)
         return -1;
-    }
 
     data = (deeplearndata_meta*)malloc(sizeof(deeplearndata_meta));
-    if (!data) {
+    if (!data)
         return -2;
-    }
 
     data->sample = sample;
     data->prev = 0;
@@ -355,14 +346,12 @@ int deeplearndata_add_labeled_training_sample(deeplearn * learner, deeplearndata
 {
     deeplearndata_meta * data;
 
-    if (sample == 0) {
+    if (sample == 0)
         return -1;
-    }
 
     data = (deeplearndata_meta*)malloc(sizeof(deeplearndata_meta));
-    if (!data) {
+    if (!data)
         return -2;
-    }
 
     data->sample = sample;
     data->prev = 0;
@@ -386,14 +375,12 @@ int deeplearndata_add_test_sample(deeplearn * learner, deeplearndata * sample)
 {
     deeplearndata_meta * data;
 
-    if (sample == 0) {
+    if (sample == 0)
         return -1;
-    }
 
     data = (deeplearndata_meta*)malloc(sizeof(deeplearndata_meta));
-    if (!data) {
+    if (!data)
         return -2;
-    }
 
     data->sample = sample;
     data->prev = 0;
@@ -419,9 +406,9 @@ int deeplearndata_create_datasets(deeplearn * learner, int test_data_percentage)
     int index, retval;
     deeplearndata * sample;
 
-    if (learner->data == 0) {
+    if (learner->data == 0)
         return -1;
-    }
+
     deeplearndata_clear_flags(learner);
     deeplearndata_free_datasets(learner);
 
@@ -429,20 +416,23 @@ int deeplearndata_create_datasets(deeplearn * learner, int test_data_percentage)
     while (learner->training_data_samples < training_samples) {
         index = rand_num(&learner->net->random_seed)%learner->data_samples;
         sample = deeplearndata_get(learner, index);
-        if (!sample) return -1;
+
+        if (!sample)
+            return -1;
+
         if (sample->flags == 0) {
             sample->flags = 1;
             retval =
               deeplearndata_add_training_sample(learner, sample);
-            if (retval != 0) {
+
+            if (retval != 0)
                 return -200 + retval;
-            }
+
             if (sample->labeled != 0) {
                 retval =
                     deeplearndata_add_labeled_training_sample(learner, sample);
-                if (retval != 0) {
+                if (retval != 0)
                     return -300 + retval;
-                }
             }
         }
     }
@@ -458,16 +448,14 @@ int deeplearndata_create_datasets(deeplearn * learner, int test_data_percentage)
             if (sample->labeled != 0) {
                 retval =
                     deeplearndata_add_test_sample(learner, sample);
-                if (retval != 0) {
+                if (retval != 0)
                     return -400 + retval;
-                }
             }
             else {
                 retval =
                     deeplearndata_add_training_sample(learner, sample);
-                if (retval != 0) {
+                if (retval != 0)
                     return -500 + retval;
-                }
             }
         }
         sample = (deeplearndata*)sample->next;
@@ -527,20 +515,22 @@ int deeplearndata_read_csv(char * filename,
         input_range_max[i] = -9999;
         inputs_text[i] = 0;
     }
+
     for (i = 0; i < DEEPLEARN_MAX_CSV_OUTPUTS; i++) {
         output_range_min[i] = 9999;
         output_range_max[i] = -9999;
     }
 
-    if (output_classes > 0) {
+    if (output_classes > 0)
         network_outputs = output_classes;
-    }
-    for (i = 0; i < network_outputs; i++) {
+
+    for (i = 0; i < network_outputs; i++)
         outputs[i] = DEEPLEARN_UNKNOWN_VALUE;
-    }
 
     fp = fopen(filename,"r");
-    if (!fp) return -1;
+
+    if (!fp)
+        return -1;
 
     while (!feof(fp)) {
         retval = fgets(line,1999,fp);
@@ -554,9 +544,8 @@ int deeplearndata_read_csv(char * filename,
                         if ((line[i]==',') || (line[i]==';') ||
                             (i==strlen(line)-1)) {
                             if (i==strlen(line)-1) {
-                                if (ctr < DEEPLEARN_MAX_FIELD_LENGTH_CHARS-1) {
+                                if (ctr < DEEPLEARN_MAX_FIELD_LENGTH_CHARS-1)
                                     valuestr[ctr++]=line[i];
-                                }
                             }
                             valuestr[ctr]=0;
                             ctr=0;
@@ -622,12 +611,13 @@ int deeplearndata_read_csv(char * filename,
                             }
                         }
                     }
-                    if (fields_per_example == 0) {
+
+                    if (fields_per_example == 0)
                         fields_per_example = field_number;
-                    }
-                    if (samples_loaded == 0) {
+
+                    if (samples_loaded == 0)
                         no_of_input_fields = input_index;
-                    }
+
                     /* add a data sample */
                     if (deeplearndata_add(&data,
                                           &data_samples,
@@ -642,6 +632,7 @@ int deeplearndata_read_csv(char * filename,
                         fclose(fp);
                         return -2;
                     }
+
                     /* free memory for any text strings */
                     for (i = 0; i < no_of_input_fields; i++) {
                         if (inputs_text[i] != 0) {
@@ -649,9 +640,10 @@ int deeplearndata_read_csv(char * filename,
                             inputs_text[i] = 0;
                         }
                     }
-                    for (i = 0; i < network_outputs; i++) {
+
+                    for (i = 0; i < network_outputs; i++)
                         outputs[i] = DEEPLEARN_UNKNOWN_VALUE;
-                    }
+
                     samples_loaded++;
                 }
             }
@@ -700,9 +692,8 @@ int deeplearndata_read_csv(char * filename,
     }
 
     /* create training and test data sets */
-    if (deeplearndata_create_datasets(learner, 20) != 0) {
+    if (deeplearndata_create_datasets(learner, 20) != 0)
         return -3;
-    }
 
     return samples_loaded;
 }
@@ -714,9 +705,8 @@ int deeplearndata_read_csv(char * filename,
 */
 int deeplearndata_training(deeplearn * learner)
 {
-    if (learner->training_data_samples == 0) {
+    if (learner->training_data_samples == 0)
         return -1;
-    }
 
     /* plot a graph showing training progress */
     if (learner->training_ctr > learner->history_plot_interval) {
@@ -740,6 +730,7 @@ int deeplearndata_training(deeplearn * learner)
         deeplearn_update(learner);
         return 1;
     }
+
     if (learner->training_complete == 0) {
         /* index number of a random training sample */
         int index = rand_num(&learner->net->random_seed)%learner->training_data_labeled_samples;
@@ -804,9 +795,8 @@ int deeplearndata_get_field_length(deeplearndata * data, int field_index)
     while (data != 0) {
         if (data->inputs_text != 0) {
             if (data->inputs_text[field_index] != 0) {
-                if (strlen(data->inputs_text[field_index])*CHAR_BITS > max) {
+                if (strlen(data->inputs_text[field_index])*CHAR_BITS > max)
                     max = strlen(data->inputs_text[field_index])*CHAR_BITS;
-                }
             }
         }
         data = (deeplearndata *)data->next;
