@@ -692,14 +692,14 @@ int deepconvnet_plot_features(deepconvnet * convnet,
 
     /* allocate memory for the image */
     img = (unsigned char*)malloc(img_width*img_height*3*sizeof(unsigned char));
-    if (!img) {
+    if (!img)
         return -1;
-    }
 
     int retval =
         conv_plot_features(convnet->convolution,
                            layer_index, img, img_width, img_height);
-    if (retval != 0) return retval;
+    if (retval != 0)
+        return retval;
 
     deeplearn_write_png_file(filename,
                              (unsigned int)img_width,
