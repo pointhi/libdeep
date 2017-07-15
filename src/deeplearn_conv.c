@@ -59,9 +59,8 @@ int conv_init(int no_of_layers,
     int across = inputs_across;
     int down = inputs_down;
 
-    if (no_of_layers >= PREPROCESS_MAX_LAYERS) {
+    if (no_of_layers >= PREPROCESS_MAX_LAYERS)
         return -1;
-    }
 
     rand_num(random_seed);
     conv->random_seed = *random_seed;
@@ -103,7 +102,9 @@ int conv_init(int no_of_layers,
         conv->layer[i].pooling_factor = pooling_factor;
         conv->layer[i].convolution =
             (float*)malloc(sizeof(float)*across*down*conv_layer_features(conv, i));
-        if (!conv->layer[i].convolution) return -2;
+
+        if (!conv->layer[i].convolution)
+            return -2;
 
         /* ensure that the random seed is different for each
            convolutional neural net */
@@ -113,11 +114,11 @@ int conv_init(int no_of_layers,
         conv->layer[i].autocoder = (ac*)malloc(sizeof(ac));
 
         int depth = conv_layer_features(conv, i);
-        if (i == 0) {
-            /* on the first layer the depth is the same as the
-               inputs or image */
+
+        /* on the first layer the depth is the same as the
+           inputs or image */
+        if (i == 0)
             depth = inputs_depth;
-        }
 
         /* the number of units/pixels within an input patch of
            the previous layer, not including depth */
@@ -129,9 +130,8 @@ int conv_init(int no_of_layers,
         if (autocoder_init(conv->layer[i].autocoder,
                            patch_pixels*depth,
                            conv_layer_features(conv, i),
-                           *random_seed) != 0) {
+                           *random_seed) != 0)
             return -3;
-        }
 
         /* reduce the dimensions by the pooling factor */
         across /= pooling_factor;
@@ -143,7 +143,8 @@ int conv_init(int no_of_layers,
         conv->layer[i].pooling =
             (float*)malloc(sizeof(float)*across*down*
                            conv_layer_features(conv, i));
-        if (!conv->layer[i].pooling) return -4;
+        if (!conv->layer[i].pooling)
+            return -4;
     }
     return 0;
 }
@@ -183,14 +184,14 @@ static void conv_update_history(deeplearn_conv * conv)
     int i;
     float error_value;
 
-    if (conv->history_step == 0) return;
+    if (conv->history_step == 0)
+        return;
 
     conv->history_ctr++;
     if (conv->history_ctr >= conv->history_step) {
         error_value = conv->BPerror;
-        if (error_value == DEEPLEARN_UNKNOWN_ERROR) {
+        if (error_value == DEEPLEARN_UNKNOWN_ERROR)
             error_value = 0;
-        }
 
         conv->history[conv->history_index] =
             error_value;
@@ -206,9 +207,9 @@ static void conv_update_history(deeplearn_conv * conv)
           }*/
 
         if (conv->history_index >= DEEPLEARN_HISTORY_SIZE) {
-            for (i = 0; i < conv->history_index; i++) {
+            for (i = 0; i < conv->history_index; i++)
                 conv->history[i/2] = conv->history[i];
-            }
+
             conv->history_index /= 2;
             conv->history_step *= 2;
         }
@@ -253,9 +254,8 @@ int conv_layer_width(int layer_index,
                      deeplearn_conv * conv,
                      int after_pooling)
 {
-    if (after_pooling == BEFORE_POOLING) {
+    if (after_pooling == BEFORE_POOLING)
         return conv->layer[layer_index].units_across;
-    }
 
     return conv->layer[layer_index].units_across /
         conv->layer[layer_index].pooling_factor;
@@ -282,9 +282,9 @@ int conv_layer_height(int layer_index,
                       deeplearn_conv * conv,
                       int after_pooling)
 {
-    if (after_pooling == BEFORE_POOLING) {
+    if (after_pooling == BEFORE_POOLING)
         return conv->layer[layer_index].units_down;
-    }
+
     return conv->layer[layer_index].units_down /
         conv->layer[layer_index].pooling_factor;
 }
@@ -367,9 +367,9 @@ static int conv_img_initial(unsigned char img[],
                                     conv->layer[0].autocoder,
                                     &currBPerror);
 
-        if (retval != 0) {
+        if (retval != 0)
             return -1;
-        }
+
         *BPerror = *BPerror + currBPerror;
     }
 
@@ -385,9 +385,9 @@ static int conv_img_initial(unsigned char img[],
                                  conv->layer[0].convolution,
                                  conv->layer[0].autocoder,
                                  use_dropouts);
-    if (retval != 0) {
+    if (retval != 0)
         return -2;
-    }
+
     return 0;
 }
 
@@ -407,9 +407,8 @@ static int conv_subsequent(deeplearn_conv * conv,
     int patch_radius = conv_patch_radius(layer_index, conv);
     unsigned char use_dropouts = 0;
 
-    if (layer_index < 1) {
+    if (layer_index < 1)
         return -3;
-    }
 
     if (conv->enable_learning != 0) {
         /* do feature learning */
@@ -425,9 +424,9 @@ static int conv_subsequent(deeplearn_conv * conv,
                                     conv->layer[layer_index].autocoder,
                                     &currBPerror);
 
-        if (retval != 0) {
+        if (retval != 0)
             return -4;
-        }
+
         *BPerror = *BPerror + currBPerror;
         use_dropouts = 1;
     }
@@ -444,9 +443,9 @@ static int conv_subsequent(deeplearn_conv * conv,
                                  conv->layer[layer_index].convolution,
                                  conv->layer[layer_index].autocoder,
                                  use_dropouts);
-    if (retval != 0) {
+    if (retval != 0)
         return -5;
-    }
+
     return 0;
 }
 
@@ -457,9 +456,9 @@ static int conv_subsequent(deeplearn_conv * conv,
  */
 static int get_max_layer(deeplearn_conv * conv)
 {
-    if (conv->training_complete == 0) {
+    if (conv->training_complete == 0)
         return conv->current_layer+1;
-    }
+
     return conv->no_of_layers;
 }
 
@@ -477,9 +476,8 @@ static void conv_enable_learning(int layer_index,
     if (conv->training_complete == 0) {
         /* enable learning on the current layer only */
         conv->enable_learning = 0;
-        if (layer_index == max_layer-1) {
+        if (layer_index == max_layer-1)
             conv->enable_learning = 1;
-        }
     }
     else {
         /* NOTE: there could be some residual learning probability
@@ -499,14 +497,12 @@ void conv_update_training_error(int layer_index,
                                 float BPerror,
                                 deeplearn_conv * conv)
 {
-    if (conv->training_complete != 0) {
+    if (conv->training_complete != 0)
         return;
-    }
 
     int max_layer = get_max_layer(conv);
-    if (layer_index < max_layer-1) {
+    if (layer_index < max_layer-1)
         return;
-    }
 
     if (conv->BPerror < 0) {
         conv->BPerror = BPerror;
@@ -521,9 +517,8 @@ void conv_update_training_error(int layer_index,
     conv_update_history(conv);
 
     /* increment the number of itterations */
-    if (conv->itterations < UINT_MAX) {
+    if (conv->itterations < UINT_MAX)
         conv->itterations++;
-    }
 
     /* has the training for this layer been completed? */
     if (conv->BPerror <
@@ -535,9 +530,8 @@ void conv_update_training_error(int layer_index,
 
         /* if this is the final layer */
         if (conv->current_layer >=
-            conv->no_of_layers) {
+            conv->no_of_layers)
             conv->training_complete = 1;
-        }
     }
 }
 
@@ -620,15 +614,14 @@ int conv_img(unsigned char img[],
         conv_enable_learning(i, conv);
 
         BPerror = 0;
-        if (i == 0) {
+
+        if (i == 0)
             retval = conv_img_initial(img, conv, &BPerror, use_dropouts);
-        }
-        else {
+        else
             retval = conv_subsequent(conv, i, &BPerror);
-        }
-        if (retval != 0) {
+
+        if (retval != 0)
             return retval;
-        }
 
         conv_update_training_error(i, BPerror, conv);
 
@@ -641,9 +634,8 @@ int conv_img(unsigned char img[],
                                     conv_layer_width(i,conv,AFTER_POOLING),
                                     conv_layer_height(i,conv,AFTER_POOLING),
                                     conv->layer[i].pooling);
-        if (retval != 0) {
+        if (retval != 0)
             return -6;
-        }
     }
     return 0;
 }
@@ -676,21 +668,26 @@ int conv_plot_history(deeplearn_conv * conv,
 
     /* save the data */
     fp = fopen(data_filename,"w");
-    if (!fp) return -1;
+
+    if (!fp)
+        return -1;
+
     for (index = 0; index < conv->history_index; index++) {
         value = conv->history[index];
         fprintf(fp,"%d    %.10f\n",
                 index*conv->history_step,value);
         /* record the maximum error value */
-        if (value > max_value) {
+        if (value > max_value)
             max_value = value;
-        }
     }
     fclose(fp);
 
     /* create a plot file */
     fp = fopen(plot_filename,"w");
-    if (!fp) return -1;
+
+    if (!fp)
+        return -1;
+
     fprintf(fp,"%s","reset\n");
     fprintf(fp,"set title \"%s\"\n",title);
     fprintf(fp,"set xrange [0:%d]\n",
@@ -731,74 +728,73 @@ int conv_plot_history(deeplearn_conv * conv,
 int conv_save(FILE * fp, deeplearn_conv * conv)
 {
     if (fwrite(&conv->reduction_factor,
-               sizeof(int), 1, fp) == 0) {
+               sizeof(int), 1, fp) == 0)
         return -1;
-    }
+
     if (fwrite(&conv->pooling_factor,
-               sizeof(int), 1, fp) == 0) {
+               sizeof(int), 1, fp) == 0)
         return -2;
-    }
+
     if (fwrite(&conv->random_seed,
-               sizeof(unsigned int), 1, fp) == 0) {
+               sizeof(unsigned int), 1, fp) == 0)
         return -3;
-    }
+
     if (fwrite(&conv->inputs_across,
-               sizeof(int), 1, fp) == 0) {
+               sizeof(int), 1, fp) == 0)
         return -4;
-    }
+
     if (fwrite(&conv->inputs_down,
-               sizeof(int), 1, fp) == 0) {
+               sizeof(int), 1, fp) == 0)
         return -5;
-    }
+
     if (fwrite(&conv->inputs_depth,
-               sizeof(int), 1, fp) == 0) {
+               sizeof(int), 1, fp) == 0)
         return -6;
-    }
+
     if (fwrite(&conv->max_features,
-               sizeof(int), 1, fp) == 0) {
+               sizeof(int), 1, fp) == 0)
         return -7;
-    }
+
     if (fwrite(&conv->no_of_layers,
-               sizeof(int), 1, fp) == 0) {
+               sizeof(int), 1, fp) == 0)
         return -8;
-    }
+
     if (fwrite(&conv->enable_learning,
-               sizeof(unsigned char), 1, fp) == 0) {
+               sizeof(unsigned char), 1, fp) == 0)
         return -9;
-    }
+
     if (fwrite(&conv->current_layer,
-               sizeof(int), 1, fp) == 0) {
+               sizeof(int), 1, fp) == 0)
         return -11;
-    }
+
     if (fwrite(&conv->training_complete,
-               sizeof(unsigned char), 1, fp) == 0) {
+               sizeof(unsigned char), 1, fp) == 0)
         return -12;
-    }
+
     if (fwrite(&conv->itterations,
-               sizeof(unsigned int), 1, fp) == 0) {
+               sizeof(unsigned int), 1, fp) == 0)
         return -13;
-    }
+
     if (fwrite(conv->error_threshold,
-               sizeof(float), conv->no_of_layers, fp) == 0) {
+               sizeof(float), conv->no_of_layers, fp) == 0)
         return -14;
-    }
+
     for (int i = 0; i < conv->no_of_layers; i++) {
         ac * net = conv->layer[i].autocoder;
-        if (autocoder_save(fp, net) != 0) {
+        if (autocoder_save(fp, net) != 0)
             return -15;
-        }
+
         if (fwrite(&conv->layer[i].units_across,
-                   sizeof(int), 1, fp) == 0) {
+                   sizeof(int), 1, fp) == 0)
             return -16;
-        }
+
         if (fwrite(&conv->layer[i].units_down,
-                   sizeof(int), 1, fp) == 0) {
+                   sizeof(int), 1, fp) == 0)
             return -17;
-        }
+
         if (fwrite(&conv->layer[i].pooling_factor,
-                   sizeof(int), 1, fp) == 0) {
+                   sizeof(int), 1, fp) == 0)
             return -18;
-        }
     }
 
     return 0;
@@ -814,53 +810,51 @@ int conv_load(FILE * fp, deeplearn_conv * conv)
 {
     float * error_threshold;
 
-    if (fread(&conv->reduction_factor, sizeof(int), 1, fp) == 0) {
+    if (fread(&conv->reduction_factor, sizeof(int), 1, fp) == 0)
         return -1;
-    }
-    if (fread(&conv->pooling_factor, sizeof(int), 1, fp) == 0) {
+
+    if (fread(&conv->pooling_factor, sizeof(int), 1, fp) == 0)
         return -2;
-    }
-    if (fread(&conv->random_seed, sizeof(unsigned int), 1, fp) == 0) {
+
+    if (fread(&conv->random_seed, sizeof(unsigned int), 1, fp) == 0)
         return -3;
-    }
-    if (fread(&conv->inputs_across, sizeof(int), 1, fp) == 0) {
+
+    if (fread(&conv->inputs_across, sizeof(int), 1, fp) == 0)
         return -4;
-    }
-    if (fread(&conv->inputs_down, sizeof(int), 1, fp) == 0) {
+
+    if (fread(&conv->inputs_down, sizeof(int), 1, fp) == 0)
         return -5;
-    }
-    if (fread(&conv->inputs_depth, sizeof(int), 1, fp) == 0) {
+
+    if (fread(&conv->inputs_depth, sizeof(int), 1, fp) == 0)
         return -6;
-    }
-    if (fread(&conv->max_features, sizeof(int), 1, fp) == 0) {
+
+    if (fread(&conv->max_features, sizeof(int), 1, fp) == 0)
         return -7;
-    }
-    if (fread(&conv->no_of_layers, sizeof(int), 1, fp) == 0) {
+
+    if (fread(&conv->no_of_layers, sizeof(int), 1, fp) == 0)
         return -8;
-    }
+
     if (fread(&conv->enable_learning,
-              sizeof(unsigned char), 1, fp) == 0) {
+              sizeof(unsigned char), 1, fp) == 0)
         return -9;
-    }
-    if (fread(&conv->current_layer, sizeof(int), 1, fp) == 0) {
+
+    if (fread(&conv->current_layer, sizeof(int), 1, fp) == 0)
         return -11;
-    }
+
     if (fread(&conv->training_complete,
-              sizeof(unsigned char), 1, fp) == 0) {
+              sizeof(unsigned char), 1, fp) == 0)
         return -12;
-    }
-    if (fread(&conv->itterations, sizeof(unsigned int), 1, fp) == 0) {
+
+    if (fread(&conv->itterations, sizeof(unsigned int), 1, fp) == 0)
         return -13;
-    }
 
     error_threshold = (float*)malloc(sizeof(float)*conv->no_of_layers);
-    if (!error_threshold) {
+    if (!error_threshold)
         return -14;
-    }
+
     if (fread(error_threshold,
-              sizeof(float), conv->no_of_layers, fp) == 0) {
+              sizeof(float), conv->no_of_layers, fp) == 0)
         return -15;
-    }
 
     if (conv_init(conv->no_of_layers,
                   conv->inputs_across, conv->inputs_down,
@@ -874,21 +868,20 @@ int conv_load(FILE * fp, deeplearn_conv * conv)
     free(error_threshold);
 
     for (int i = 0; i < conv->no_of_layers; i++) {
-        if (autocoder_load(fp, conv->layer[i].autocoder, 0) != 0) {
+        if (autocoder_load(fp, conv->layer[i].autocoder, 0) != 0)
             return -17;
-        }
+
         if (fread(&conv->layer[i].units_across,
-                  sizeof(int), 1, fp) == 0) {
+                  sizeof(int), 1, fp) == 0)
             return -18;
-        }
+
         if (fread(&conv->layer[i].units_down,
-                  sizeof(int), 1, fp) == 0) {
+                  sizeof(int), 1, fp) == 0)
             return -19;
-        }
+
         if (fread(&conv->layer[i].pooling_factor,
-                  sizeof(int), 1, fp) == 0) {
+                  sizeof(int), 1, fp) == 0)
             return -20;
-        }
     }
 
     return 0;
@@ -901,9 +894,8 @@ int conv_load(FILE * fp, deeplearn_conv * conv)
  */
 void conv_set_learning_rate(deeplearn_conv * conv, float rate)
 {
-    for (int i = 0; i < conv->no_of_layers; i++) {
+    for (int i = 0; i < conv->no_of_layers; i++)
         conv->layer[i].autocoder->learningRate = rate;
-    }
 }
 
 /**
@@ -913,9 +905,8 @@ void conv_set_learning_rate(deeplearn_conv * conv, float rate)
  */
 void conv_set_dropouts(deeplearn_conv * conv, float dropout_percent)
 {
-    for (int i = 0; i < conv->no_of_layers; i++) {
+    for (int i = 0; i < conv->no_of_layers; i++)
         conv->layer[i].autocoder->DropoutPercent = dropout_percent;
-    }
 }
 
 /**
@@ -937,14 +928,14 @@ int conv_plot_features(deeplearn_conv * conv, int layer_index,
     int fy = conv_layer_features(conv, layer_index)/fx;
     ac * autocoder = conv->layer[layer_index].autocoder;
 
-    if (layer_index >= conv->no_of_layers) return -100;
+    if (layer_index >= conv->no_of_layers)
+        return -100;
 
     /* clear the img with a white background */
     memset((void*)img,'\255',img_width*img_height*3);
 
-    if (layer_index == 0) {
+    if (layer_index == 0)
         patch_depth = conv->inputs_depth;
-    }
 
     /* for every feature within the autocoder */
     for (int y = 0; y < fy; y++) {
@@ -963,7 +954,8 @@ int conv_plot_features(deeplearn_conv * conv, int layer_index,
                                        patch_radius, patch_depth,
                                        img_tx, img_ty, img_bx, img_by,
                                        img, img_width, img_height);
-            if (retval != 0) return retval;
+            if (retval != 0)
+                return retval;
         }
     }
     return 0;
