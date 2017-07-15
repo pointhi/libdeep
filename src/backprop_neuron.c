@@ -391,37 +391,29 @@ void bp_weights_test_pattern(bp_neuron * n, int depth)
 */
 int bp_neuron_save(FILE * fp, bp_neuron * n)
 {
-    if (fwrite(&n->NoOfInputs, sizeof(int), 1, fp) == 0) {
+    if (fwrite(&n->NoOfInputs, sizeof(int), 1, fp) == 0)
         return -1;
-    }
 
-    if (fwrite(n->weights, sizeof(float), n->NoOfInputs, fp) == 0) {
+    if (fwrite(n->weights, sizeof(float), n->NoOfInputs, fp) == 0)
         return -2;
-    }
 
-    if (fwrite(n->lastWeightChange, sizeof(float), n->NoOfInputs, fp) == 0) {
+    if (fwrite(n->lastWeightChange, sizeof(float), n->NoOfInputs, fp) == 0)
         return -3;
-    }
 
-    if (fwrite(&n->min_weight, sizeof(float), 1, fp) == 0) {
+    if (fwrite(&n->min_weight, sizeof(float), 1, fp) == 0)
         return -4;
-    }
 
-    if (fwrite(&n->max_weight, sizeof(float), 1, fp) == 0) {
+    if (fwrite(&n->max_weight, sizeof(float), 1, fp) == 0)
         return -5;
-    }
 
-    if (fwrite(&n->bias, sizeof(float), 1, fp) == 0) {
+    if (fwrite(&n->bias, sizeof(float), 1, fp) == 0)
         return -6;
-    }
 
-    if (fwrite(&n->lastBiasChange, sizeof(float), 1, fp) == 0) {
+    if (fwrite(&n->lastBiasChange, sizeof(float), 1, fp) == 0)
         return -7;
-    }
 
-    if (fwrite(&n->desiredValue, sizeof(float), 1, fp) == 0) {
+    if (fwrite(&n->desiredValue, sizeof(float), 1, fp) == 0)
         return -8;
-    }
 
     return 0;
 }
@@ -434,37 +426,29 @@ int bp_neuron_save(FILE * fp, bp_neuron * n)
 */
 int bp_neuron_load(FILE * fp, bp_neuron * n)
 {
-    if (fread(&n->NoOfInputs, sizeof(int), 1, fp) == 0) {
+    if (fread(&n->NoOfInputs, sizeof(int), 1, fp) == 0)
         return -1;
-    }
 
-    if (fread(n->weights, sizeof(float), n->NoOfInputs, fp) == 0) {
+    if (fread(n->weights, sizeof(float), n->NoOfInputs, fp) == 0)
         return -2;
-    }
 
-    if (fread(n->lastWeightChange, sizeof(float), n->NoOfInputs, fp) == 0) {
+    if (fread(n->lastWeightChange, sizeof(float), n->NoOfInputs, fp) == 0)
         return -3;
-    }
 
-    if (fread(&n->min_weight, sizeof(float), 1, fp) == 0) {
+    if (fread(&n->min_weight, sizeof(float), 1, fp) == 0)
         return -4;
-    }
 
-    if (fread(&n->max_weight, sizeof(float), 1, fp) == 0) {
+    if (fread(&n->max_weight, sizeof(float), 1, fp) == 0)
         return -5;
-    }
 
-    if (fread(&n->bias, sizeof(float), 1, fp) == 0) {
+    if (fread(&n->bias, sizeof(float), 1, fp) == 0)
         return -6;
-    }
 
-    if (fread(&n->lastBiasChange, sizeof(float), 1, fp) == 0) {
+    if (fread(&n->lastBiasChange, sizeof(float), 1, fp) == 0)
         return -7;
-    }
 
-    if (fread(&n->desiredValue, sizeof(float), 1, fp) == 0) {
+    if (fread(&n->desiredValue, sizeof(float), 1, fp) == 0)
         return -8;
-    }
 
     n->value = 0;
     n->BPerror = 0;
