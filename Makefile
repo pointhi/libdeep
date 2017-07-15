@@ -65,4 +65,5 @@ instlib:
 	mkdir -m 755 -p ${DESTDIR}${PREFIX}/share/man/man1
 	install -m 644 man/${APP}.1.gz ${DESTDIR}${PREFIX}/share/man/man1
 clean:
-	rm -f ${LIBNAME} \#* \.#* gnuplot* *.png src/*.plist unittests/*.plist
+	rm -f ${LIBNAME} \#* \.#* gnuplot* *.png src/*.plist
+	rm -f unittests/*.plist unittests/tests
