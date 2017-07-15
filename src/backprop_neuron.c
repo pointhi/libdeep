@@ -1,6 +1,6 @@
 /*
  libdeep - a library for deep learning
- Copyright (C) 2013-2016  Bob Mottram <bob@robotics.uk.to>
+ Copyright (C) 2013-2017  Bob Mottram <bob@freedombone.net>
 
  Redistribution and use in source and binary forms, with or without
  modification, are permitted provided that the following conditions
@@ -68,7 +68,7 @@ void bp_neuron_copy(bp_neuron * source,
                     bp_neuron * dest)
 {
     /* check that the source and destination have the same
-	   number of inputs */
+       number of inputs */
     if (source->NoOfInputs !=
         dest->NoOfInputs) {
         printf("Warning: neurons have different numbers of inputs\n");

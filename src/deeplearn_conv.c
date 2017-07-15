@@ -1,6 +1,6 @@
 /*
   libdeep - a library for deep learning
-  Copyright (C) 2015-2016  Bob Mottram <bob@robotics.uk.to>
+  Copyright (C) 2015-2017  Bob Mottram <bob@freedombone.net>
 
   Redistribution and use in source and binary forms, with or without
   modification, are permitted provided that the following conditions
@@ -546,7 +546,7 @@ void conv_update_training_error(int layer_index,
  *        deconvolutions and unpoolings
  * @param start_layer the convolution layer to beging from
  * @param conv Convolution object
- * @param img Input image which is the output 
+ * @param img Input image which is the output
  * @returns zero on success
  */
 int deconv_img(int start_layer,
@@ -559,7 +559,7 @@ int deconv_img(int start_layer,
     int img_depth = conv->inputs_depth;
 
     if (start_layer > max_layer-1) start_layer = max_layer-1;
-    
+
     for (int layer_index = start_layer; layer_index > 0; layer_index--) {
         /* unpool the current layer */
         unpooling_from_flt_to_flt(conv_layer_features(conv, layer_index),

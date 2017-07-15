@@ -1,6 +1,6 @@
 /*
   libdeep - a library for deep learning
-  Copyright (C) 2013-2016  Bob Mottram <bob@robotics.uk.to>
+  Copyright (C) 2013-2017  Bob Mottram <bob@freedombone.net>
 
   Redistribution and use in source and binary forms, with or without
   modification, are permitted provided that the following conditions
@@ -87,7 +87,7 @@ static int create_img_patch(float img[],
 {
     int i;
     float f;
-    
+
     for (i = 0; i < feature_autocoder->NoOfHiddens; i++) {
         f = autocoder_get_hidden(feature_autocoder, i);
         for (int y = ty; y < by; y++) {
@@ -96,10 +96,10 @@ static int create_img_patch(float img[],
                     ((y*img_width) + x) * img_depth;
                 for (int d = 0; d < img_depth; d++) {
                     img[index_img+d] +=
-                        f * feature_autocoder->weights[index_img+d];                    
+                        f * feature_autocoder->weights[index_img+d];
                 }
             }
-        }       
+        }
     }
     return 0;
 }
@@ -512,19 +512,19 @@ int features_conv_img_to_flt(int samples_across,
  * @returns zero on success
  */
 int features_deconv_flt_to_flt(int samples_across,
-							   int samples_down,
-							   int patch_radius,
-							   int img_width,
-							   int img_height,
-							   int img_depth,
-							   float img[],
-							   int layer_units,
-							   float layer[],
-							   ac * feature_autocoder)
-{	
+                               int samples_down,
+                               int patch_radius,
+                               int img_width,
+                               int img_height,
+                               int img_depth,
+                               float img[],
+                               int layer_units,
+                               float layer[],
+                               ac * feature_autocoder)
+{
     int no_of_learned_features = feature_autocoder->NoOfHiddens;
 
-    
+
     if (feature_autocoder->NoOfInputs !=
         patch_radius*patch_radius*4*img_depth) {
         /* the patch size doesn't match the feature
@@ -534,10 +534,10 @@ int features_deconv_flt_to_flt(int samples_across,
 
     /* clear the original image */
     memset((void*)img, '\0', img_width*img_height*img_depth*sizeof(float));
-    
+
     /* for each input image sample */
     for (int fy = 0; fy < samples_down; fy++) {
-        for (int fx = 0; fx < samples_across; fx++) {   
+        for (int fx = 0; fx < samples_across; fx++) {
             /* starting position in the first layer,
                where the depth is the number of encoded features */
             int index_layer =
@@ -567,7 +567,7 @@ int features_deconv_flt_to_flt(int samples_across,
             }
         }
     }
-    
+
     return 0;
 }
 
@@ -602,7 +602,7 @@ int features_deconv_img_to_flt(int samples_across,
 {
     int retval, i;
 
-    
+
     if (feature_autocoder->NoOfInputs !=
         patch_radius*patch_radius*4*img_depth) {
         /* the patch size doesn't match the feature
@@ -640,10 +640,10 @@ int features_deconv_img_to_flt(int samples_across,
         else {
             if (deconv_img[i] > 255) {
                 img[i] = 255;
-            }           
+            }
         }
     }
-    
+
     free(deconv_img);
     return 0;
 }

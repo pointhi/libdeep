@@ -1,6 +1,6 @@
 /*
   libdeep - a library for deep learning
-  Copyright (C) 2015-2016  Bob Mottram <bob@robotics.uk.to>
+  Copyright (C) 2015-2017  Bob Mottram <bob@freedombone.net>
 
   A deep convolution network combines a convolutional net as a
   preprocessing stage together with a deep learning system as the

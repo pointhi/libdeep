@@ -1,6 +1,6 @@
 /*
   libdeep - a library for deep learning
-  Copyright (C) 2013-2016  Bob Mottram <bob@robotics.uk.to>
+  Copyright (C) 2013-2017  Bob Mottram <bob@freedombone.net>
 
   Redistribution and use in source and binary forms, with or without
   modification, are permitted provided that the following conditions
@@ -41,10 +41,10 @@ int rand_num(unsigned int * seed)
 
     /* avoid the singularity */
     if (v==0) {
-		v++;
-		while (((unsigned long long)v * 279470273UL) % 4294967291UL == 0)
-			v++;
-	}
+        v++;
+        while (((unsigned long long)v * 279470273UL) % 4294967291UL == 0)
+            v++;
+    }
 
     *seed = v;
     return abs((int)v);

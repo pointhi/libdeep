@@ -1,6 +1,6 @@
 /*
   libdeep - a library for deep learning
-  Copyright (C) 2013-2016  Bob Mottram <bob@robotics.uk.to>
+  Copyright (C) 2013-2017  Bob Mottram <bob@freedombone.net>
 
   Redistribution and use in source and binary forms, with or without
   modification, are permitted provided that the following conditions
@@ -410,7 +410,7 @@ int autocoder_load(FILE * fp, ac * autocoder, int initialise)
  */
 void autocoder_set_input(ac * autocoder, int index, float value)
 {
-	autocoder->inputs[index] = value;
+    autocoder->inputs[index] = value;
 }
 
 /**
@@ -420,7 +420,7 @@ void autocoder_set_input(ac * autocoder, int index, float value)
  */
 void autocoder_set_inputs(ac * autocoder, float inputs[])
 {
-	memcpy((void*)autocoder->inputs, inputs, autocoder->NoOfInputs*sizeof(float));
+    memcpy((void*)autocoder->inputs, inputs, autocoder->NoOfInputs*sizeof(float));
 }
 
 /**
@@ -431,7 +431,7 @@ void autocoder_set_inputs(ac * autocoder, float inputs[])
  */
 float autocoder_get_hidden(ac * autocoder, int index)
 {
-	return autocoder->hiddens[index];
+    return autocoder->hiddens[index];
 }
 
 /**
@@ -442,7 +442,7 @@ float autocoder_get_hidden(ac * autocoder, int index)
  */
 void autocoder_set_hidden(ac * autocoder, int index, float value)
 {
-	autocoder->hiddens[index] = value;
+    autocoder->hiddens[index] = value;
 }
 
 /**
@@ -451,9 +451,9 @@ void autocoder_set_hidden(ac * autocoder, int index, float value)
  */
 void autocoder_update(ac * autocoder)
 {
-	autocoder_feed_forward(autocoder);
-	autocoder_backprop(autocoder);
-	autocoder_learn(autocoder);
+    autocoder_feed_forward(autocoder);
+    autocoder_backprop(autocoder);
+    autocoder_learn(autocoder);
 }
 
 /**
@@ -462,23 +462,23 @@ void autocoder_update(ac * autocoder)
  */
 void autocoder_normalise_inputs(ac * autocoder)
 {
-	float min = autocoder->inputs[0];
-	float max = autocoder->inputs[0];
+    float min = autocoder->inputs[0];
+    float max = autocoder->inputs[0];
 
-	for (int i = 1; i < autocoder->NoOfInputs; i++) {
-		if (autocoder->inputs[i] < min)
-			min = autocoder->inputs[i];
-		if (autocoder->inputs[i] > max)
-			max = autocoder->inputs[i];
-	}
+    for (int i = 1; i < autocoder->NoOfInputs; i++) {
+        if (autocoder->inputs[i] < min)
+            min = autocoder->inputs[i];
+        if (autocoder->inputs[i] > max)
+            max = autocoder->inputs[i];
+    }
 
-	float range = max - min;
-	if (range <= 0) return;
+    float range = max - min;
+    if (range <= 0) return;
 
-	for (int i = 0; i < autocoder->NoOfInputs; i++) {
-		autocoder->inputs[i] =
-			0.25f + (((autocoder->inputs[i] - min)/range)*0.5f);
-	}
+    for (int i = 0; i < autocoder->NoOfInputs; i++) {
+        autocoder->inputs[i] =
+            0.25f + (((autocoder->inputs[i] - min)/range)*0.5f);
+    }
 }
 
 /**
@@ -489,23 +489,23 @@ void autocoder_normalise_inputs(ac * autocoder)
  */
 int autocoder_compare(ac * autocoder0, ac * autocoder1)
 {
-	if (autocoder0->NoOfInputs != autocoder1->NoOfInputs) {
-		return -1;
-	}
-	if (autocoder0->NoOfHiddens != autocoder1->NoOfHiddens) {
-		return -2;
-	}
-	for (int h = 0; h < autocoder0->NoOfHiddens; h++) {
-		if (autocoder0->bias[h] != autocoder1->bias[h]) {
-			return -3;
-		}
-	}
-	for (int i = 0; i < autocoder0->NoOfInputs*autocoder0->NoOfHiddens; i++) {
-		if (autocoder0->weights[i] != autocoder1->weights[i]) {
-			return -4;
-		}
-	}
-	return 0;
+    if (autocoder0->NoOfInputs != autocoder1->NoOfInputs) {
+        return -1;
+    }
+    if (autocoder0->NoOfHiddens != autocoder1->NoOfHiddens) {
+        return -2;
+    }
+    for (int h = 0; h < autocoder0->NoOfHiddens; h++) {
+        if (autocoder0->bias[h] != autocoder1->bias[h]) {
+            return -3;
+        }
+    }
+    for (int i = 0; i < autocoder0->NoOfInputs*autocoder0->NoOfHiddens; i++) {
+        if (autocoder0->weights[i] != autocoder1->weights[i]) {
+            return -4;
+        }
+    }
+    return 0;
 }
 
 /**
@@ -525,53 +525,53 @@ int autocoder_compare(ac * autocoder0, ac * autocoder1)
  * @return zero on success
  */
 int autocoder_plot_weights(ac * autocoder,
-						   int feature_index,
-						   int patch_radius, int patch_depth,
-						   int img_tx, int img_ty, int img_bx, int img_by,
-						   unsigned char img[],
-						   int img_width, int img_height)
+                           int feature_index,
+                           int patch_radius, int patch_depth,
+                           int img_tx, int img_ty, int img_bx, int img_by,
+                           unsigned char img[],
+                           int img_width, int img_height)
 {
-	int img_y_range = img_by - img_ty;
-	int img_x_range = img_bx - img_tx;
-	int patch_width = patch_radius*2;
-	int no_of_weights = patch_width*patch_width*patch_depth;
+    int img_y_range = img_by - img_ty;
+    int img_x_range = img_bx - img_tx;
+    int patch_width = patch_radius*2;
+    int no_of_weights = patch_width*patch_width*patch_depth;
 
-	/* check that the number of inputs matches the expected patch size */
-	if (autocoder->NoOfInputs != no_of_weights) {
-		return -1;
-	}
+    /* check that the number of inputs matches the expected patch size */
+    if (autocoder->NoOfInputs != no_of_weights) {
+        return -1;
+    }
 
-	float min_weight = autocoder->weights[0];
-	float max_weight = min_weight;
-	int start_index = feature_index*no_of_weights;
-	for (int i = start_index; i < start_index + no_of_weights; i++) {
-		if (autocoder->weights[i] < min_weight) {
-			min_weight = autocoder->weights[i];
-		}
-		if (autocoder->weights[i] > max_weight) {
-			max_weight = autocoder->weights[i];
-		}
-	}
+    float min_weight = autocoder->weights[0];
+    float max_weight = min_weight;
+    int start_index = feature_index*no_of_weights;
+    for (int i = start_index; i < start_index + no_of_weights; i++) {
+        if (autocoder->weights[i] < min_weight) {
+            min_weight = autocoder->weights[i];
+        }
+        if (autocoder->weights[i] > max_weight) {
+            max_weight = autocoder->weights[i];
+        }
+    }
 
-	float weight_range = max_weight - min_weight;
-	if (weight_range <= 0.0f) return -2;
+    float weight_range = max_weight - min_weight;
+    if (weight_range <= 0.0f) return -2;
 
-	/* for every pixel in the output image */
-	for (int y = img_ty; y < img_by; y++) {
-		int patch_y = (y - img_ty) * patch_width / img_y_range;
-		for (int x = img_tx; x < img_bx; x++) {
-			int patch_x = (x - img_tx) * patch_width / img_x_range;
-			/* position in the image */
-			int img_n = (y*img_width + x)*3;
-			/* position in the patch */
-			int patch_n = (patch_y*patch_width + patch_x)*patch_depth;
-			for (int c = 0; c < 3; c++) {
-				float w = autocoder->weights[start_index + patch_n +
-											 (c*patch_depth/3)];
-				img[img_n + c] =
-					(unsigned char)((w-min_weight)*255/weight_range);
-			}
-		}
-	}
-	return 0;
+    /* for every pixel in the output image */
+    for (int y = img_ty; y < img_by; y++) {
+        int patch_y = (y - img_ty) * patch_width / img_y_range;
+        for (int x = img_tx; x < img_bx; x++) {
+            int patch_x = (x - img_tx) * patch_width / img_x_range;
+            /* position in the image */
+            int img_n = (y*img_width + x)*3;
+            /* position in the patch */
+            int patch_n = (patch_y*patch_width + patch_x)*patch_depth;
+            for (int c = 0; c < 3; c++) {
+                float w = autocoder->weights[start_index + patch_n +
+                                             (c*patch_depth/3)];
+                img[img_n + c] =
+                    (unsigned char)((w-min_weight)*255/weight_range);
+            }
+        }
+    }
+    return 0;
 }
