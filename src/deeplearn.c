@@ -1398,7 +1398,7 @@ static int deeplearn_export_python(deeplearn * learner, char * filename)
     if (!fp)
         return -1;
 
-    fprintf(fp, "%s", "#!/usr/bin/python\n\n");
+    fprintf(fp, "%s", "#!/usr/bin/python3\n\n");
     fprintf(fp, "%s", "import sys\n");
     fprintf(fp, "%s", "import math\n\n");
 
@@ -1632,7 +1632,7 @@ static int deeplearn_export_python(deeplearn * learner, char * filename)
     fprintf(fp, "%s", "# Create an instance of the class\n");
     fprintf(fp, "%s", "net = NeuralNet()\n\n");
     fprintf(fp, "%s", "# Use the commandline arguments as input values\n");
-    fprintf(fp, "%s", "print net.update(sys.argv[1:])\n");
+    fprintf(fp, "%s", "print(net.update(sys.argv[1:]))\n");
     fclose(fp);
     return 0;
 }
