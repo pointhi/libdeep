@@ -107,7 +107,7 @@ static void facerec_training()
             /*
             if ((&learner)->autocoder[learner.current_hidden_layer] != 0) {
                 if (learner.current_hidden_layer==0) {
-                    bp_plot_weights((&learner)->autocoder[learner.current_hidden_layer],
+                    autocoder_plot_weights((&learner)->autocoder[learner.current_hidden_layer],
                                     weights_filename,
                                     weights_image_width,
                                     weights_image_height,
