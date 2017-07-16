@@ -33,8 +33,8 @@
 #include "libdeep/deeplearn_images.h"
 
 /* the dimensions of each face image */
-int image_width = 32;
-int image_height = 32;
+int image_width = 24;
+int image_height = 24;
 
 /* the number of face images */
 int no_of_images;
@@ -57,7 +57,7 @@ static void facerec_training()
 {
     int no_of_inputs = image_width*image_height;
     int no_of_hiddens = 10*10;
-    int hidden_layers=4;
+    int hidden_layers=2;
     int no_of_outputs=5*5;
     int itt,i,index;
     unsigned int random_seed = 123;
@@ -66,8 +66,8 @@ static void facerec_training()
     char weights_filename[256];
     int weights_image_width = 480;
     int weights_image_height = 800;
-    float error_threshold[] = { 9.5f, 7.5f, 9.0f, 9.0f, 9.5f};
-    const int logging_interval = 7000;
+    float error_threshold[] = { 8.0f, 1.5f, 9.5f};
+    const int logging_interval = 10000;
 
     sprintf(weights_filename,"%s","weights.png");
     sprintf(title, "%s", "Face Image Training");
@@ -104,24 +104,12 @@ static void facerec_training()
                                    filename, title,
                                    1024, 480);
             /* plot the weights */
-            /*
-            if ((&learner)->autocoder[learner.current_hidden_layer] != 0) {
-                if (learner.current_hidden_layer==0) {
-                    autocoder_plot_weights((&learner)->autocoder[learner.current_hidden_layer],
-                                    weights_filename,
-                                    weights_image_width,
-                                    weights_image_height,
-                                    image_width);
-                }
-                else {
-                    bp_plot_weights((&learner)->autocoder[learner.current_hidden_layer],
-                                    weights_filename,
-                                    weights_image_width,
-                                    weights_image_height,
-                                    0);
-                }
-            }
-            */
+            if ((&learner)->autocoder[learner.current_hidden_layer] != 0)
+                bp_plot_weights((&learner)->net,
+                                weights_filename,
+                                weights_image_width,
+                                weights_image_height,
+                                image_width);
         }
     }
 
@@ -146,14 +134,12 @@ static void facerec_training()
                                     images[index],
                                     image_width, image_height);
 
-        for (i = 0; i < no_of_outputs; i++) {
-            if (i == class_number[index]) {
+        for (i = 0; i < no_of_outputs; i++)
+            if (i == class_number[index])
                 deeplearn_set_output(&learner,i, 0.8f);
-            }
-            else {
+            else
                 deeplearn_set_output(&learner,i, 0.2f);
-            }
-        }
+
         deeplearn_update(&learner);
 
         itt++;
@@ -166,15 +152,11 @@ static void facerec_training()
                                    filename, title,
                                    1024, 480);
             /* plot the weights */
-            if ((&learner)->autocoder!=0) {
-                /*
-                bp_plot_weights((&learner)->autocoder[learner.current_hidden_layer],
-                                weights_filename,
-                                weights_image_width,
-                                weights_image_height,
-                                image_width);
-                */
-            }
+            bp_plot_weights((&learner)->net,
+                            weights_filename,
+                            weights_image_width,
+                            weights_image_height,
+                            image_width);
         }
     }
 

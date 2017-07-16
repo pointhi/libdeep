@@ -577,8 +577,9 @@ int bp_plot_weights(bp * net,
 {
     int layer, neurons_x, neurons_y, ty, by, h, x, y, ix, iy;
     int wx, wy, inputs_x, inputs_y, n, i, unit, no_of_neurons;
-    int no_of_weights,wdth;
-    float neuronx, neurony,dw;
+    int no_of_weights,wdth, max_unit;
+    float neuronx, neurony, dw, db, min_bias, max_bias;
+    float min_activation, max_activation, da;
     bp_neuron ** neurons, * curr_neuron;
     unsigned char * img;
 
@@ -596,12 +597,11 @@ int bp_plot_weights(bp * net,
     neurons_y = (net->NoOfHiddens/neurons_x);
 
     /* dimensions of the weight matrix */
-    if (input_image_width <= 0) {
+    if (input_image_width <= 0)
         inputs_x = (int)sqrt(net->NoOfInputs);
-    }
-    else {
+    else
         inputs_x = input_image_width;
-    }
+
     inputs_y = (net->NoOfInputs/inputs_x);
 
     no_of_weights = net->NoOfInputs;
@@ -633,19 +633,39 @@ int bp_plot_weights(bp * net,
         by = (layer+2)*image_height/(net->HiddenLayers+3);
         h = (by-ty)*95/100;
 
+        /* reset ranges */
+        min_bias = 9999999.0f;
+        max_bias = -9999999.0f;
+        min_activation = 9999999.0f;
+        max_activation = -9999999.0f;
+
         /* number of patches across and down for the final layer */
         if (layer == net->HiddenLayers) {
             neurons_x = (int)sqrt(net->NoOfOutputs);
             neurons_y = (net->NoOfOutputs/neurons_x);
             neurons = net->outputs;
             no_of_neurons = net->NoOfOutputs;
+            max_unit = net->NoOfOutputs;
         }
         else {
             neurons_x = (int)sqrt(bp_hiddens_in_layer(net,layer));
             neurons_y = (bp_hiddens_in_layer(net,layer)/neurons_x);
             neurons = net->hiddens[layer];
             no_of_neurons = bp_hiddens_in_layer(net,layer);
+            max_unit = bp_hiddens_in_layer(net,layer);
         }
+
+        /* get the bias range within this layer */
+        for (y = 0; y < max_unit; y++) {
+            if (neurons[y]->bias < min_bias) min_bias = neurons[y]->bias;
+            if (neurons[y]->bias > max_bias) max_bias = neurons[y]->bias;
+            if (neurons[y]->value < min_activation) min_activation = neurons[y]->value;
+            if (neurons[y]->value > max_activation) max_activation = neurons[y]->value;
+        }
+
+        /* update ranges */
+        db = max_bias - min_bias;
+        da = max_activation - min_activation;
 
         /* for every pixel within the region */
         for (y = ty; y < by; y++) {
@@ -671,8 +691,10 @@ int bp_plot_weights(bp * net,
                             img[n] =
                                 (int)((curr_neuron->weights[i] -
                                        curr_neuron->min_weight)*255/dw);
-                            img[n+1] = img[n];
-                            img[n+2] = img[n];
+                            img[n+1] =
+                                (int)((curr_neuron->bias - min_bias)*255/db);
+                            img[n+2] =
+                                (int)((curr_neuron->value - min_activation)*255/da);
                         }
                         else {
                             img[n] =

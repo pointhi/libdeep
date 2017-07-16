@@ -105,5 +105,8 @@ int autocoder_plot_weights(ac * autocoder,
                            int img_tx, int img_ty, int img_bx, int img_by,
                            unsigned char img[],
                            int img_width, int img_height);
+int autocoder_plot_weight_matrix(ac * net,
+                                 char * filename,
+                                 int image_width, int image_height);
 
 #endif

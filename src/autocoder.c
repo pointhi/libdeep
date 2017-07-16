@@ -575,3 +575,73 @@ int autocoder_plot_weights(ac * autocoder,
     }
     return 0;
 }
+
+/**
+* @brief Plots weight matrices within an image
+* @param net Autocoder neural net object
+* @param filename Filename of the image to save as
+* @param image_width Width of the image in pixels
+* @param image_height Height of the image in pixels
+*/
+int autocoder_plot_weight_matrix(ac * net,
+                                 char * filename,
+                                 int image_width, int image_height)
+{
+    int h, i, x, y, n;
+    float w, min_w=9999999.0f, max_w=-9999999.0f;
+    float min_bias=9999999.0f, max_bias=-999999.0f;
+    float min_hidden=999999.0f, max_hidden=-999999.0f;
+    unsigned char * img;
+
+    /* allocate memory for the image */
+    img = (unsigned char*)malloc(image_width*image_height*3);
+    if (!img) {
+        return -1;
+    }
+
+    /* clear the image with a white background */
+    memset((void*)img,'\255',image_width*image_height*3);
+
+    /* get the weight range */
+    for (h = 0; h < net->NoOfHiddens; h++) {
+        for (i = 0; i < net->NoOfInputs; i++) {
+            w = net->weights[h*net->NoOfInputs + i];
+            if (w < min_w) min_w = w;
+            if (w > max_w) max_w = w;
+        }
+    }
+
+    /* get the bias and hidden unit range */
+    for (h = 0; h < net->NoOfHiddens; h++) {
+        if (net->bias[h] < min_bias) min_bias = net->bias[h];
+        if (net->bias[h] > max_bias) max_bias = net->bias[h];
+        if (net->hiddens[h] < min_hidden) min_hidden = net->hiddens[h];
+        if (net->hiddens[h] > max_hidden) max_hidden = net->hiddens[h];
+    }
+
+    if (max_bias > min_bias) {
+        for (y = 0; y < image_height; y++) {
+            h = y*net->NoOfHiddens/image_height;
+            for (x = 0; x < image_width; x++) {
+                i = x*net->NoOfInputs/image_width;
+                w = net->weights[h*net->NoOfInputs + i];
+                n = (y*image_width + x)*3;
+                img[n] = (unsigned char)((w - min_w)*255/(max_w - min_w));
+                img[n+1] = (unsigned char)((net->bias[h]-min_bias)*255/(max_bias - min_bias));
+                if (max_hidden > min_hidden)
+                    img[n+2] = (unsigned char)((net->hiddens[h]-min_hidden)*255/(max_hidden - min_hidden));
+                else
+                    img[n+2] = (unsigned char)255;
+            }
+        }
+    }
+
+    /* write the image to file */
+    deeplearn_write_png_file(filename,
+                             (unsigned int)image_width, (unsigned int)image_height,
+                             24, img);
+
+    /* free the image memory */
+    free(img);
+    return 0;
+}
