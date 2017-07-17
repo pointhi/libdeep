@@ -149,11 +149,12 @@ int deeplearn_init(deeplearn * learner,
     if (!learner->output_range_max)
         return -4;
 
-    for (i = 0; i < no_of_inputs; i++) {
+    for (i = no_of_inputs-1; i >= 0; i--) {
         learner->input_range_min[i] = 99999;
         learner->input_range_max[i] = -99999;
     }
-    for (i = 0; i < no_of_outputs; i++) {
+
+    for (i = no_of_outputs-1; i >= 0; i--) {
         learner->output_range_min[i] = 99999;
         learner->output_range_max[i] = -99999;
     }
@@ -257,7 +258,7 @@ void copy_autocoder_to_hidden_layer(deeplearn * learner, int hidden_layer)
 {
     ac * autocoder = learner->autocoder[hidden_layer];
     /* for each unit on the hidden layer */
-    for (int i = 0; i < bp_hiddens_in_layer(learner->net,hidden_layer); i++) {
+    for (int i = bp_hiddens_in_layer(learner->net,hidden_layer)-1; i >= 0; i--) {
         bp_neuron * nrn  = learner->net->hiddens[hidden_layer][i];
         nrn->bias = autocoder->bias[i];
         memcpy((void*)nrn->weights,
@@ -278,7 +279,7 @@ void deeplearn_pretrain(bp * net, ac * autocoder, int current_layer)
     if (current_layer > 0) {
         /* copy the hidden unit values to the inputs
            of the autocoder */
-        for (int i = 0; i < bp_hiddens_in_layer(net,current_layer-1); i++) {
+        for (int i = bp_hiddens_in_layer(net,current_layer-1)-1; i >= 0; i--) {
             float hidden_value = bp_get_hidden(net, current_layer-1, i);
             autocoder_set_input(autocoder, i, hidden_value);
         }
@@ -286,7 +287,7 @@ void deeplearn_pretrain(bp * net, ac * autocoder, int current_layer)
     else {
         /* copy the input unit values to the inputs
            of the autocoder */
-        for (int i = 0; i < net->NoOfInputs; i++) {
+        for (int i = net->NoOfInputs-1; i >= 0; i--) {
             autocoder_set_input(autocoder, i,
                                 bp_get_input(net, i));
         }
@@ -630,7 +631,7 @@ void deeplearn_set_output(deeplearn * learner, int index, float value)
  */
 void deeplearn_set_outputs(deeplearn * learner, deeplearndata * sample)
 {
-    for (int i = 0; i < learner->net->NoOfOutputs; i++) {
+    for (int i = learner->net->NoOfOutputs-1; i >= 0; i--) {
         float value = sample->outputs[i];
         float range = learner->output_range_max[i] - learner->output_range_min[i];
         if (range > 0) {
@@ -647,7 +648,7 @@ void deeplearn_set_outputs(deeplearn * learner, deeplearndata * sample)
  */
 void deeplearn_get_outputs(deeplearn * learner, float * outputs)
 {
-    for (int i = 0; i < learner->net->NoOfOutputs; i++) {
+    for (int i = learner->net->NoOfOutputs-1; i >= 0; i--) {
         float value = deeplearn_get_output(learner, i);
         float range = learner->output_range_max[i] - learner->output_range_min[i];
         if (range > 0)
@@ -677,7 +678,7 @@ int deeplearn_get_class(deeplearn * learner)
     int i, class = -9999;
     float max = -1;
 
-    for (i = 0; i < learner->net->NoOfOutputs; i++) {
+    for (i = learner->net->NoOfOutputs-1; i >= 0; i--) {
         if (bp_get_output(learner->net, i) > max) {
             max = bp_get_output(learner->net, i);
             class = i;
@@ -695,7 +696,7 @@ void deeplearn_set_class(deeplearn * learner, int class)
 {
     int i;
 
-    for (i = 0; i < learner->net->NoOfOutputs; i++) {
+    for (i = learner->net->NoOfOutputs-1; i >= 0; i--) {
         if (i != class)
             bp_set_output(learner->net, i, 0.25f);
         else
@@ -1079,7 +1080,7 @@ void deeplearn_set_learning_rate(deeplearn * learner, float rate)
 {
     learner->net->learningRate = rate;
 
-    for (int i = 0; i < learner->net->HiddenLayers; i++)
+    for (int i = learner->net->HiddenLayers-1; i >= 0; i--)
         learner->autocoder[i]->learningRate = rate;
 }
 
@@ -1092,7 +1093,7 @@ void deeplearn_set_dropouts(deeplearn * learner, float dropout_percent)
 {
     learner->net->DropoutPercent = dropout_percent;
 
-    for (int i = 0; i < learner->net->HiddenLayers; i++)
+    for (int i = learner->net->HiddenLayers-1; i >= 0; i--)
         learner->autocoder[i]->DropoutPercent = dropout_percent;
 }
 

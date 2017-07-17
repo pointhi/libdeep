@@ -64,13 +64,13 @@ int pooling_from_flt_to_flt(int depth,
     memset((void*)layer1,'\0',layer1_across*layer1_down*depth*sizeof(float));
 
     /*#pragma omp parallel for*/
-    for (int y0 = 0; y0 < layer0_down; y0++) {
+    for (int y0 = layer0_down-1; y0 >= 0; y0--) {
         int y1 = y0 * layer1_down / layer0_down;
-        for (int x0 = 0; x0 < layer0_across; x0++) {
+        for (int x0 = layer0_across-1; x0 >= 0; x0--) {
             int x1 = x0 * layer1_across / layer0_across;
             int n0 = (y0*layer0_across + x0)*depth;
             int n1 = (y1*layer1_across + x1)*depth;
-            for (int d = 0; d < depth; d++) {
+            for (int d = depth-1; d >= 0; d--) {
                 if (layer0[n0+d] > layer1[n1+d])
                     layer1[n1+d] = layer0[n0+d];
             }
@@ -113,13 +113,13 @@ int unpooling_from_flt_to_flt(int depth,
     }
 
     /*#pragma omp parallel for*/
-    for (int y_original = 0; y_original < original_layer_down; y_original++) {
+    for (int y_original = original_layer_down-1; y_original >= 0; y_original--) {
         int y_pooled = y_original * pooled_layer_down / original_layer_down;
-        for (int x_original = 0; x_original < original_layer_across; x_original++) {
+        for (int x_original = original_layer_across-1; x_original >= 0; x_original--) {
             int x_pooled = x_original * pooled_layer_across / original_layer_across;
             int n_pooled = (y_pooled*pooled_layer_across + x_pooled)*depth;
             int n_original = (y_original*original_layer_across + x_original)*depth;
-            for (int d = 0; d < depth; d++)
+            for (int d = depth; d >= 0; d--)
                 original_layer[n_original+d] = pooled_layer[n_pooled+d];
         }
     }
