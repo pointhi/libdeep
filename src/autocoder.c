@@ -87,10 +87,10 @@ int autocoder_init(ac * autocoder,
     autocoder->DropoutPercent = 0.01f;
 
     /* initial small random values */
-    for (int h = 0; h < no_of_hiddens; h++) {
+    for (int h = no_of_hiddens-1; h >= 0; h--) {
         autocoder->bias[h] =
             rand_initial_weight(&autocoder->random_seed);
-        for (int i = 0; i < no_of_inputs; i++) {
+        for (int i = no_of_inputs-1; i >= 0; i--) {
             autocoder->weights[h*no_of_inputs + i] =
                 rand_initial_weight(&autocoder->random_seed);
         }
@@ -133,17 +133,15 @@ void autocoder_encode(ac * autocoder, float * encoded, unsigned char use_dropout
 
         /* weighted sum of inputs */
         float adder = autocoder->bias[h];
-        for (int i = 0; i < autocoder->NoOfInputs; i++) {
+        for (int i = autocoder->NoOfInputs-1; i >= 0; i--)
             adder +=
                 autocoder->weights[h*autocoder->NoOfInputs + i] *
                 autocoder->inputs[i];
-        }
 
         /* add some random noise */
-        if (autocoder->noise > 0) {
+        if (autocoder->noise > 0)
             adder = ((1.0f - autocoder->noise) * adder) +
                 (autocoder->noise * ((rand_num(&autocoder->random_seed)%10000)/10000.0f));
-        }
 
         /* activation function */
         encoded[h] = 1.0f / (1.0f + exp(-adder));
@@ -157,10 +155,10 @@ void autocoder_encode(ac * autocoder, float * encoded, unsigned char use_dropout
  */
 void autocoder_decode(ac * autocoder, float * decoded)
 {
-    for (int i = 0; i < autocoder->NoOfInputs; i++) {
+    for (int i = autocoder->NoOfInputs-1; i >= 0; i--) {
         /* weighted sum of hidden inputs */
         float adder = 0;
-        for (int h = 0; h < autocoder->NoOfHiddens; h++) {
+        for (int h = autocoder->NoOfHiddens-1; h >= 0; h--) {
             if (autocoder->hiddens[h] == AUTOCODER_DROPPED_OUT)
                 continue;
 
@@ -170,10 +168,9 @@ void autocoder_decode(ac * autocoder, float * decoded)
         }
 
         /* add some random noise */
-        if (autocoder->noise > 0) {
+        if (autocoder->noise > 0)
             adder = ((1.0f - autocoder->noise) * adder) +
                 (autocoder->noise * ((rand_num(&autocoder->random_seed)%10000)/10000.0f));
-        }
 
         /* activation function */
         decoded[i] = 1.0f / (1.0f + exp(-adder));
@@ -202,12 +199,12 @@ void autocoder_backprop(ac * autocoder)
     /* backprop from outputs to hiddens */
     autocoder->BPerror = 0;
     float errorPercent = 0;
-    for (int i = 0; i < autocoder->NoOfInputs; i++) {
+    for (int i = autocoder->NoOfInputs-1; i >= 0; i--) {
         float BPerror = autocoder->inputs[i] - autocoder->outputs[i];
         autocoder->BPerror += fabs(BPerror);
         errorPercent += fabs(BPerror);
         float afact = autocoder->outputs[i] * (1.0f - autocoder->outputs[i]);
-        for (int h = 0; h < autocoder->NoOfHiddens; h++) {
+        for (int h = autocoder->NoOfHiddens-1; h >= 0; h--) {
             if (autocoder->hiddens[h] == AUTOCODER_DROPPED_OUT)
                 continue;
 
@@ -235,9 +232,8 @@ void autocoder_backprop(ac * autocoder)
     }
 
     /* increment the number of training itterations */
-    if (autocoder->itterations < UINT_MAX) {
+    if (autocoder->itterations < UINT_MAX)
         autocoder->itterations++;
-    }
 }
 
 /**
@@ -248,11 +244,11 @@ void autocoder_learn(ac * autocoder)
 {
     /* weights between outputs and hiddens */
     float e = autocoder->learningRate / (1.0f + autocoder->NoOfHiddens);
-    for (int i = 0; i < autocoder->NoOfInputs; i++) {
+    for (int i = autocoder->NoOfInputs-1; i >= 0; i--) {
         float afact = autocoder->outputs[i] * (1.0f - autocoder->outputs[i]);
         float BPerror = autocoder->inputs[i] - autocoder->outputs[i];
         float gradient = afact * BPerror;
-        for (int h = 0; h < autocoder->NoOfHiddens; h++) {
+        for (int h = autocoder->NoOfHiddens-1; h >= 0; h--) {
             if (autocoder->hiddens[h] == AUTOCODER_DROPPED_OUT)
                 continue;
 
@@ -266,7 +262,7 @@ void autocoder_learn(ac * autocoder)
 
     /* weights between hiddens and inputs */
     e = autocoder->learningRate / (1.0f + autocoder->NoOfInputs);
-    for (int h = 0; h < autocoder->NoOfHiddens; h++) {
+    for (int h = autocoder->NoOfHiddens-1; h >= 0; h--) {
         if (autocoder->hiddens[h] == AUTOCODER_DROPPED_OUT)
             continue;
 
@@ -275,7 +271,7 @@ void autocoder_learn(ac * autocoder)
         float gradient = afact * BPerror;
         autocoder->lastBiasChange[h] = e * (autocoder->lastBiasChange[h] + 1.0f) * gradient;
         autocoder->bias[h] += autocoder->lastBiasChange[h];
-        for (int i = 0; i < autocoder->NoOfInputs; i++) {
+        for (int i = autocoder->NoOfInputs-1; i >= 0; i--) {
             int n = h*autocoder->NoOfInputs + i;
             autocoder->lastWeightChange[n] =
                 e * (autocoder->lastWeightChange[n] + 1) *
@@ -495,15 +491,14 @@ int autocoder_compare(ac * autocoder0, ac * autocoder1)
     if (autocoder0->NoOfHiddens != autocoder1->NoOfHiddens) {
         return -2;
     }
-    for (int h = 0; h < autocoder0->NoOfHiddens; h++) {
+    for (int h = autocoder0->NoOfHiddens-1; h >= 0; h--) {
         if (autocoder0->bias[h] != autocoder1->bias[h]) {
             return -3;
         }
     }
-    for (int i = 0; i < autocoder0->NoOfInputs*autocoder0->NoOfHiddens; i++) {
-        if (autocoder0->weights[i] != autocoder1->weights[i]) {
+    for (int i = autocoder0->NoOfInputs*autocoder0->NoOfHiddens-1; i >= 0; i--) {
+        if (autocoder0->weights[i] != autocoder1->weights[i])
             return -4;
-        }
     }
     return 0;
 }
