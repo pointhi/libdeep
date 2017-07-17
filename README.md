@@ -1,6 +1,6 @@
 <img src="https://github.com/bashrc/libdeep/blob/master/examples/cancer_classification/cancer_detection_training_error.png?raw=true" width=640/>
 
-This is a C library which can be used in deep learning applications.  It allows multiple layers to be trained and also includes the dropouts technique to avoid overfitting the data.
+This is a C library which can be used in deep learning applications.  It allows multiple layers to be trained and also includes the dropouts technique to avoid overfitting the data. What differentiates libdeep from the numerous other deep learning systems out there is that it's relatively small and that trained networks can be exported as *completely standalone C or Python programs* which can either be used via the commandline or within and Arduino IDE for creating robotics or IoT systems.
 
 A Python API for libdeep can be found at https://github.com/bashrc/libdeep-python
 
