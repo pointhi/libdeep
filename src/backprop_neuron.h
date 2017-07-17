@@ -37,7 +37,6 @@
 #include <ctype.h>
 #include <math.h>
 #include <assert.h>
-#include <time.h>
 #include <omp.h>
 #include "deeplearn_random.h"
 
