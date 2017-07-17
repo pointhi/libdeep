@@ -185,14 +185,13 @@ int deeplearndata_index_meta(
 */
 deeplearndata * deeplearndata_get_training(deeplearn * learner, int index)
 {
-    if ((index < 0) || (index >= learner->indexed_training_data_samples)) {
+    if ((index < 0) || (index >= learner->indexed_training_data_samples))
         return 0;
-    }
 
     deeplearndata_meta * meta = learner->indexed_training_data[index];
-    if (meta == 0) {
+    if (meta == 0)
         return 0;
-    }
+
     return meta->sample;
 }
 
@@ -356,10 +355,12 @@ int deeplearndata_add_labeled_training_sample(deeplearn * learner, deeplearndata
     data->sample = sample;
     data->prev = 0;
     data->next = 0;
+
     if (learner->training_data_labeled) {
         learner->training_data_labeled->prev = (struct deeplearndata_meta *)data;
         data->next = (struct deeplearndata_meta *)learner->training_data_labeled;
     }
+
     learner->training_data_labeled = data;
     learner->training_data_labeled_samples++;
     return 0;
@@ -385,10 +386,12 @@ int deeplearndata_add_test_sample(deeplearn * learner, deeplearndata * sample)
     data->sample = sample;
     data->prev = 0;
     data->next = 0;
+
     if (learner->test_data) {
         learner->test_data->prev = (struct deeplearndata_meta *)data;
         data->next = (struct deeplearndata_meta *)learner->test_data;
     }
+
     learner->test_data = data;
     learner->test_data_samples++;
     return 0;

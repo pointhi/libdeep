@@ -461,6 +461,7 @@ void bp_set_input(bp * net, int index, float value)
 {
     /* get the neuron object */
     bp_neuron * n  = net->inputs[index];
+
     /* Set the value */
     n->value = value;
 }
@@ -525,8 +526,10 @@ void bp_inputs_from_image_patch(bp * net,
         if (py >= image_height) break;
         for (px = tx; px < tx+patch_size; px++, i++) {
             if (px >= image_width) break;
+
             /* array index within the image */
             idx = (py*image_width) + px;
+
             /* set the input value within the range 0.25 to 0.75 */
             bp_set_input(net, i, 0.25f + (img[idx]*0.5f/255.0f));
         }
@@ -552,10 +555,9 @@ void bp_inputs_from_image(bp * net,
     assert(net->NoOfInputs == image_width*image_height);
 
     /* set the inputs */
-    for (i = 0; i < image_width*image_height; i++) {
-        /* set the input value within the range 0.25 to 0.75 */
+    /* set the input value within the range 0.25 to 0.75 */
+    for (i = 0; i < image_width*image_height; i++)
         bp_set_input(net, i, 0.25f + (img[i]*0.5f/255.0f));
-    }
 }
 
 /**
@@ -583,9 +585,8 @@ int bp_plot_weights(bp * net,
 
     /* allocate memory for the image */
     img = (unsigned char*)malloc(image_width*image_height*3);
-    if (!img) {
+    if (!img)
         return -1;
-    }
 
     /* clear the image with a white background */
     memset((void*)img,'\255',image_width*image_height*3);
@@ -885,13 +886,12 @@ int bp_save(FILE * fp, bp * net)
         return -9;
 
     for (int l = 0; l < net->HiddenLayers; l++) {
-        for (int i = 0; i < bp_hiddens_in_layer(net,l); i++) {
+        for (int i = 0; i < bp_hiddens_in_layer(net,l); i++)
             bp_neuron_save(fp,net->hiddens[l][i]);
-        }
     }
-    for (int i = 0; i < net->NoOfOutputs; i++) {
+
+    for (int i = 0; i < net->NoOfOutputs; i++)
         bp_neuron_save(fp,net->outputs[i]);
-    }
 
     return 0;
 }
@@ -956,15 +956,13 @@ int bp_load(FILE * fp, bp * net,
 
     for (l = 0; l < net->HiddenLayers; l++) {
         for (i = 0; i < bp_hiddens_in_layer(net,l); i++) {
-            if (bp_neuron_load(fp,net->hiddens[l][i]) != 0) {
+            if (bp_neuron_load(fp,net->hiddens[l][i]) != 0)
                 return -11;
-            }
         }
     }
     for (i = 0; i < net->NoOfOutputs; i++) {
-        if (bp_neuron_load(fp,net->outputs[i]) != 0) {
+        if (bp_neuron_load(fp,net->outputs[i]) != 0)
             return -12;
-        }
     }
 
     net->learningRate = learning_rate;
@@ -1085,9 +1083,9 @@ int bp_classifications_to_numbers(int no_of_instances,
     /* allocate memory for a list of unique descriptions (labels) */
     unique_classification =
         (char**)malloc(no_of_instances * sizeof(char*));
-    if (!unique_classification) {
+
+    if (!unique_classification)
         return -1;
-    }
 
     /* create a list of unique classification names */
     for (i = 0; i < no_of_instances; i++) {
@@ -1113,17 +1111,19 @@ int bp_classifications_to_numbers(int no_of_instances,
             }
             sprintf(unique_classification[unique_ctr],
                     "%s", instance_classification[i]);
+
             /* store the classification number */
             numbers[i] = unique_ctr;
+
             /* increment the number of classes */
             unique_ctr++;
         }
     }
 
     /* free memory which was used to store descriptions */
-    for (i = 0; i < unique_ctr; i++) {
+    for (i = 0; i < unique_ctr; i++)
         free(unique_classification[i]);
-    }
+
     free(unique_classification);
     return 0;
 }
