@@ -51,12 +51,12 @@ static int scan_img_patch(unsigned char img[],
         for (int x = tx; x < bx; x++) {
             int index_img =
                 ((y*img_width) + x) * img_depth;
-            for (int d = 0; d < img_depth; d++) {
-                /* convert from 8 bit to a neuron value */
+
+            /* convert from 8 bit to a neuron value */
+            for (int d = img_depth-1; d >= 0; d--)
                 autocoder_set_input(feature_autocoder,
                                     index_feature_input++,
                                     PIXEL_TO_FLOAT(img[index_img+d]));
-            }
         }
     }
 
@@ -94,7 +94,8 @@ static int create_img_patch(float img[],
             for (int x = tx; x < bx; x++) {
                 int index_img =
                     ((y*img_width) + x) * img_depth;
-                for (int d = 0; d < img_depth; d++)
+
+                for (int d = img_depth-1; d >= 0; d--)
                     img[index_img+d] +=
                         f * feature_autocoder->weights[index_img+d];
             }
@@ -130,12 +131,11 @@ static int scan_floats_patch(float inputs_floats[],
             /* depth typically corresponds to colour channels
                in the initial layer, or feature responses in
                subsequent layers */
-            for (int d = 0; d < inputs_depth; d++) {
-                /* set the inputs of the autocoder */
+            /* set the inputs of the autocoder */
+            for (int d = inputs_depth-1; d >= 0; d--)
                 autocoder_set_input(feature_autocoder,
                                     index_feature_input++,
                                     inputs_floats[index_inputs+d]);
-            }
         }
     }
 
@@ -237,8 +237,8 @@ int features_learn_from_img(int samples_across,
     }
 
     /* for each patch */
-    for (int fy = 0; fy < samples_down; fy++) {
-        for (int fx = 0; fx < samples_across; fx++) {
+    for (int fy = samples_down-1; fy >= 0; fy--) {
+        for (int fx = samples_across-1; fx >= 0; fx--) {
 
             /* get the coordinates of the patch in the image */
             int tx=0, ty=0, bx=0, by=0;
@@ -307,8 +307,8 @@ int features_learn_from_flt(int samples_across,
         return -2;
 
     /* for each patch */
-    for (int fy = 0; fy < samples_down; fy++) {
-        for (int fx = 0; fx < samples_across; fx++) {
+    for (int fy = samples_down-1; fy >= 0; fy--) {
+        for (int fx = samples_across-1; fx >= 0; fx--) {
 
             /* get the coordinates of the patch in the image */
             int tx=0, ty=0, bx=0, by=0;
@@ -378,8 +378,8 @@ int features_conv_img_to_neurons(int samples_across,
         patch_radius*patch_radius*4*img_depth)
         return -2;
 
-    for (int fy = 0; fy < samples_down; fy++) {
-        for (int fx = 0; fx < samples_across; fx++) {
+    for (int fy = samples_down-1; fy >= 0; fy--) {
+        for (int fx = samples_across-1; fx >= 0; fx--) {
             int tx=0, ty=0, bx=0, by=0;
             if (features_patch_coords(fx, fy,
                                       samples_across, samples_down,
@@ -400,7 +400,7 @@ int features_conv_img_to_neurons(int samples_across,
             autocoder_encode(feature_autocoder, feature_autocoder->hiddens,
                              use_dropouts);
 
-            for (int f = 0; f < no_of_learned_features; f++)
+            for (int f = no_of_learned_features-1; f >= 0; f--)
                 bp_set_input(net, index_input_layer+f,
                              autocoder_get_hidden(feature_autocoder, f));
         }
@@ -452,8 +452,8 @@ int features_conv_img_to_flt(int samples_across,
         return -2;
 
     /* for each input image sample */
-    for (int fy = 0; fy < samples_down; fy++) {
-        for (int fx = 0; fx < samples_across; fx++) {
+    for (int fy = samples_down-1; fy >= 0; fy--) {
+        for (int fx = samples_across-1; fx >= 0; fx--) {
             /* starting position in the first layer,
                where the depth is the number of encoded features */
             int index_layer0 =
@@ -467,7 +467,7 @@ int features_conv_img_to_flt(int samples_across,
                                       patch_radius,
                                       img_width, img_height,
                                       &tx, &ty, &bx, &by) != 0) {
-                for (int f = 0; f < no_of_learned_features; f++)
+                for (int f = no_of_learned_features-1; f >= 0; f--)
                     layer0[index_layer0+f] = 0;
 
                 continue;
@@ -529,8 +529,8 @@ int features_deconv_flt_to_flt(int samples_across,
     memset((void*)img, '\0', img_width*img_height*img_depth*sizeof(float));
 
     /* for each input image sample */
-    for (int fy = 0; fy < samples_down; fy++) {
-        for (int fx = 0; fx < samples_across; fx++) {
+    for (int fy = samples_down-1; fy >= 0; fy--) {
+        for (int fx = samples_across-1; fx >= 0; fx--) {
             /* starting position in the first layer,
                where the depth is the number of encoded features */
             int index_layer =
@@ -625,7 +625,7 @@ int features_deconv_img_to_flt(int samples_across,
         return retval;
     }
 
-    for (i = 0; i < img_width*img_height*img_depth; i++) {
+    for (i = img_width*img_height*img_depth-1; i >= 0; i--) {
         if ((deconv_img[i] > 0) && (deconv_img[i] <= 255)) {
             img[i] = (unsigned char)deconv_img[i];
         }
@@ -679,8 +679,8 @@ int features_conv_flt_to_flt(int samples_across,
         patch_radius*patch_radius*4*floats_depth)
         return -2;
 
-    for (int fy = 0; fy < samples_down; fy++) {
-        for (int fx = 0; fx < samples_across; fx++) {
+    for (int fy = samples_down-1; fy >= 0; fy--) {
+        for (int fx = samples_across-1; fx >= 0; fx--) {
             int index_layer1 =
                 (fy * samples_across + fx) *
                 no_of_learned_features;
@@ -690,7 +690,7 @@ int features_conv_flt_to_flt(int samples_across,
                                       patch_radius,
                                       floats_width, floats_height,
                                       &tx, &ty, &bx, &by) != 0) {
-                for (int f = 0; f < no_of_learned_features; f++)
+                for (int f = no_of_learned_features-1; f >= 0; f--)
                     layer1[index_layer1+f] = 0;
 
                 continue;
@@ -749,8 +749,8 @@ int features_conv_floats_to_neurons(int samples_across,
         patch_radius*patch_radius*4*floats_depth)
         return -2;
 
-    for (int fy = 0; fy < samples_down; fy++) {
-        for (int fx = 0; fx < samples_across; fx++) {
+    for (int fy = samples_down-1; fy >= 0; fy--) {
+        for (int fx = samples_across-1; fx >= 0; fx--) {
             int tx=0, ty=0, bx=0, by=0;
             if (features_patch_coords(fx, fy,
                                       samples_across, samples_down,
@@ -771,7 +771,7 @@ int features_conv_floats_to_neurons(int samples_across,
             autocoder_encode(feature_autocoder, feature_autocoder->hiddens,
                              use_dropouts);
 
-            for (int f = 0; f < no_of_learned_features; f++)
+            for (int f = no_of_learned_features-1; f >= 0; f--)
                 bp_set_input(net, index_net_inputs+f,
                              autocoder_get_hidden(feature_autocoder, f));
         }
