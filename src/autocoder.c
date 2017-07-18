@@ -133,10 +133,13 @@ void autocoder_encode(ac * autocoder, float * encoded, unsigned char use_dropout
 
         /* weighted sum of inputs */
         float adder = autocoder->bias[h];
-        for (int i = autocoder->NoOfInputs-1; i >= 0; i--)
-            adder +=
-                autocoder->weights[h*autocoder->NoOfInputs + i] *
-                autocoder->inputs[i];
+        float * w = &autocoder->weights[h*autocoder->NoOfInputs];
+        float * inp = &autocoder->inputs[0];
+        int i = autocoder->NoOfInputs-1;
+        while (i >= 0) {
+            adder += w[i] * inp[i];
+            i--;
+        }
 
         /* add some random noise */
         if (autocoder->noise > 0)
@@ -158,13 +161,17 @@ void autocoder_decode(ac * autocoder, float * decoded)
     for (int i = autocoder->NoOfInputs-1; i >= 0; i--) {
         /* weighted sum of hidden inputs */
         float adder = 0;
-        for (int h = autocoder->NoOfHiddens-1; h >= 0; h--) {
-            if (autocoder->hiddens[h] == AUTOCODER_DROPPED_OUT)
-                continue;
+        int h = autocoder->NoOfHiddens-1;
+        float * w = &autocoder->weights[i];
+        float * inp = &autocoder->hiddens[0];
+        int step = autocoder->NoOfInputs;
+        int ctr = h*step;
+        while (h >= 0) {
+            if (inp[h] != AUTOCODER_DROPPED_OUT)
+                adder += w[ctr] * inp[h];
 
-            adder +=
-                autocoder->weights[h*autocoder->NoOfInputs + i] *
-                autocoder->hiddens[h];
+            ctr -= step;
+            h--;
         }
 
         /* add some random noise */
