@@ -106,13 +106,12 @@ int bp_neuron_init(bp_neuron * n,
 
     /* create some weights */
     n->weights = (float*)malloc(no_of_inputs*sizeof(float));
-    if (!n->weights) {
+    if (!n->weights)
         return -1;
-    }
+
     n->lastWeightChange = (float*)malloc(no_of_inputs*sizeof(float));
-    if (!n->lastWeightChange) {
+    if (!n->lastWeightChange)
         return -2;
-    }
 
     bp_neuron_init_weights(n, random_seed);
     n->desiredValue = -1;
@@ -122,12 +121,12 @@ int bp_neuron_init(bp_neuron * n,
     n->excluded = 0;
 
     /* pointers to input neurons */
-    n->inputs = (struct bp_n **)malloc(no_of_inputs*
-                                       sizeof(struct bp_n *));
-    if (!n->inputs) {
+    n->inputs = (struct bp_n **)malloc(no_of_inputs*sizeof(struct bp_n *));
+    if (!n->inputs)
         return -3;
-    }
+
     memset(n->inputs,'\0',no_of_inputs*sizeof(struct bp_n *));
+
     return 0;
 }
 
@@ -223,17 +222,14 @@ void bp_neuron_feedForward(bp_neuron * n,
     adder = n->bias;
 
     /* calculate weighted sum of inputs */
-    for (i = 0; i < n->NoOfInputs; i++) {
-        if (n->inputs[i] != 0) {
-            adder += n->weights[i] * n->inputs[i]->value;
-        }
-    }
+    for (i = 0; i < n->NoOfInputs; i++)
+        adder += n->weights[i] * n->inputs[i]->value;
+
 
     /* add some random noise */
-    if (noise > 0) {
+    if (noise > 0)
         adder = ((1.0f - noise) * adder) +
             (noise * ((rand_num(random_seed)%10000)/10000.0f));
-    }
 
     /* activation function */
     n->value = 1.0f / (1.0f + exp(-adder));
