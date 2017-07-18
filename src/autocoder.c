@@ -259,15 +259,16 @@ void autocoder_learn(ac * autocoder)
         float afact = autocoder->outputs[i] * (1.0f - autocoder->outputs[i]);
         float BPerror = autocoder->inputs[i] - autocoder->outputs[i];
         float gradient = afact * BPerror;
+        int step = autocoder->NoOfInputs;
+        int n = (autocoder->NoOfHiddens-1)*step + i;
         for (int h = autocoder->NoOfHiddens-1; h >= 0; h--) {
-            if (autocoder->hiddens[h] == AUTOCODER_DROPPED_OUT)
-                continue;
-
-            int n = h*autocoder->NoOfInputs + i;
-            autocoder->lastWeightChange[n] =
-                e * (autocoder->lastWeightChange[n] + 1) *
-                gradient * autocoder->hiddens[h];
-            autocoder->weights[n] += autocoder->lastWeightChange[n];
+            if (autocoder->hiddens[h] != AUTOCODER_DROPPED_OUT) {
+                autocoder->lastWeightChange[n] =
+                    e * (autocoder->lastWeightChange[n] + 1) *
+                    gradient * autocoder->hiddens[h];
+                autocoder->weights[n] += autocoder->lastWeightChange[n];
+            }
+            n -= step;
         }
     }
 
@@ -282,8 +283,8 @@ void autocoder_learn(ac * autocoder)
         float gradient = afact * BPerror;
         autocoder->lastBiasChange[h] = e * (autocoder->lastBiasChange[h] + 1.0f) * gradient;
         autocoder->bias[h] += autocoder->lastBiasChange[h];
-        for (int i = autocoder->NoOfInputs-1; i >= 0; i--) {
-            int n = h*autocoder->NoOfInputs + i;
+        int n = (h+1)*autocoder->NoOfInputs - 1;
+        for (int i = autocoder->NoOfInputs-1; i >= 0; i--, n--) {
             autocoder->lastWeightChange[n] =
                 e * (autocoder->lastWeightChange[n] + 1) *
                 gradient * autocoder->inputs[i];
