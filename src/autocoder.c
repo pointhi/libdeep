@@ -301,43 +301,43 @@ void autocoder_learn(ac * autocoder)
  */
 int autocoder_save(FILE * fp, ac * autocoder)
 {
-    if (fwrite(&autocoder->NoOfInputs, sizeof(int), 1, fp) == 0) {
+    if (fwrite(&autocoder->NoOfInputs, sizeof(int), 1, fp) == 0)
         return -1;
-    }
-    if (fwrite(&autocoder->NoOfHiddens, sizeof(int), 1, fp) == 0) {
+
+    if (fwrite(&autocoder->NoOfHiddens, sizeof(int), 1, fp) == 0)
         return -2;
-    }
-    if (fwrite(&autocoder->random_seed, sizeof(unsigned int), 1, fp) == 0) {
+
+    if (fwrite(&autocoder->random_seed, sizeof(unsigned int), 1, fp) == 0)
         return -3;
-    }
-    if (fwrite(&autocoder->DropoutPercent, sizeof(float), 1, fp) == 0) {
+
+    if (fwrite(&autocoder->DropoutPercent, sizeof(float), 1, fp) == 0)
         return -4;
-    }
+
     if (fwrite(autocoder->weights, sizeof(float),
-               autocoder->NoOfInputs*autocoder->NoOfHiddens, fp) == 0) {
+               autocoder->NoOfInputs*autocoder->NoOfHiddens, fp) == 0)
         return -5;
-    }
+
     if (fwrite(autocoder->lastWeightChange, sizeof(float),
-               autocoder->NoOfInputs*autocoder->NoOfHiddens, fp) == 0) {
+               autocoder->NoOfInputs*autocoder->NoOfHiddens, fp) == 0)
         return -6;
-    }
+
     if (fwrite(autocoder->bias, sizeof(float),
-               autocoder->NoOfHiddens, fp) == 0) {
+               autocoder->NoOfHiddens, fp) == 0)
         return -7;
-    }
+
     if (fwrite(autocoder->lastBiasChange, sizeof(float),
-               autocoder->NoOfHiddens, fp) == 0) {
+               autocoder->NoOfHiddens, fp) == 0)
         return -8;
-    }
-    if (fwrite(&autocoder->learningRate, sizeof(float), 1, fp) == 0) {
+
+    if (fwrite(&autocoder->learningRate, sizeof(float), 1, fp) == 0)
         return -9;
-    }
-    if (fwrite(&autocoder->noise, sizeof(float), 1, fp) == 0) {
+
+    if (fwrite(&autocoder->noise, sizeof(float), 1, fp) == 0)
         return -10;
-    }
-    if (fwrite(&autocoder->itterations, sizeof(unsigned int), 1, fp) == 0) {
+
+    if (fwrite(&autocoder->itterations, sizeof(unsigned int), 1, fp) == 0)
         return -11;
-    }
+
     return 0;
 }
 
@@ -354,15 +354,14 @@ int autocoder_load(FILE * fp, ac * autocoder, int initialise)
     int no_of_hiddens = 0;
     unsigned int random_seed = 0;
 
-    if (fread(&no_of_inputs, sizeof(int), 1, fp) == 0) {
+    if (fread(&no_of_inputs, sizeof(int), 1, fp) == 0)
         return -1;
-    }
-    if (fread(&no_of_hiddens, sizeof(int), 1, fp) == 0) {
+
+    if (fread(&no_of_hiddens, sizeof(int), 1, fp) == 0)
         return -2;
-    }
-    if (fread(&random_seed, sizeof(unsigned int), 1, fp) == 0) {
+
+    if (fread(&random_seed, sizeof(unsigned int), 1, fp) == 0)
         return -3;
-    }
 
     /* create the autocoder */
     if (initialise != 0) {
@@ -379,34 +378,34 @@ int autocoder_load(FILE * fp, ac * autocoder, int initialise)
         autocoder->random_seed = random_seed;
     }
 
-    if (fread(&autocoder->DropoutPercent, sizeof(float), 1, fp) == 0) {
+    if (fread(&autocoder->DropoutPercent, sizeof(float), 1, fp) == 0)
         return -5;
-    }
+
     if (fread(autocoder->weights, sizeof(float),
-              autocoder->NoOfInputs*autocoder->NoOfHiddens, fp) == 0) {
+              autocoder->NoOfInputs*autocoder->NoOfHiddens, fp) == 0)
         return -6;
-    }
+
     if (fread(autocoder->lastWeightChange, sizeof(float),
-              autocoder->NoOfInputs*autocoder->NoOfHiddens, fp) == 0) {
+              autocoder->NoOfInputs*autocoder->NoOfHiddens, fp) == 0)
         return -7;
-    }
+
     if (fread(autocoder->bias, sizeof(float),
-              autocoder->NoOfHiddens, fp) == 0) {
+              autocoder->NoOfHiddens, fp) == 0)
         return -8;
-    }
+
     if (fread(autocoder->lastBiasChange, sizeof(float),
-              autocoder->NoOfHiddens, fp) == 0) {
+              autocoder->NoOfHiddens, fp) == 0)
         return -9;
-    }
-    if (fread(&autocoder->learningRate, sizeof(float), 1, fp) == 0) {
+
+    if (fread(&autocoder->learningRate, sizeof(float), 1, fp) == 0)
         return -10;
-    }
-    if (fread(&autocoder->noise, sizeof(float), 1, fp) == 0) {
+
+    if (fread(&autocoder->noise, sizeof(float), 1, fp) == 0)
         return -11;
-    }
-    if (fread(&autocoder->itterations, sizeof(unsigned int), 1, fp) == 0) {
+
+    if (fread(&autocoder->itterations, sizeof(unsigned int), 1, fp) == 0)
         return -12;
-    }
+
     return 0;
 }
 
@@ -476,6 +475,7 @@ void autocoder_normalise_inputs(ac * autocoder)
     for (int i = 1; i < autocoder->NoOfInputs; i++) {
         if (autocoder->inputs[i] < min)
             min = autocoder->inputs[i];
+
         if (autocoder->inputs[i] > max)
             max = autocoder->inputs[i];
     }
@@ -497,17 +497,17 @@ void autocoder_normalise_inputs(ac * autocoder)
  */
 int autocoder_compare(ac * autocoder0, ac * autocoder1)
 {
-    if (autocoder0->NoOfInputs != autocoder1->NoOfInputs) {
+    if (autocoder0->NoOfInputs != autocoder1->NoOfInputs)
         return -1;
-    }
-    if (autocoder0->NoOfHiddens != autocoder1->NoOfHiddens) {
+
+    if (autocoder0->NoOfHiddens != autocoder1->NoOfHiddens)
         return -2;
-    }
+
     for (int h = autocoder0->NoOfHiddens-1; h >= 0; h--) {
-        if (autocoder0->bias[h] != autocoder1->bias[h]) {
+        if (autocoder0->bias[h] != autocoder1->bias[h])
             return -3;
-        }
     }
+
     for (int i = autocoder0->NoOfInputs*autocoder0->NoOfHiddens-1; i >= 0; i--) {
         if (autocoder0->weights[i] != autocoder1->weights[i])
             return -4;
@@ -544,20 +544,18 @@ int autocoder_plot_weights(ac * autocoder,
     int no_of_weights = patch_width*patch_width*patch_depth;
 
     /* check that the number of inputs matches the expected patch size */
-    if (autocoder->NoOfInputs != no_of_weights) {
+    if (autocoder->NoOfInputs != no_of_weights)
         return -1;
-    }
 
     float min_weight = autocoder->weights[0];
     float max_weight = min_weight;
     int start_index = feature_index*no_of_weights;
     for (int i = start_index; i < start_index + no_of_weights; i++) {
-        if (autocoder->weights[i] < min_weight) {
+        if (autocoder->weights[i] < min_weight)
             min_weight = autocoder->weights[i];
-        }
-        if (autocoder->weights[i] > max_weight) {
+
+        if (autocoder->weights[i] > max_weight)
             max_weight = autocoder->weights[i];
-        }
     }
 
     float weight_range = max_weight - min_weight;
@@ -568,8 +566,10 @@ int autocoder_plot_weights(ac * autocoder,
         int patch_y = (y - img_ty) * patch_width / img_y_range;
         for (int x = img_tx; x < img_bx; x++) {
             int patch_x = (x - img_tx) * patch_width / img_x_range;
+
             /* position in the image */
             int img_n = (y*img_width + x)*3;
+
             /* position in the patch */
             int patch_n = (patch_y*patch_width + patch_x)*patch_depth;
             for (int c = 0; c < 3; c++) {
