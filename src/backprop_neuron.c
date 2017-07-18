@@ -242,28 +242,21 @@ void bp_neuron_feedForward(bp_neuron * n,
 void bp_neuron_backprop(bp_neuron * n)
 {
     int i;
-    bp_neuron * nrn;
     float afact;
 
     /* if the neuron has dropped out then don't continue */
     if (n->excluded > 0) return;
 
-    if (n->desiredValue > -1) {
-        /* output unit */
+    /* output unit */
+    if (n->desiredValue > -1)
         n->BPerror = n->desiredValue - n->value;
-    }
 
     /* activation function */
     afact = af(n->value);
 
     /* back-propogate the error */
-    for (i = 0; i < n->NoOfInputs; i++) {
-        nrn = n->inputs[i];
-        if (nrn != 0) {
-            nrn->BPerror +=
-                (n->BPerror * afact * n->weights[i]);
-        }
-    }
+    for (i = 0; i < n->NoOfInputs; i++)
+        n->inputs[i]->BPerror += n->BPerror * afact * n->weights[i];
 }
 
 /**
