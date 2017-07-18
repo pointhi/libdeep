@@ -44,30 +44,47 @@ int autocoder_init(ac * autocoder,
 {
     autocoder->NoOfInputs = no_of_inputs;
     autocoder->NoOfHiddens = no_of_hiddens;
+
     autocoder->inputs =
         (float*)malloc(no_of_inputs*sizeof(float));
-    if (!autocoder->inputs) return -1;
+    if (!autocoder->inputs)
+        return -1;
+
     autocoder->hiddens =
         (float*)malloc(no_of_hiddens*sizeof(float));
-    if (!autocoder->hiddens) return -2;
+    if (!autocoder->hiddens)
+        return -2;
+
     autocoder->bias =
         (float*)malloc(no_of_hiddens*sizeof(float));
-    if (!autocoder->bias) return -3;
+    if (!autocoder->bias)
+        return -3;
+
     autocoder->weights =
         (float*)malloc(no_of_hiddens*no_of_inputs*sizeof(float));
-    if (!autocoder->weights) return -4;
+    if (!autocoder->weights)
+        return -4;
+
     autocoder->lastWeightChange =
         (float*)malloc(no_of_hiddens*no_of_inputs*sizeof(float));
-    if (!autocoder->lastWeightChange) return -5;
+    if (!autocoder->lastWeightChange)
+        return -5;
+
     autocoder->outputs =
         (float*)malloc(no_of_inputs*sizeof(float));
-    if (!autocoder->outputs) return -6;
+    if (!autocoder->outputs)
+        return -6;
+
     autocoder->bperr =
         (float*)malloc(no_of_hiddens*sizeof(float));
-    if (!autocoder->bperr) return -7;
+    if (!autocoder->bperr)
+        return -7;
+
     autocoder->lastBiasChange =
         (float*)malloc(no_of_hiddens*sizeof(float));
-    if (!autocoder->lastBiasChange) return -8;
+    if (!autocoder->lastBiasChange)
+        return -8;
+
     memset((void*)autocoder->inputs,'\0',no_of_inputs*sizeof(float));
     memset((void*)autocoder->outputs,'\0',no_of_inputs*sizeof(float));
     memset((void*)autocoder->hiddens,'\0',
@@ -90,10 +107,9 @@ int autocoder_init(ac * autocoder,
     for (int h = no_of_hiddens-1; h >= 0; h--) {
         autocoder->bias[h] =
             rand_initial_weight(&autocoder->random_seed);
-        for (int i = no_of_inputs-1; i >= 0; i--) {
+        for (int i = no_of_inputs-1; i >= 0; i--)
             autocoder->weights[h*no_of_inputs + i] =
                 rand_initial_weight(&autocoder->random_seed);
-        }
     }
     return 0;
 }
@@ -122,7 +138,7 @@ void autocoder_free(ac * autocoder)
  */
 void autocoder_encode(ac * autocoder, float * encoded, unsigned char use_dropouts)
 {
-    for (int h = 0; h < autocoder->NoOfHiddens; h++) {
+    for (int h = autocoder->NoOfHiddens-1; h >= 0; h--) {
         if (use_dropouts != 0) {
             if (rand_num(&autocoder->random_seed)%10000 <
                 autocoder->DropoutPercent*100) {
@@ -281,7 +297,8 @@ void autocoder_learn(ac * autocoder)
         float afact = autocoder->hiddens[h] * (1.0f - autocoder->hiddens[h]);
         float BPerror = autocoder->bperr[h];
         float gradient = afact * BPerror;
-        autocoder->lastBiasChange[h] = e * (autocoder->lastBiasChange[h] + 1.0f) * gradient;
+        autocoder->lastBiasChange[h] =
+            e * (autocoder->lastBiasChange[h] + 1.0f) * gradient;
         autocoder->bias[h] += autocoder->lastBiasChange[h];
         int n = (h+1)*autocoder->NoOfInputs - 1;
         for (int i = autocoder->NoOfInputs-1; i >= 0; i--, n--) {
