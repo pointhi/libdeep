@@ -211,12 +211,16 @@ void autocoder_backprop(ac * autocoder)
         autocoder->BPerror += fabs(BPerror);
         errorPercent += fabs(BPerror);
         float afact = autocoder->outputs[i] * (1.0f - autocoder->outputs[i]);
-        for (int h = autocoder->NoOfHiddens-1; h >= 0; h--) {
-            if (autocoder->hiddens[h] == AUTOCODER_DROPPED_OUT)
-                continue;
-
-            autocoder->bperr[h] +=
-                BPerror * afact * autocoder->weights[h*autocoder->NoOfInputs + i];
+        float bperr = BPerror * afact;
+        float * w = &autocoder->weights[i];
+        int h = autocoder->NoOfHiddens-1;
+        int step = autocoder->NoOfInputs;
+        int ctr = h*step;
+        while (h >= 0) {
+            if (autocoder->hiddens[h] != AUTOCODER_DROPPED_OUT)
+                autocoder->bperr[h] += bperr * w[ctr];
+            h--;
+            ctr -= step;
         }
     }
 
