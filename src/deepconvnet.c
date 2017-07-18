@@ -346,9 +346,9 @@ int deepconvnet_update_img(deepconvnet * convnet, unsigned char img[],
         return -2;
 
     if (convnet->learner->training_complete == 0) {
-        if (deeplearn_training_last_layer(convnet->learner)) {
+        if (deeplearn_training_last_layer(convnet->learner))
             deepconvnet_set_class(convnet, class_number);
-        }
+
         deeplearn_update(convnet->learner);
         deepconvnet_update(convnet);
     }
@@ -369,17 +369,16 @@ int deepconvnet_test_img(deepconvnet * convnet, unsigned char img[])
 {
     const unsigned char use_dropouts = 0;
 
-    if (conv_img(img, convnet->convolution, use_dropouts) != 0) {
+    if (conv_img(img, convnet->convolution, use_dropouts) != 0)
         return -1;
-    }
 
     if (deepconvnet_set_inputs_conv(convnet->learner,
-                                    convnet->convolution) != 0) {
+                                    convnet->convolution) != 0)
         return -2;
-    }
 
     /* feed forward only */
     deeplearn_feed_forward(convnet->learner);
+
     return 0;
 }
 
@@ -576,10 +575,11 @@ float deepconvnet_get_performance(deepconvnet * convnet)
         int index = convnet->test_set_index[i];
         unsigned char * img = convnet->images[index];
         deepconvnet_update_img(convnet, img, -1);
+
         if (deeplearn_get_class(convnet->learner) ==
-            convnet->classification_number[index]) {
+            convnet->classification_number[index])
             performance += 100.0f;
-        }
+
         ctr++;
     }
 

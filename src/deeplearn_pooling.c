@@ -119,7 +119,7 @@ int unpooling_from_flt_to_flt(int depth,
             int x_pooled = x_original * pooled_layer_across / original_layer_across;
             int n_pooled = (y_pooled*pooled_layer_across + x_pooled)*depth;
             int n_original = (y_original*original_layer_across + x_original)*depth;
-            for (int d = depth; d >= 0; d--)
+            for (int d = depth-1; d >= 0; d--)
                 original_layer[n_original+d] = pooled_layer[n_pooled+d];
         }
     }

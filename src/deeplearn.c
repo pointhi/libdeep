@@ -287,10 +287,8 @@ void deeplearn_pretrain(bp * net, ac * autocoder, int current_layer)
     else {
         /* copy the input unit values to the inputs
            of the autocoder */
-        for (int i = net->NoOfInputs-1; i >= 0; i--) {
-            autocoder_set_input(autocoder, i,
-                                bp_get_input(net, i));
-        }
+        for (int i = net->NoOfInputs-1; i >= 0; i--)
+            autocoder_set_input(autocoder, i, bp_get_input(net, i));
     }
     autocoder_update(autocoder);
 }
@@ -357,9 +355,8 @@ void deeplearn_update(deeplearn * learner)
         learner->BPerror = learner->net->BPerrorPercent;
 
         /* set the training completed flag */
-        if (learner->BPerror < minimum_error_percent) {
+        if (learner->BPerror < minimum_error_percent)
             learner->training_complete = 1;
-        }
     }
 
     /* record the history of error values */
@@ -523,7 +520,8 @@ void deeplearn_set_inputs(deeplearn * learner, deeplearndata * sample)
             value = sample->inputs[i];
             range = learner->input_range_max[i] - learner->input_range_min[i];
             if (range > 0) {
-                normalised = (((value - learner->input_range_min[i])/range)*0.5) + 0.25;
+                normalised =
+                    (((value - learner->input_range_min[i])/range)*0.5) + 0.25;
                 deeplearn_set_input(learner, pos, normalised);
             }
             pos++;
@@ -998,9 +996,8 @@ int deeplearn_plot_history(deeplearn * learner,
         fprintf(fp,"%d    %.10f\n",
                 index*learner->history_step,value);
         /* record the maximum error value */
-        if (value > max_value) {
+        if (value > max_value)
             max_value = value;
-        }
     }
     fclose(fp);
 
@@ -1109,21 +1106,21 @@ static int deeplearn_export_c(deeplearn * learner, char * filename)
     int i, j, k, no_of_weights;
 
     fp = fopen(filename,"w");
-    if (!fp) {
+    if (!fp)
         return -1;
-    }
 
     fprintf(fp,"%s\n", "#include <stdio.h>");
     fprintf(fp,"%s\n", "#include <stdlib.h>");
-    if (learner->no_of_input_fields > 0) {
+
+    if (learner->no_of_input_fields > 0)
         fprintf(fp,"%s\n", "#include <string.h>");
-    }
+
     fprintf(fp,"%s\n\n", "#include <math.h>");
 
-    if (learner->no_of_input_fields > 0) {
+    if (learner->no_of_input_fields > 0)
         fprintf(fp, "const int no_of_input_fields = %d;\n",
                 learner->no_of_input_fields);
-    }
+
     fprintf(fp, "const int no_of_inputs = %d;\n",
             learner->net->NoOfInputs);
     fprintf(fp, "const int no_of_hiddens = %d;\n",

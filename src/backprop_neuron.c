@@ -46,9 +46,11 @@ static void bp_neuron_init_weights(bp_neuron * n,
     for (i = 0; i < n->NoOfInputs; i++) {
         n->weights[i] = rand_initial_weight(random_seed);
         n->lastWeightChange[i] = 0;
+
         if (n->weights[i] < n->min_weight) {
             n->min_weight = n->weights[i];
         }
+
         if (n->weights[i] > n->max_weight) {
             n->max_weight = n->weights[i];
         }
@@ -141,10 +143,8 @@ int bp_neuron_compare(bp_neuron * n1, bp_neuron * n2)
 {
     int i;
 
-    if ((n1->NoOfInputs != n2->NoOfInputs) ||
-        (n1->bias != n2->bias)) {
+    if ((n1->NoOfInputs != n2->NoOfInputs) || (n1->bias != n2->bias))
         return 0;
-    }
 
     for (i = 0; i < n1->NoOfInputs; i++) {
         if ((n1->weights[i] != n2->weights[i]) ||
@@ -168,9 +168,8 @@ void bp_neuron_free(bp_neuron * n)
     free(n->lastWeightChange);
 
     /* clear the pointers to input neurons */
-    for (i = 0; i < n->NoOfInputs; i++) {
+    for (i = 0; i < n->NoOfInputs; i++)
         n->inputs[i]=0;
-    }
 
     /* free the inputs */
     free(n->inputs);
@@ -271,10 +270,9 @@ void bp_neuron_reproject(bp_neuron * n)
 
     for (i = 0; i < n->NoOfInputs; i++) {
         nrn = n->inputs[i];
-        if (nrn != 0) {
+        if (nrn != 0)
             nrn->value_reprojected +=
                 (n->value_reprojected * n->weights[i]);
-        }
     }
 }
 
@@ -308,12 +306,11 @@ void bp_neuron_learn(bp_neuron * n,
             n->weights[i] += n->lastWeightChange[i];
 
             /* limit weights within range */
-            if (n->weights[i] < n->min_weight) {
+            if (n->weights[i] < n->min_weight)
                 n->min_weight = n->weights[i];
-            }
-            if (n->weights[i] > n->max_weight) {
+
+            if (n->weights[i] > n->max_weight)
                 n->max_weight = n->weights[i];
-            }
         }
     }
 }
@@ -331,44 +328,46 @@ void bp_weights_test_pattern(bp_neuron * n, int depth)
     int height = units / width;
 
     /* clear all weights */
-    for (int i = 0; i < n->NoOfInputs; i++) {
+    for (int i = 0; i < n->NoOfInputs; i++)
         n->weights[i] = 0;
-    }
 
     /* draw a cross */
     for (int x = 0; x < width; x++) {
         int y = x*height/width;
         int p = (y*width + x)*depth;
-        for (int d = 0; d < depth; d++) {
+
+        for (int d = 0; d < depth; d++)
             n->weights[p+d] = 1.0f;
-        }
+
         y = (width-1-x)*height/width;
         p = (y*width + x)*depth;
-        for (int d = 0; d < depth; d++) {
+
+        for (int d = 0; d < depth; d++)
             n->weights[p+d] = 1.0f;
-        }
     }
 
     for (int x = 0; x < width; x++) {
         int p = x*depth;
-        for (int d = 0; d < depth; d++) {
+
+        for (int d = 0; d < depth; d++)
             n->weights[p+d] = 2.0f;
-        }
+
         p = ((height-1)*width + x)*depth;
-        for (int d = 0; d < depth; d++) {
+
+        for (int d = 0; d < depth; d++)
             n->weights[p+d] = 2.0f;
-        }
     }
 
     for (int y = 0; y < height; y++) {
         int p = y*width*depth;
-        for (int d = 0; d < depth; d++) {
+
+        for (int d = 0; d < depth; d++)
             n->weights[p+d] = 2.0f;
-        }
+
         p = (y*width + (width-1))*depth;
-        for (int d = 0; d < depth; d++) {
+
+        for (int d = 0; d < depth; d++)
             n->weights[p+d] = 2.0f;
-        }
     }
 }
 

@@ -61,6 +61,7 @@ int enc_text_to_binary(char * text,
                 inputs[pos]->value = 0.25f;
         }
     }
+
     /* set the remaining inputs within the field to neutral */
     while (i < max_field_length_chars) {
         for (bit = 0; bit < CHAR_BITS; bit++) {

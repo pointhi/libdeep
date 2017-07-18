@@ -959,13 +959,15 @@ int bp_compare(bp * net1, bp * net2)
             retval =
                 bp_neuron_compare(net1->hiddens[l][i],
                                   net2->hiddens[l][i]);
-            if (retval == 0) return -7;
+            if (retval == 0)
+                return -7;
         }
     }
 
     for (i = net1->NoOfOutputs-1; i >= 0; i--) {
         retval = bp_neuron_compare(net1->outputs[i], net2->outputs[i]);
-        if (retval == 0) return -8;
+        if (retval == 0)
+            return -8;
     }
 
     if (net1->itterations != net2->itterations)
@@ -1056,9 +1058,9 @@ int bp_classifications_to_numbers(int no_of_instances,
             unique_classification[unique_ctr] =
                 (char*)malloc((1+strlen(instance_classification[i]))*
                               sizeof(char));
-            if (!unique_classification[unique_ctr]) {
+            if (!unique_classification[unique_ctr])
                 return -2;
-            }
+
             sprintf(unique_classification[unique_ctr],
                     "%s", instance_classification[i]);
 

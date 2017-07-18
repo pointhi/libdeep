@@ -92,12 +92,11 @@ int deeplearndata_add(deeplearndata ** datalist,
 
     /* update the data range */
     for (i = 0; i < no_of_input_fields; i++) {
-        if (inputs[i] < input_range_min[i]) {
+        if (inputs[i] < input_range_min[i])
             input_range_min[i] = inputs[i];
-        }
-        if (inputs[i] > input_range_max[i]) {
+
+        if (inputs[i] > input_range_max[i])
             input_range_max[i] = inputs[i];
-        }
     }
 
     data->labeled = 1;
@@ -580,12 +579,10 @@ int deeplearndata_read_csv(char * filename,
                                         else {
                                             /* for a class number */
                                             for (k = 0; k < network_outputs; k++) {
-                                                if (k != (int)value) {
+                                                if (k != (int)value)
                                                     outputs[k] = 0.25f;
-                                                }
-                                                else {
+                                                else
                                                     outputs[k] = 0.75f;
-                                                }
                                             }
                                         }
                                         break;
@@ -609,9 +606,8 @@ int deeplearndata_read_csv(char * filename,
                         }
                         else {
                             /* update the value string */
-                            if (ctr < DEEPLEARN_MAX_FIELD_LENGTH_CHARS-1) {
+                            if (ctr < DEEPLEARN_MAX_FIELD_LENGTH_CHARS-1)
                                 valuestr[ctr++] = line[i];
-                            }
                         }
                     }
 
@@ -682,13 +678,16 @@ int deeplearndata_read_csv(char * filename,
     learner->data_samples = data_samples;
 
     /* create the indexed array for fast access */
-    deeplearndata_index_data(learner->data, learner->data_samples, &learner->indexed_data, &learner->indexed_data_samples);
+    deeplearndata_index_data(learner->data, learner->data_samples,
+                             &learner->indexed_data,
+                             &learner->indexed_data_samples);
 
     /* set the field ranges */
     for (i = 0; i < no_of_input_fields; i++) {
         learner->input_range_min[i] = input_range_min[i];
         learner->input_range_max[i] = input_range_max[i];
     }
+
     for (i = 0; i < network_outputs; i++) {
         learner->output_range_min[i] = output_range_min[i];
         learner->output_range_max[i] = output_range_max[i];
@@ -713,12 +712,11 @@ int deeplearndata_training(deeplearn * learner)
 
     /* plot a graph showing training progress */
     if (learner->training_ctr > learner->history_plot_interval) {
-        if (strlen(learner->history_plot_filename) > 0) {
+        if (strlen(learner->history_plot_filename) > 0)
             deeplearn_plot_history(learner,
                                    learner->history_plot_filename,
                                    learner->history_plot_title,
                                    1024, 480);
-        }
         learner->training_ctr = 0;
     }
     learner->training_ctr++;
