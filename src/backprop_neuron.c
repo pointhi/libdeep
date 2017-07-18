@@ -222,7 +222,7 @@ void bp_neuron_feedForward(bp_neuron * n,
     adder = n->bias;
 
     /* calculate weighted sum of inputs */
-    for (i = 0; i < n->NoOfInputs; i++)
+    for (i = n->NoOfInputs-1; i >= 0; i--)
         adder += n->weights[i] * n->inputs[i]->value;
 
 
@@ -255,7 +255,7 @@ void bp_neuron_backprop(bp_neuron * n)
     afact = af(n->value);
 
     /* back-propogate the error */
-    for (i = 0; i < n->NoOfInputs; i++)
+    for (i = n->NoOfInputs-1; i >= 0; i--)
         n->inputs[i]->BPerror += n->BPerror * afact * n->weights[i];
 }
 
