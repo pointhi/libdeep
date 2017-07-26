@@ -38,6 +38,7 @@
 #include <math.h>
 #include <assert.h>
 #include <omp.h>
+#include "globals.h"
 #include "deeplearn_random.h"
 
 struct bp_n {

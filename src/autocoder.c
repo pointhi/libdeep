@@ -163,7 +163,7 @@ void autocoder_encode(ac * autocoder, float * encoded, unsigned char use_dropout
                 (autocoder->noise * ((rand_num(&autocoder->random_seed)%10000)/10000.0f));
 
         /* activation function */
-        encoded[h] = 1.0f / (1.0f + exp(-adder));
+        encoded[h] = AF_SIGMOID(adder);
     }
 }
 
@@ -196,7 +196,7 @@ void autocoder_decode(ac * autocoder, float * decoded)
                 (autocoder->noise * ((rand_num(&autocoder->random_seed)%10000)/10000.0f));
 
         /* activation function */
-        decoded[i] = 1.0f / (1.0f + exp(-adder));
+        decoded[i] = AF_SIGMOID(adder);
     }
 }
 

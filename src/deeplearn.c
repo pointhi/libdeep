@@ -1117,6 +1117,8 @@ static int deeplearn_export_c(deeplearn * learner, char * filename)
 
     fprintf(fp,"%s\n\n", "#include <math.h>");
 
+    fprintf(fp,"%s\n\n", "#define AF_SIGMOID(adder) (1.0f / (1.0f + exp(-(adder))))");
+
     if (learner->no_of_input_fields > 0)
         fprintf(fp, "const int no_of_input_fields = %d;\n",
                 learner->no_of_input_fields);
@@ -1337,7 +1339,7 @@ static int deeplearn_export_c(deeplearn * learner, char * filename)
     fprintf(fp, "%s", "    for (j = 0; j < no_of_inputs; j++) {\n");
     fprintf(fp, "%s", "      sum += hidden_layer_0_weights[i*no_of_inputs+j]*network_inputs[j];\n");
     fprintf(fp, "%s", "    }\n");
-    fprintf(fp, "%s", "    hiddens[i] = 1.0f / (1.0f + exp(-sum));\n");
+    fprintf(fp, "%s", "    hiddens[i] = AF_SIGMOID(sum);\n");
     fprintf(fp, "%s", "  }\n");
     fprintf(fp, "%s", "  for (i = 0; i < no_of_hiddens; i++) {\n");
     fprintf(fp, "%s", "    prev_hiddens[i] = hiddens[i];\n");
@@ -1349,7 +1351,7 @@ static int deeplearn_export_c(deeplearn * learner, char * filename)
         fprintf(fp, "    for (j = 0; j < %d; j++) {\n",bp_hiddens_in_layer(learner->net,i-1));
         fprintf(fp, "      sum += hidden_layer_%d_weights[i*%d+j]*prev_hiddens[j];\n",i,bp_hiddens_in_layer(learner->net,i-1));
         fprintf(fp, "%s", "    }\n");
-        fprintf(fp, "%s", "    hiddens[i] = 1.0f / (1.0f + exp(-sum));\n");
+        fprintf(fp, "%s", "    hiddens[i] = AF_SIGMOID(sum);\n");
         fprintf(fp, "%s", "  }\n");
         fprintf(fp, "  for (i = 0; i < %d; i++) {\n",bp_hiddens_in_layer(learner->net,i));
         fprintf(fp, "%s", "    prev_hiddens[i] = hiddens[i];\n");
@@ -1361,7 +1363,7 @@ static int deeplearn_export_c(deeplearn * learner, char * filename)
     fprintf(fp, "    for (j = 0; j < %d; j++) {\n",bp_hiddens_in_layer(learner->net,learner->net->HiddenLayers-1));
     fprintf(fp, "      sum += output_layer_weights[i*%d+j]*prev_hiddens[j];\n",bp_hiddens_in_layer(learner->net,learner->net->HiddenLayers-1));
     fprintf(fp, "%s", "    }\n");
-    fprintf(fp, "%s", "    outputs[i] = 1.0f / (1.0f + exp(-sum));\n");
+    fprintf(fp, "%s", "    outputs[i] = AF_SIGMOID(sum);\n");
     fprintf(fp, "%s", "  }\n\n");
 
     fprintf(fp, "%s", "  for (i = 0; i < no_of_outputs; i++) {\n");

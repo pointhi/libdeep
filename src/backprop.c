@@ -362,7 +362,7 @@ void bp_reproject(bp * net, int layer, int neuron_index)
         for (i = bp_hiddens_in_layer(net,layer-1)-1; i >= 0; i--) {
             n = net->hiddens[layer-1][i];
             n->value_reprojected =
-                1.0f / (1.0f + exp(-(n->value_reprojected)));
+                AF_SIGMOID(n->value_reprojected);
         }
     }
 
@@ -377,7 +377,7 @@ void bp_reproject(bp * net, int layer, int neuron_index)
         for (i = bp_hiddens_in_layer(net,l-1)-1; i >= 0; i--) {
             n = net->hiddens[l-1][i];
             n->value_reprojected =
-                1.0f / (1.0f + exp(-(n->value_reprojected)));
+                AF_SIGMOID(n->value_reprojected);
         }
     }
 }
