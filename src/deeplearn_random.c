@@ -53,9 +53,11 @@ int rand_num(unsigned int * seed)
 /**
  * @brief Returns a small random value used to initialise weights
  * @param seed Random number generator seed
+ * @param no_of_inputs The number of input weights
  * @return Small random value
  */
-float rand_initial_weight(unsigned int * seed)
+float rand_initial_weight(unsigned int * seed, int no_of_inputs)
 {
-    return (0.2f*(rand_num(seed)%100000/100000.0f)) - 0.1f;
+    float magnitude = 1.0f / no_of_inputs;
+    return (magnitude*(rand_num(seed)%100000/100000.0f)) - (magnitude*0.5f);
 }

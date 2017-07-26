@@ -106,10 +106,10 @@ int autocoder_init(ac * autocoder,
     /* initial small random values */
     for (int h = no_of_hiddens-1; h >= 0; h--) {
         autocoder->bias[h] =
-            rand_initial_weight(&autocoder->random_seed);
+            rand_initial_weight(&autocoder->random_seed, 2);
         for (int i = no_of_inputs-1; i >= 0; i--)
             autocoder->weights[h*no_of_inputs + i] =
-                rand_initial_weight(&autocoder->random_seed);
+                rand_initial_weight(&autocoder->random_seed, no_of_inputs);
     }
     return 0;
 }

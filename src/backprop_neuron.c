@@ -44,7 +44,7 @@ static void bp_neuron_init_weights(bp_neuron * n,
 
     /* do the weights */
     for (i = 0; i < n->NoOfInputs; i++) {
-        n->weights[i] = rand_initial_weight(random_seed);
+        n->weights[i] = rand_initial_weight(random_seed, n->NoOfInputs);
         n->lastWeightChange[i] = 0;
 
         if (n->weights[i] < n->min_weight) {
@@ -57,7 +57,7 @@ static void bp_neuron_init_weights(bp_neuron * n,
     }
 
     /* dont forget the bias value */
-    n->bias = rand_initial_weight(random_seed);
+    n->bias = rand_initial_weight(random_seed, 2);
     n->lastBiasChange = 0;
 }
 
