@@ -1117,7 +1117,13 @@ static int deeplearn_export_c(deeplearn * learner, char * filename)
 
     fprintf(fp,"%s\n\n", "#include <math.h>");
 
-    fprintf(fp,"%s\n\n", "#define AF_SIGMOID(adder) (1.0f / (1.0f + exp(-(adder))))");
+#if ACTIVATION_FUNCTION == AF_SIGMOID
+    fprintf(fp,"%s\n\n", "#define AF(adder) (1.0f / (1.0f + exp(-(adder))))");
+#elif ACTIVATION_FUNCTION == AF_TANH
+    fprintf(fp,"%s\n\n", "#define AF(adder) ((((2.0f / (1.0f + exp(-(2*adder)))) - 1.0f)*0.5f)+0.5f)");
+#elif ACTIVATION_FUNCTION == AF_LINEAR
+    fprintf(fp,"%s\n\n", "#define AF(adder) ((adder) < 1.0f ? ((adder) > -1.0f ? (((adder)*0.5f)+0.5f) : 0.0f) : 1.0f)");
+#endif
 
     if (learner->no_of_input_fields > 0)
         fprintf(fp, "const int no_of_input_fields = %d;\n",
@@ -1339,7 +1345,7 @@ static int deeplearn_export_c(deeplearn * learner, char * filename)
     fprintf(fp, "%s", "    for (j = 0; j < no_of_inputs; j++) {\n");
     fprintf(fp, "%s", "      sum += hidden_layer_0_weights[i*no_of_inputs+j]*network_inputs[j];\n");
     fprintf(fp, "%s", "    }\n");
-    fprintf(fp, "%s", "    hiddens[i] = AF_SIGMOID(sum);\n");
+    fprintf(fp, "%s", "    hiddens[i] = AF(sum);\n");
     fprintf(fp, "%s", "  }\n");
     fprintf(fp, "%s", "  for (i = 0; i < no_of_hiddens; i++) {\n");
     fprintf(fp, "%s", "    prev_hiddens[i] = hiddens[i];\n");
@@ -1351,7 +1357,7 @@ static int deeplearn_export_c(deeplearn * learner, char * filename)
         fprintf(fp, "    for (j = 0; j < %d; j++) {\n",bp_hiddens_in_layer(learner->net,i-1));
         fprintf(fp, "      sum += hidden_layer_%d_weights[i*%d+j]*prev_hiddens[j];\n",i,bp_hiddens_in_layer(learner->net,i-1));
         fprintf(fp, "%s", "    }\n");
-        fprintf(fp, "%s", "    hiddens[i] = AF_SIGMOID(sum);\n");
+        fprintf(fp, "%s", "    hiddens[i] = AF(sum);\n");
         fprintf(fp, "%s", "  }\n");
         fprintf(fp, "  for (i = 0; i < %d; i++) {\n",bp_hiddens_in_layer(learner->net,i));
         fprintf(fp, "%s", "    prev_hiddens[i] = hiddens[i];\n");
@@ -1363,7 +1369,7 @@ static int deeplearn_export_c(deeplearn * learner, char * filename)
     fprintf(fp, "    for (j = 0; j < %d; j++) {\n",bp_hiddens_in_layer(learner->net,learner->net->HiddenLayers-1));
     fprintf(fp, "      sum += output_layer_weights[i*%d+j]*prev_hiddens[j];\n",bp_hiddens_in_layer(learner->net,learner->net->HiddenLayers-1));
     fprintf(fp, "%s", "    }\n");
-    fprintf(fp, "%s", "    outputs[i] = AF_SIGMOID(sum);\n");
+    fprintf(fp, "%s", "    outputs[i] = AF(sum);\n");
     fprintf(fp, "%s", "  }\n\n");
 
     fprintf(fp, "%s", "  for (i = 0; i < no_of_outputs; i++) {\n");
@@ -1520,8 +1526,23 @@ static int deeplearn_export_python(deeplearn * learner, char * filename)
     fprintf(fp, "%s", "]\n\n\n");
 
     fprintf(fp, "%s", "  # Activation function\n");
+
+#if ACTIVATION_FUNCTION == AF_SIGMOID
     fprintf(fp, "%s", "  def af(this, adder):\n");
     fprintf(fp, "%s", "      return 1.0 / (1.0 + math.exp(-adder))\n\n");
+#elif ACTIVATION_FUNCTION == AF_TANH
+    fprintf(fp, "%s", "  def af(this, adder):\n");
+    fprintf(fp, "%s", "      return ((((2.0 / (1.0 + math.exp(-(2*adder)))) - 1.0)*0.5)+0.5)\n\n");
+#elif ACTIVATION_FUNCTION == AF_LINEAR
+    fprintf(fp, "%s", "  def af(this, adder):\n");
+    fprintf(fp, "%s", "      if adder < 1.0:\n");
+    fprintf(fp, "%s", "          if adder > -1.0:\n");
+    fprintf(fp, "%s", "              return (adder*0.5) + 0.5\n");
+    fprintf(fp, "%s", "          else:\n");
+    fprintf(fp, "%s", "              return 0.0\n");
+    fprintf(fp, "%s", "      else:\n");
+    fprintf(fp, "%s", "          return 1.0\n");
+#endif
 
     if (learner->no_of_input_fields > 0) {
         fprintf(fp, "%s", "  # Encode some text into the input units\n");

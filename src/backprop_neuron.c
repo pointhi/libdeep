@@ -231,7 +231,7 @@ void bp_neuron_feedForward(bp_neuron * n,
             (noise * ((rand_num(random_seed)%10000)/10000.0f));
 
     /* activation function */
-    n->value = AF_SIGMOID(adder);
+    n->value = AF(adder);
 }
 
 /**

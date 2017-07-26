@@ -356,6 +356,7 @@ static void test_backprop_training()
             no_of_inputs, no_of_hiddens,
             hidden_layers,
             no_of_outputs, &random_seed);
+
     assert(net->inputs!=0);
     assert(net->hiddens!=0);
     assert(net->outputs!=0);

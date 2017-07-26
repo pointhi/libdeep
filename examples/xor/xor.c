@@ -77,7 +77,7 @@ int main(int argc, char* argv[])
 
     printf("Training Completed\n");
 
-    printf("Test data set performance is %.1f%%\n", deeplearndata_get_performance(&learner));
+    printf("Test data set performance is %.4f%%\n", deeplearndata_get_performance(&learner));
 
     deeplearn_export(&learner, "export_xor.c");
     deeplearn_export(&learner, "export_xor.py");
