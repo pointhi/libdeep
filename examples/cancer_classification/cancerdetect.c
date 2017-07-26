@@ -68,7 +68,7 @@ int main(int argc, char* argv[])
     /* set percentage of dropouts */
     deeplearn_set_dropouts(&learner, 2.0f);
 
-    learner.history_plot_interval = 500000;
+    learner.history_plot_interval = 2000000;
 
     sprintf(learner.history_plot_title,"%s",TITLE);
 

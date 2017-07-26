@@ -30,25 +30,26 @@
 #ifndef DEEPLEARN_GLOBALS_H
 #define DEEPLEARN_GLOBALS_H
 
-#define DEEPLEARN_TEMP_DIRECTORY "/tmp/"
-#define DEEPLEARN_HISTORY_SIZE   1024
-#define DEEPLEARN_UNKNOWN_ERROR  9999
-#define DEEPLEARN_UNKNOWN_VALUE  -9999
-#define DEEPLEARN_MAX_FIELD_LENGTH_CHARS 1024
-#define DEEPLEARN_MAX_CSV_INPUTS 2048
-#define DEEPLEARN_MAX_CSV_OUTPUTS 1024
+#define DEEPLEARN_TEMP_DIRECTORY          "/tmp/"
+#define DEEPLEARN_HISTORY_SIZE            1024
+#define DEEPLEARN_UNKNOWN_ERROR           9999
+#define DEEPLEARN_UNKNOWN_VALUE          -9999
+#define DEEPLEARN_MAX_FIELD_LENGTH_CHARS  1024
+#define DEEPLEARN_MAX_CSV_INPUTS          2048
+#define DEEPLEARN_MAX_CSV_OUTPUTS         1024
 
 /* The number of bits per character in a text string */
-#define CHAR_BITS (sizeof(char)*8)
+#define CHAR_BITS               (sizeof(char)*8)
 
 #define AUTOCODER_UNKNOWN      -9999
 #define AUTOCODER_DROPPED_OUT  -9999
 
-#define AF_SIGMOID 0
-#define AF_TANH    1
-#define AF_LINEAR  2
+#define AF_SIGMOID              0
+#define AF_TANH                 1
+#define AF_LINEAR               2
 
-#define ACTIVATION_FUNCTION AF_SIGMOID
+#define ACTIVATION_FUNCTION     AF_SIGMOID
+
 #if ACTIVATION_FUNCTION == AF_SIGMOID
 #define AF(adder) (1.0f / (1.0f + exp(-(adder))))
 #elif ACTIVATION_FUNCTION == AF_TANH
@@ -57,6 +58,6 @@
 #define AF(adder) ((adder) < 1.0f ? ((adder) > -1.0f ? (((adder)*0.5f)+0.5f) : 0.0f) : 1.0f)
 #endif
 
-#define PIXEL_TO_FLOAT(p) (0.25f + ((p)/(2*255.0f)))
+#define PIXEL_TO_FLOAT(p)       (0.25f + ((p)/(2*255.0f)))
 
 #endif
