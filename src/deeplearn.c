@@ -1519,6 +1519,10 @@ static int deeplearn_export_python(deeplearn * learner, char * filename)
     }
     fprintf(fp, "%s", "]\n\n\n");
 
+    fprintf(fp, "%s", "  # Activation function\n");
+    fprintf(fp, "%s", "  def af(this, adder):\n");
+    fprintf(fp, "%s", "      return 1.0 / (1.0 + math.exp(-adder))\n\n");
+
     if (learner->no_of_input_fields > 0) {
         fprintf(fp, "%s", "  # Encode some text into the input units\n");
         fprintf(fp, "%s", "  def encode_text(this, text,inputs,no_of_inputs,");
@@ -1603,7 +1607,7 @@ static int deeplearn_export_python(deeplearn * learner, char * filename)
     fprintf(fp, "%s", "      adder = this.hidden_layer_0_bias[i]\n");
     fprintf(fp, "%s", "      for j in range(this.no_of_inputs):\n");
     fprintf(fp, "%s", "        adder = adder + this.hidden_layer_0_weights[i*this.no_of_inputs+j]*network_inputs[j]\n");
-    fprintf(fp, "%s", "      hiddens.append(1.0 / (1.0 + math.exp(-adder)))\n");
+    fprintf(fp, "%s", "      hiddens.append(this.af(adder))\n");
     fprintf(fp, "%s", "    for i in range(this.no_of_hiddens):\n");
     fprintf(fp, "%s", "      prev_hiddens.append(hiddens[i])\n\n");
     for (i = 1; i < learner->net->HiddenLayers; i++) {
@@ -1612,7 +1616,7 @@ static int deeplearn_export_python(deeplearn * learner, char * filename)
         fprintf(fp, "      adder = this.hidden_layer_%d_bias[i]\n",i);
         fprintf(fp, "      for j in range(%d):\n",bp_hiddens_in_layer(learner->net,i-1));
         fprintf(fp, "        adder = adder + this.hidden_layer_%d_weights[i*%d+j]*prev_hiddens[j]\n",i,bp_hiddens_in_layer(learner->net,i-1));
-        fprintf(fp, "%s", "      hiddens[i] = 1.0 / (1.0 + math.exp(-adder))\n");
+        fprintf(fp, "%s", "      hiddens[i] = this.af(adder)\n");
         fprintf(fp, "    for i in range(%d):\n",bp_hiddens_in_layer(learner->net,i));
         fprintf(fp, "%s", "      prev_hiddens[i] = hiddens[i]\n\n");
     }
@@ -1621,7 +1625,7 @@ static int deeplearn_export_python(deeplearn * learner, char * filename)
     fprintf(fp, "%s", "      adder = this.output_layer_bias[i]\n");
     fprintf(fp, "      for j in range(%d):\n",bp_hiddens_in_layer(learner->net,learner->net->HiddenLayers-1));
     fprintf(fp, "        adder = adder + this.output_layer_weights[i*%d+j]*prev_hiddens[j]\n",bp_hiddens_in_layer(learner->net,learner->net->HiddenLayers-1));
-    fprintf(fp, "%s", "      outputs.append(1.0 / (1.0 + math.exp(-adder)))\n\n");
+    fprintf(fp, "%s", "      outputs.append(this.af(adder))\n\n");
     fprintf(fp, "%s", "    # Convert outputs from 0.25 - 0.75 back to their original range\n");
     fprintf(fp, "%s", "    for i in range(this.no_of_outputs):\n");
     fprintf(fp, "%s", "      outputs[i] = this.output_range_min[i] + ((outputs[i]-0.25)*(this.output_range_max[i] - this.output_range_min[i])/0.5)\n\n");
