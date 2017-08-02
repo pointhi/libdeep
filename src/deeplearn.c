@@ -1097,10 +1097,11 @@ void deeplearn_set_dropouts(deeplearn * learner, float dropout_percent)
 /**
  * @brief Exports a trained network as a standalone C program
  * @param learner Deep learner object
+ * @param export_type The flavor of C
  * @param filename The C source file to be produced
  * @returns zero on success
  */
-static int deeplearn_export_c(deeplearn * learner, char * filename)
+static int deeplearn_export_c_base(deeplearn * learner, int export_type, char * filename)
 {
     FILE * fp;
     int i, j, k, no_of_weights;
@@ -1109,13 +1110,15 @@ static int deeplearn_export_c(deeplearn * learner, char * filename)
     if (!fp)
         return -1;
 
-    fprintf(fp,"%s\n", "#include <stdio.h>");
-    fprintf(fp,"%s\n", "#include <stdlib.h>");
+    if (export_type == EXPORT_C99) {
+        fprintf(fp,"%s\n", "#include <stdio.h>");
+        fprintf(fp,"%s\n", "#include <stdlib.h>");
 
-    if (learner->no_of_input_fields > 0)
-        fprintf(fp,"%s\n", "#include <string.h>");
+        if (learner->no_of_input_fields > 0)
+            fprintf(fp,"%s\n", "#include <string.h>");
 
-    fprintf(fp,"%s\n\n", "#include <math.h>");
+        fprintf(fp,"%s\n\n", "#include <math.h>");
+    }
 
 #if ACTIVATION_FUNCTION == AF_SIGMOID
     fprintf(fp,"%s\n\n", "#define AF(adder) (1.0f / (1.0f + exp(-(adder))))");
@@ -1291,7 +1294,16 @@ static int deeplearn_export_c(deeplearn * learner, char * filename)
         fprintf(fp, "%s", "}\n\n");
     }
 
-    fprintf(fp, "%s", "int main(int argc, char* argv[])\n");
+    if (export_type == EXPORT_C99)
+        fprintf(fp, "%s", "int main(int argc, char* argv[])\n");
+    else {
+        fprintf(fp, "%s", "void setup()\n");
+        fprintf(fp, "%s", "{\n");
+        fprintf(fp, "%s", "  Serial.begin(115200);\n");
+        fprintf(fp, "%s", "}\n\n");
+        fprintf(fp, "%s", "void loop()\n");
+    }
+
     fprintf(fp, "%s", "{\n");
 
     if (learner->no_of_input_fields == 0)
@@ -1301,16 +1313,22 @@ static int deeplearn_export_c(deeplearn * learner, char * filename)
 
     fprintf(fp, "%s", "  float sum;\n\n");
 
-    if (learner->no_of_input_fields == 0)
-        fprintf(fp, "  if (argc < %d) return -1;\n\n", learner->net->NoOfInputs);
-    else
-        fprintf(fp, "  if (argc < %d) return -1;\n\n", learner->no_of_input_fields);
-
-    fprintf(fp, "%s", "  /* Obtain input values from command arguments */\n");
-    fprintf(fp, "%s", "  for (i = 1; i < argc; i++) {\n");
-    fprintf(fp, "%s", "    if (i > no_of_inputs) return -2;\n");
-    fprintf(fp, "%s", "    inputs[i-1] = atof(argv[i]);\n");
-    fprintf(fp, "%s", "  }\n\n");
+    if (export_type == EXPORT_C99) {
+        if (learner->no_of_input_fields == 0)
+            fprintf(fp, "  if (argc < %d) return -1;\n\n", learner->net->NoOfInputs);
+        else
+            fprintf(fp, "  if (argc < %d) return -1;\n\n", learner->no_of_input_fields);
+        fprintf(fp, "%s", "  /* Obtain input values from command arguments */\n");
+        fprintf(fp, "%s", "  for (i = 1; i < argc; i++) {\n");
+        fprintf(fp, "%s", "    if (i > no_of_inputs) return -2;\n");
+        fprintf(fp, "%s", "    inputs[i-1] = atof(argv[i]);\n");
+        fprintf(fp, "%s", "  }\n\n");
+    }
+    else {
+        fprintf(fp, "%s", "  /* Obtain input values from analog pins */\n");
+        fprintf(fp, "%s", "  for (i = 1; i < no_of_inputs; i++)\n");
+        fprintf(fp, "%s", "    inputs[i-1] = 0.25 + (analogRead(i)/2048.0);\n\n");
+    }
 
     if (learner->no_of_input_fields == 0) {
         fprintf(fp, "%s", "  /* Normalise inputs into a 0.25 - 0.75 range */\n");
@@ -1332,7 +1350,11 @@ static int deeplearn_export_c(deeplearn * learner, char * filename)
         fprintf(fp, "%s", "    }\n");
         fprintf(fp, "%s", "    else {\n");
         fprintf(fp, "%s", "      /* text value */\n");
-        fprintf(fp, "%s", "      encode_text(argv[i+1], network_inputs, no_of_inputs,\n");
+        if (export_type == EXPORT_C99)
+            fprintf(fp, "%s", "      encode_text(argv[i+1], network_inputs, no_of_inputs,\n");
+        else
+            fprintf(fp, "%s", "      encode_text(\"\", network_inputs, no_of_inputs,\n");
+
         fprintf(fp,       "                  pos, field_length[i]/%d);\n", (int)CHAR_BITS);
         fprintf(fp, "%s", "      pos += field_length[i];\n");
         fprintf(fp, "%s", "    }\n");
@@ -1375,18 +1397,54 @@ static int deeplearn_export_c(deeplearn * learner, char * filename)
     fprintf(fp, "%s", "  for (i = 0; i < no_of_outputs; i++) {\n");
     fprintf(fp, "%s", "    /* Convert outputs from 0.25 - 0.75 back to their original range */\n");
     fprintf(fp, "%s", "    outputs[i] = output_range_min[i] + ((outputs[i]-0.25f)*(output_range_max[i] - output_range_min[i])/0.5f);\n");
-    fprintf(fp, "%s", "    /* Send the outputs to stdout */\n");
-    fprintf(fp, "%s", "    printf(\"%.10f\",outputs[i]);\n");
-    fprintf(fp, "%s", "    if (i < no_of_outputs-1) {\n");
-    fprintf(fp, "%s", "      printf(\" \");\n");
-    fprintf(fp, "%s", "    }\n");
-    fprintf(fp, "%s", "  }\n\n");
-    fprintf(fp, "%s", "  printf(\"\\n\");");
-    fprintf(fp, "%s", "\n");
-    fprintf(fp, "%s", "  return 0;\n");
+
+    if (export_type == EXPORT_C99) {
+        fprintf(fp, "%s", "    /* Send the outputs to stdout */\n");
+        fprintf(fp, "%s", "    printf(\"%.10f\",outputs[i]);\n");
+        fprintf(fp, "%s", "    if (i < no_of_outputs-1) {\n");
+        fprintf(fp, "%s", "      printf(\" \");\n");
+        fprintf(fp, "%s", "    }\n");
+        fprintf(fp, "%s", "  }\n\n");
+        fprintf(fp, "%s", "  printf(\"\\n\");");
+        fprintf(fp, "%s", "\n");
+        fprintf(fp, "%s", "  return 0;\n");
+    }
+    else {
+        fprintf(fp, "%s", "    /* Do something with the outputs here */\n");
+        fprintf(fp, "%s", "    Serial.print(outputs[i]);\n");
+        fprintf(fp, "%s", "    if (i < no_of_outputs-1) {\n");
+        fprintf(fp, "%s", "      Serial.print(\" \");\n");
+        fprintf(fp, "%s", "    }\n");
+        fprintf(fp, "%s", "  }\n\n");
+        fprintf(fp, "%s", "  Serial.println(\"\");");
+        fprintf(fp, "%s", "\n");
+    }
+
     fprintf(fp, "%s", "}\n");
     fclose(fp);
     return 0;
+}
+
+/**
+ * @brief Exports a trained network as a standalone C program
+ * @param learner Deep learner object
+ * @param filename The C source file to be produced
+ * @returns zero on success
+ */
+static int deeplearn_export_c(deeplearn * learner, char * filename)
+{
+    return deeplearn_export_c_base(learner, EXPORT_C99, filename);
+}
+
+/**
+ * @brief Exports a trained network as a standalone Arduino C program
+ * @param learner Deep learner object
+ * @param filename The Arduino C source file to be produced
+ * @returns zero on success
+ */
+static int deeplearn_export_arduino(deeplearn * learner, char * filename)
+{
+    return deeplearn_export_c_base(learner, EXPORT_ARDUINO, filename);
 }
 
 /**
@@ -1679,5 +1737,10 @@ int deeplearn_export(deeplearn * learner, char * filename)
             (filename[length-1] == 'y'))
             return deeplearn_export_python(learner, filename);
     }
+
+    if ((strstr(filename,"sketch") != NULL) ||
+        (strstr(filename,"arduino") != NULL))
+        return deeplearn_export_arduino(learner, filename);
+
     return deeplearn_export_c(learner, filename);
 }

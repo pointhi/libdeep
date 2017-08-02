@@ -39,6 +39,13 @@
 #include "encoding.h"
 #include "deeplearn_conv.h"
 
+/* Enumerate different flavors of C which can be exported
+   as a standalone program */
+enum {
+    EXPORT_C99 = 0,
+    EXPORT_ARDUINO
+};
+
 struct deeplearndata {
     float * inputs;
     char ** inputs_text;

@@ -79,8 +79,9 @@ int main(int argc, char* argv[])
 
     printf("Test data set performance is %.1f%%\n", deeplearndata_get_performance(&learner));
 
-    deeplearn_export(&learner, "cancer_classifier.c");
-    deeplearn_export(&learner, "cancer_classifier.py");
+    deeplearn_export(&learner, "export_cancer_classifier.c");
+    deeplearn_export(&learner, "export_cancer_classifier_sketch.c");
+    deeplearn_export(&learner, "export_cancer_classifier.py");
 
     deeplearn_free(&learner);
 
