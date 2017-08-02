@@ -1325,9 +1325,10 @@ static int deeplearn_export_c_base(deeplearn * learner, int export_type, char * 
         fprintf(fp, "%s", "  }\n\n");
     }
     else {
-        fprintf(fp, "%s", "  /* Obtain input values from analog pins */\n");
-        fprintf(fp, "%s", "  for (i = 1; i < no_of_inputs; i++)\n");
-        fprintf(fp, "%s", "    inputs[i-1] = 0.25 + (analogRead(i)/2048.0);\n\n");
+        fprintf(fp, "%s", "  /* Change the read pin numbers as needed */\n");
+        for (i = 0; i < learner->net->NoOfInputs; i++)
+            fprintf(fp, "  inputs[%d] = analogRead(%d);\n", i, i);
+        fprintf(fp, "%s", "\n");
     }
 
     if (learner->no_of_input_fields == 0) {
