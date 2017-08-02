@@ -11,4 +11,4 @@ debug:
 	gcc -Wall -ansi -pedantic -g -o concreteslump concreteslump.c -ldeep -lm -fopenmp
 
 clean:
-	rm -f *.o concreteslump
+	rm -f *.o concreteslump *.plist export*

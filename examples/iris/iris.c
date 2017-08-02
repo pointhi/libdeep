@@ -80,8 +80,9 @@ int main(int argc, char* argv[])
 
     printf("Test data set performance is %.1f%%\n", deeplearndata_get_performance(&learner));
 
-    deeplearn_export(&learner, "iris_classifier.c");
-    deeplearn_export(&learner, "iris_classifier.py");
+    deeplearn_export(&learner, "export_iris_classifier.c");
+    deeplearn_export(&learner, "export_iris_classifier_sketch.c");
+    deeplearn_export(&learner, "export_iris_classifier.py");
 
     deeplearn_free(&learner);
 
