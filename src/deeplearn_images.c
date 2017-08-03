@@ -49,8 +49,8 @@ void deeplearn_float_to_img(float float_img[],
 {
     int img_depth_bytes = img_depth_bits/8;
 
-    for (int i = 0; i < img_width*img_height; i++) {
-        for (int j = 0; j < img_depth_bytes; j++) {
+    COUNTDOWN(i, img_width*img_height) {
+        COUNTDOWN(j, img_depth_bytes) {
             int k = j*float_img_depth/img_depth_bytes;
             img[i*img_depth_bytes + j] =
                 (unsigned char)(float_img[i*float_img_depth + k]*255);
@@ -103,7 +103,6 @@ int deeplearn_write_png_file(char * filename,
                              unsigned char buffer[])
 {
     unsigned error=1;
-    unsigned int i;
     unsigned char * image = buffer;
 
     if (bitsperpixel == 32)
@@ -115,7 +114,7 @@ int deeplearn_write_png_file(char * filename,
     if (bitsperpixel == 8) {
         image = (unsigned char*)malloc(width*height*3*sizeof(unsigned char));
         if (image) {
-            for (i = 0; i < width*height; i++) {
+            COUNTDOWN(i, width*height) {
                 image[i*3] = buffer[i];
                 image[i*3+1] = buffer[i];
                 image[i*3+2] = buffer[i];
@@ -184,16 +183,16 @@ void deeplearn_downsample_colour_to_mono(unsigned char img[],
                                          int downsampled_width,
                                          int downsampled_height)
 {
-    int x,y,n2,xx,yy,n=0;
+    int n=0;
 
-    for (y = 0; y < downsampled_height; y++) {
+    for (int y = 0; y < downsampled_height; y++) {
         /* y coordinate in the original image */
-        yy = y * height / downsampled_height;
-        for (x = 0; x < downsampled_width; x++, n++) {
+        int yy = y * height / downsampled_height;
+        for (int x = 0; x < downsampled_width; x++, n++) {
             /* x coordinate in the original image */
-            xx = x * width / downsampled_width;
+            int xx = x * width / downsampled_width;
             /* index within the original image */
-            n2 = ((yy*width) + xx)*3;
+            int n2 = ((yy*width) + xx)*3;
             /* update downsampled image */
             downsampled[n] = (img[n2]+img[n2+1]+img[n2+2])/3;
         }
@@ -215,16 +214,16 @@ void deeplearn_downsample_colour(unsigned char img[],
                                  int downsampled_width,
                                  int downsampled_height)
 {
-    int x,y,n2,xx,yy,n=0;
+    int n=0;
 
-    for (y = 0; y < downsampled_height; y++) {
+    for (int y = 0; y < downsampled_height; y++) {
         /* y coordinate in the original image */
-        yy = y * height / downsampled_height;
-        for (x = 0; x < downsampled_width; x++, n+=3) {
+        int yy = y * height / downsampled_height;
+        for (int x = 0; x < downsampled_width; x++, n+=3) {
             /* x coordinate in the original image */
-            xx = x * width / downsampled_width;
+            int xx = x * width / downsampled_width;
             /* index within the original image */
-            n2 = ((yy*width) + xx)*3;
+            int n2 = ((yy*width) + xx)*3;
             /* update downsampled image */
             downsampled[n] = img[n2];
             downsampled[n+1] = img[n2+1];
@@ -357,17 +356,15 @@ void bp_plot_images(unsigned char **images,
                     int image_width, int image_height,
                     char * filename)
 {
-    int i,y,x,n1,n2;
-
     /* allocate memory for the image */
     unsigned char * img =
         (unsigned char*)malloc(image_width*image_height*no_of_images*3);
 
-    for (i = 0; i < no_of_images; i++) {
-        for (y = 0; y < image_height; y++) {
-            for (x = 0; x < image_width; x++) {
-                n1 = ((y+(i*image_height))*image_width + x)*3;
-                n2 = (y*image_width) + x;
+    COUNTDOWN(i, no_of_images) {
+        COUNTDOWN(y, image_height) {
+            COUNTDOWN(x, image_width) {
+                int n1 = ((y+(i*image_height))*image_width + x)*3;
+                int n2 = (y*image_width) + x;
                 img[n1] = images[i][n2];
                 img[n1+1] = img[n1];
                 img[n1+2] = img[n1];

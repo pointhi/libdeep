@@ -143,7 +143,7 @@ void deepconvnet_free(deepconvnet * convnet)
     free(convnet->learner);
 
     if (convnet->no_of_images > 0) {
-        for (int i = 0; i < convnet->no_of_images; i++) {
+        COUNTDOWN(i, convnet->no_of_images) {
             if (convnet->images[i] != NULL) {
                 free(convnet->images[i]);
                 convnet->images[i] = 0;
@@ -255,7 +255,7 @@ static int deepconvnet_set_inputs_conv(deeplearn * learner, deeplearn_conv * con
         return -1;
 
     /* NOTE: can this be done with memcpy ? */
-    for (int i = 0; i < learner->net->NoOfInputs; i++)
+    COUNTDOWN(i, learner->net->NoOfInputs)
         deeplearn_set_input(learner, i, get_conv_output(conv,i));
 
     return 0;

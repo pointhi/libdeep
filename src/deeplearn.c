@@ -102,8 +102,6 @@ int deeplearn_init(deeplearn * learner,
                    float error_threshold[],
                    unsigned int * random_seed)
 {
-    int i;
-
     /* no training/test data yet */
     learner->data = 0;
     learner->data_samples = 0;
@@ -149,12 +147,12 @@ int deeplearn_init(deeplearn * learner,
     if (!learner->output_range_max)
         return -4;
 
-    for (i = no_of_inputs-1; i >= 0; i--) {
+    COUNTDOWN(i, no_of_inputs) {
         learner->input_range_min[i] = 99999;
         learner->input_range_max[i] = -99999;
     }
 
-    for (i = no_of_outputs-1; i >= 0; i--) {
+    COUNTDOWN(i, no_of_outputs) {
         learner->output_range_min[i] = 99999;
         learner->output_range_max[i] = -99999;
     }
@@ -201,7 +199,7 @@ int deeplearn_init(deeplearn * learner,
     if (!learner->autocoder)
         return -8;
 
-    for (i = 0; i < hidden_layers; i++) {
+    for (int i = 0; i < hidden_layers; i++) {
         learner->autocoder[i] = (ac*)malloc(sizeof(ac));
         if (!learner->autocoder[i])
             return -9;
@@ -258,7 +256,7 @@ void copy_autocoder_to_hidden_layer(deeplearn * learner, int hidden_layer)
 {
     ac * autocoder = learner->autocoder[hidden_layer];
     /* for each unit on the hidden layer */
-    for (int i = bp_hiddens_in_layer(learner->net,hidden_layer)-1; i >= 0; i--) {
+    COUNTDOWN(i, bp_hiddens_in_layer(learner->net,hidden_layer)) {
         bp_neuron * nrn  = learner->net->hiddens[hidden_layer][i];
         nrn->bias = autocoder->bias[i];
         memcpy((void*)nrn->weights,
@@ -279,7 +277,7 @@ void deeplearn_pretrain(bp * net, ac * autocoder, int current_layer)
     if (current_layer > 0) {
         /* copy the hidden unit values to the inputs
            of the autocoder */
-        for (int i = bp_hiddens_in_layer(net,current_layer-1)-1; i >= 0; i--) {
+        COUNTDOWN(i, bp_hiddens_in_layer(net,current_layer-1)) {
             float hidden_value = bp_get_hidden(net, current_layer-1, i);
             autocoder_set_input(autocoder, i, hidden_value);
         }
@@ -287,7 +285,7 @@ void deeplearn_pretrain(bp * net, ac * autocoder, int current_layer)
     else {
         /* copy the input unit values to the inputs
            of the autocoder */
-        for (int i = net->NoOfInputs-1; i >= 0; i--)
+        COUNTDOWN(i, net->NoOfInputs)
             autocoder_set_input(autocoder, i, bp_get_input(net, i));
     }
     autocoder_update(autocoder);
@@ -402,7 +400,6 @@ void deeplearn_free(deeplearn * learner)
     /* clear any data */
     deeplearndata * sample = learner->data;
     deeplearndata * prev_sample;
-    int i;
 
     free(learner->input_range_min);
     free(learner->input_range_max);
@@ -417,7 +414,7 @@ void deeplearn_free(deeplearn * learner)
         if (prev_sample != 0) {
             if (prev_sample->inputs_text != 0) {
                 /* clear any input text strings */
-                for (i = 0; i < learner->no_of_input_fields; i++) {
+                COUNTDOWN(i, learner->no_of_input_fields) {
                     if (prev_sample->inputs_text[i] != 0)
                         free(prev_sample->inputs_text[i]);
                 }
@@ -461,7 +458,7 @@ void deeplearn_free(deeplearn * learner)
     free(learner->error_threshold);
 
     /* free the autocoder */
-    for (int i = 0; i < learner->net->HiddenLayers; i++) {
+    COUNTDOWN(i, learner->net->HiddenLayers) {
         autocoder_free(learner->autocoder[i]);
         free(learner->autocoder[i]);
         learner->autocoder[i] = 0;
@@ -629,7 +626,7 @@ void deeplearn_set_output(deeplearn * learner, int index, float value)
  */
 void deeplearn_set_outputs(deeplearn * learner, deeplearndata * sample)
 {
-    for (int i = learner->net->NoOfOutputs-1; i >= 0; i--) {
+    COUNTDOWN(i, learner->net->NoOfOutputs) {
         float value = sample->outputs[i];
         float range = learner->output_range_max[i] - learner->output_range_min[i];
         if (range > 0) {
@@ -646,7 +643,7 @@ void deeplearn_set_outputs(deeplearn * learner, deeplearndata * sample)
  */
 void deeplearn_get_outputs(deeplearn * learner, float * outputs)
 {
-    for (int i = learner->net->NoOfOutputs-1; i >= 0; i--) {
+    COUNTDOWN(i, learner->net->NoOfOutputs) {
         float value = deeplearn_get_output(learner, i);
         float range = learner->output_range_max[i] - learner->output_range_min[i];
         if (range > 0)
@@ -673,10 +670,10 @@ float deeplearn_get_output(deeplearn * learner, int index)
  */
 int deeplearn_get_class(deeplearn * learner)
 {
-    int i, class = -9999;
+    int class = -9999;
     float max = -1;
 
-    for (i = learner->net->NoOfOutputs-1; i >= 0; i--) {
+    COUNTDOWN(i, learner->net->NoOfOutputs) {
         if (bp_get_output(learner->net, i) > max) {
             max = bp_get_output(learner->net, i);
             class = i;
@@ -692,9 +689,7 @@ int deeplearn_get_class(deeplearn * learner)
  */
 void deeplearn_set_class(deeplearn * learner, int class)
 {
-    int i;
-
-    for (i = learner->net->NoOfOutputs-1; i >= 0; i--) {
+    COUNTDOWN(i, learner->net->NoOfOutputs) {
         if (i != class)
             bp_set_output(learner->net, i, 0.25f);
         else
@@ -896,7 +891,7 @@ int deeplearn_load(FILE * fp, deeplearn * learner,
 int deeplearn_compare(deeplearn * learner1,
                       deeplearn * learner2)
 {
-    int retval,i;
+    int retval;
 
     if (learner1->current_hidden_layer !=
         learner2->current_hidden_layer)
@@ -919,7 +914,7 @@ int deeplearn_compare(deeplearn * learner1,
         learner2->history_step)
         return -7;
 
-    for (i = 0; i < learner1->history_index; i++) {
+    COUNTDOWN(i, learner1->history_index) {
         if (learner1->history[i] !=
             learner2->history[i])
             return -8;
@@ -929,13 +924,13 @@ int deeplearn_compare(deeplearn * learner1,
         learner2->itterations)
         return -9;
 
-    for (i = 0; i < learner1->net->HiddenLayers+1; i++) {
+    COUNTDOWN(i, learner1->net->HiddenLayers+1) {
         if (learner1->error_threshold[i] !=
             learner2->error_threshold[i])
             return -10;
     }
 
-    for (i = 0; i < learner1->net->NoOfInputs; i++) {
+    COUNTDOWN(i, learner1->net->NoOfInputs) {
         if (learner1->input_range_min[i] !=
             learner2->input_range_min[i])
             return -11;
@@ -945,7 +940,7 @@ int deeplearn_compare(deeplearn * learner1,
             return -12;
     }
 
-    for (i = 0; i < learner1->net->NoOfOutputs; i++) {
+    COUNTDOWN(i, learner1->net->NoOfOutputs) {
         if (learner1->output_range_min[i] !=
             learner2->output_range_min[i])
             return -13;
@@ -1077,7 +1072,7 @@ void deeplearn_set_learning_rate(deeplearn * learner, float rate)
 {
     learner->net->learningRate = rate;
 
-    for (int i = learner->net->HiddenLayers-1; i >= 0; i--)
+    COUNTDOWN(i, learner->net->HiddenLayers)
         learner->autocoder[i]->learningRate = rate;
 }
 
@@ -1090,7 +1085,7 @@ void deeplearn_set_dropouts(deeplearn * learner, float dropout_percent)
 {
     learner->net->DropoutPercent = dropout_percent;
 
-    for (int i = learner->net->HiddenLayers-1; i >= 0; i--)
+    COUNTDOWN(i, learner->net->HiddenLayers)
         learner->autocoder[i]->DropoutPercent = dropout_percent;
 }
 

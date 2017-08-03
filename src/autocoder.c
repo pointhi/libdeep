@@ -104,10 +104,10 @@ int autocoder_init(ac * autocoder,
     autocoder->DropoutPercent = 0.01f;
 
     /* initial small random values */
-    for (int h = no_of_hiddens-1; h >= 0; h--) {
+    COUNTDOWN(h, no_of_hiddens) {
         autocoder->bias[h] =
             rand_initial_weight(&autocoder->random_seed, 2);
-        for (int i = no_of_inputs-1; i >= 0; i--)
+        COUNTDOWN(i, no_of_inputs)
             autocoder->weights[h*no_of_inputs + i] =
                 rand_initial_weight(&autocoder->random_seed, no_of_inputs);
     }
@@ -138,7 +138,7 @@ void autocoder_free(ac * autocoder)
  */
 void autocoder_encode(ac * autocoder, float * encoded, unsigned char use_dropouts)
 {
-    for (int h = autocoder->NoOfHiddens-1; h >= 0; h--) {
+    COUNTDOWN(h, autocoder->NoOfHiddens) {
         if (use_dropouts != 0) {
             if (rand_num(&autocoder->random_seed)%10000 <
                 autocoder->DropoutPercent*100) {
@@ -174,7 +174,7 @@ void autocoder_encode(ac * autocoder, float * encoded, unsigned char use_dropout
  */
 void autocoder_decode(ac * autocoder, float * decoded)
 {
-    for (int i = autocoder->NoOfInputs-1; i >= 0; i--) {
+    COUNTDOWN(i, autocoder->NoOfInputs) {
         /* weighted sum of hidden inputs */
         float adder = 0;
         int h = autocoder->NoOfHiddens-1;
@@ -222,7 +222,7 @@ void autocoder_backprop(ac * autocoder)
     /* backprop from outputs to hiddens */
     autocoder->BPerror = 0;
     float errorPercent = 0;
-    for (int i = autocoder->NoOfInputs-1; i >= 0; i--) {
+    COUNTDOWN(i, autocoder->NoOfInputs) {
         float BPerror = autocoder->inputs[i] - autocoder->outputs[i];
         autocoder->BPerror += fabs(BPerror);
         errorPercent += fabs(BPerror);
@@ -271,13 +271,13 @@ void autocoder_learn(ac * autocoder)
 {
     /* weights between outputs and hiddens */
     float e = autocoder->learningRate / (1.0f + autocoder->NoOfHiddens);
-    for (int i = autocoder->NoOfInputs-1; i >= 0; i--) {
+    COUNTDOWN(i, autocoder->NoOfInputs) {
         float afact = autocoder->outputs[i] * (1.0f - autocoder->outputs[i]);
         float BPerror = autocoder->inputs[i] - autocoder->outputs[i];
         float gradient = afact * BPerror;
         int step = autocoder->NoOfInputs;
         int n = (autocoder->NoOfHiddens-1)*step + i;
-        for (int h = autocoder->NoOfHiddens-1; h >= 0; h--) {
+        COUNTDOWN(h, autocoder->NoOfHiddens) {
             if (autocoder->hiddens[h] != AUTOCODER_DROPPED_OUT) {
                 autocoder->lastWeightChange[n] =
                     e * (autocoder->lastWeightChange[n] + 1) *
@@ -290,7 +290,7 @@ void autocoder_learn(ac * autocoder)
 
     /* weights between hiddens and inputs */
     e = autocoder->learningRate / (1.0f + autocoder->NoOfInputs);
-    for (int h = autocoder->NoOfHiddens-1; h >= 0; h--) {
+    COUNTDOWN(h, autocoder->NoOfHiddens) {
         if (autocoder->hiddens[h] == AUTOCODER_DROPPED_OUT)
             continue;
 
@@ -301,11 +301,12 @@ void autocoder_learn(ac * autocoder)
             e * (autocoder->lastBiasChange[h] + 1.0f) * gradient;
         autocoder->bias[h] += autocoder->lastBiasChange[h];
         int n = (h+1)*autocoder->NoOfInputs - 1;
-        for (int i = autocoder->NoOfInputs-1; i >= 0; i--, n--) {
+        COUNTDOWN(i, autocoder->NoOfInputs) {
             autocoder->lastWeightChange[n] =
                 e * (autocoder->lastWeightChange[n] + 1) *
                 gradient * autocoder->inputs[i];
             autocoder->weights[n] += autocoder->lastWeightChange[n];
+            n--;
         }
     }
 }
@@ -520,12 +521,12 @@ int autocoder_compare(ac * autocoder0, ac * autocoder1)
     if (autocoder0->NoOfHiddens != autocoder1->NoOfHiddens)
         return -2;
 
-    for (int h = autocoder0->NoOfHiddens-1; h >= 0; h--) {
+    COUNTDOWN(h, autocoder0->NoOfHiddens) {
         if (autocoder0->bias[h] != autocoder1->bias[h])
             return -3;
     }
 
-    for (int i = autocoder0->NoOfInputs*autocoder0->NoOfHiddens-1; i >= 0; i--) {
+    COUNTDOWN(i, autocoder0->NoOfInputs*autocoder0->NoOfHiddens) {
         if (autocoder0->weights[i] != autocoder1->weights[i])
             return -4;
     }
@@ -589,7 +590,7 @@ int autocoder_plot_weights(ac * autocoder,
 
             /* position in the patch */
             int patch_n = (patch_y*patch_width + patch_x)*patch_depth;
-            for (int c = 0; c < 3; c++) {
+            COUNTDOWN(c, 3) {
                 float w = autocoder->weights[start_index + patch_n +
                                              (c*patch_depth/3)];
                 img[img_n + c] =
@@ -611,7 +612,6 @@ int autocoder_plot_weight_matrix(ac * net,
                                  char * filename,
                                  int image_width, int image_height)
 {
-    int h, i, x, y, n;
     float w, min_w=9999999.0f, max_w=-9999999.0f;
     float min_bias=9999999.0f, max_bias=-999999.0f;
     float min_hidden=999999.0f, max_hidden=-999999.0f;
@@ -627,8 +627,8 @@ int autocoder_plot_weight_matrix(ac * net,
     memset((void*)img,'\255',image_width*image_height*3);
 
     /* get the weight range */
-    for (h = 0; h < net->NoOfHiddens; h++) {
-        for (i = 0; i < net->NoOfInputs; i++) {
+    COUNTDOWN(h, net->NoOfHiddens) {
+        COUNTDOWN(i, net->NoOfInputs) {
             w = net->weights[h*net->NoOfInputs + i];
             if (w < min_w) min_w = w;
             if (w > max_w) max_w = w;
@@ -636,7 +636,7 @@ int autocoder_plot_weight_matrix(ac * net,
     }
 
     /* get the bias and hidden unit range */
-    for (h = 0; h < net->NoOfHiddens; h++) {
+    COUNTDOWN(h, net->NoOfHiddens) {
         if (net->bias[h] < min_bias) min_bias = net->bias[h];
         if (net->bias[h] > max_bias) max_bias = net->bias[h];
         if (net->hiddens[h] < min_hidden) min_hidden = net->hiddens[h];
@@ -644,12 +644,12 @@ int autocoder_plot_weight_matrix(ac * net,
     }
 
     if (max_bias > min_bias) {
-        for (y = 0; y < image_height; y++) {
-            h = y*net->NoOfHiddens/image_height;
-            for (x = 0; x < image_width; x++) {
-                i = x*net->NoOfInputs/image_width;
+        COUNTDOWN(y, image_height) {
+            int h = y*net->NoOfHiddens/image_height;
+            COUNTDOWN(x, image_width) {
+                int i = x*net->NoOfInputs/image_width;
+                int n = (y*image_width + x)*3;
                 w = net->weights[h*net->NoOfInputs + i];
-                n = (y*image_width + x)*3;
                 img[n] = (unsigned char)((w - min_w)*255/(max_w - min_w));
                 img[n+1] = (unsigned char)((net->bias[h]-min_bias)*255/(max_bias - min_bias));
                 if (max_hidden > min_hidden)
