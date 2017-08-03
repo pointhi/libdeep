@@ -155,7 +155,7 @@ int conv_init(int no_of_layers,
  */
 void conv_free(deeplearn_conv * conv)
 {
-    COUNTDOWN(i, conv->no_of_layers) {
+    for (int i = 0; i < conv->no_of_layers; i++) {
         free(conv->layer[i].convolution);
         free(conv->layer[i].pooling);
         autocoder_free(conv->layer[i].autocoder);
@@ -894,7 +894,7 @@ int conv_load(FILE * fp, deeplearn_conv * conv)
  */
 void conv_set_learning_rate(deeplearn_conv * conv, float rate)
 {
-    COUNTDOWN(i, conv->no_of_layers)
+    for (int i = 0; i < conv->no_of_layers; i++)
         conv->layer[i].autocoder->learningRate = rate;
 }
 
@@ -905,7 +905,7 @@ void conv_set_learning_rate(deeplearn_conv * conv, float rate)
  */
 void conv_set_dropouts(deeplearn_conv * conv, float dropout_percent)
 {
-    COUNTDOWN(i, conv->no_of_layers)
+    for (int i = 0; i < conv->no_of_layers; i++)
         conv->layer[i].autocoder->DropoutPercent = dropout_percent;
 }
 

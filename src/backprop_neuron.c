@@ -318,41 +318,41 @@ void bp_weights_test_pattern(bp_neuron * n, int depth)
         n->weights[i] = 0;
 
     /* draw a cross */
-    for (int x = 0; x < width; x++) {
+    COUNTUP(x, width) {
         int y = x*height/width;
         int p = (y*width + x)*depth;
 
-        for (int d = 0; d < depth; d++)
+        COUNTDOWN(d, depth)
             n->weights[p+d] = 1.0f;
 
         y = (width-1-x)*height/width;
         p = (y*width + x)*depth;
 
-        for (int d = 0; d < depth; d++)
+        COUNTDOWN(d, depth)
             n->weights[p+d] = 1.0f;
     }
 
-    for (int x = 0; x < width; x++) {
+    COUNTUP(x, width) {
         int p = x*depth;
 
-        for (int d = 0; d < depth; d++)
+        COUNTDOWN(d, depth)
             n->weights[p+d] = 2.0f;
 
         p = ((height-1)*width + x)*depth;
 
-        for (int d = 0; d < depth; d++)
+        COUNTDOWN(d, depth)
             n->weights[p+d] = 2.0f;
     }
 
-    for (int y = 0; y < height; y++) {
+    COUNTUP(y, height) {
         int p = y*width*depth;
 
-        for (int d = 0; d < depth; d++)
+        COUNTDOWN(d, depth)
             n->weights[p+d] = 2.0f;
 
         p = (y*width + (width-1))*depth;
 
-        for (int d = 0; d < depth; d++)
+        COUNTDOWN(d, depth)
             n->weights[p+d] = 2.0f;
     }
 }

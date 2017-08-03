@@ -501,7 +501,7 @@ void autocoder_normalise_inputs(ac * autocoder)
     float range = max - min;
     if (range <= 0) return;
 
-    for (int i = 0; i < autocoder->NoOfInputs; i++) {
+    COUNTUP(i, autocoder->NoOfInputs) {
         autocoder->inputs[i] =
             0.25f + (((autocoder->inputs[i] - min)/range)*0.5f);
     }

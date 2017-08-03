@@ -169,7 +169,6 @@ void deepconvnet_free(deepconvnet * convnet)
  */
 static void deepconvnet_update_history(deepconvnet * convnet)
 {
-    int i;
     float error_value;
 
     if (convnet->history_step == 0)
@@ -191,7 +190,7 @@ static void deepconvnet_update_history(deepconvnet * convnet)
         convnet->BPerror = error_value;
 
         if (convnet->history_index >= DEEPLEARN_HISTORY_SIZE) {
-            for (i = 0; i < convnet->history_index; i++)
+            COUNTUP(i, convnet->history_index)
                 convnet->history[i/2] = convnet->history[i];
 
             convnet->history_index /= 2;
@@ -458,7 +457,7 @@ void deepconvnet_set_dropouts(deepconvnet * convnet, float dropout_percent)
 int deepconvnet_plot_history(deepconvnet * convnet,
                              int image_width, int image_height)
 {
-    int index,retval=0;
+    int retval=0;
     FILE * fp;
     char data_filename[256];
     char plot_filename[256];
@@ -477,7 +476,7 @@ int deepconvnet_plot_history(deepconvnet * convnet,
     if (!fp)
         return -1;
 
-    for (index = 0; index < convnet->history_index; index++) {
+    COUNTUP(index, convnet->history_index) {
         value = convnet->history[index];
         fprintf(fp,"%d    %.10f\n",
                 index*convnet->history_step,value);
@@ -571,7 +570,7 @@ float deepconvnet_get_performance(deepconvnet * convnet)
     if (convnet->classification_number == NULL)
         return -2;
 
-    for (int i = 0; i < test_images; i++) {
+    COUNTUP(i, test_images) {
         int index = convnet->test_set_index[i];
         unsigned char * img = convnet->images[index];
         deepconvnet_update_img(convnet, img, -1);

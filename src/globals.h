@@ -60,7 +60,7 @@
 
 #define PIXEL_TO_FLOAT(p)       (0.25f + ((p)/(2*255.0f)))
 
-#define FOR(i, start, end) for (int (i) = (start); (i) < (end); (i)++)
+#define COUNTUP(i, end) for (int (i) = 0; (i) < (end); (i)++)
 #define COUNTDOWN(i, end) for (int (i) = (end-1); (i) >= 0; (i)--)
 
 #endif

@@ -185,16 +185,17 @@ void deeplearn_downsample_colour_to_mono(unsigned char img[],
 {
     int n=0;
 
-    for (int y = 0; y < downsampled_height; y++) {
+    COUNTUP(y, downsampled_height) {
         /* y coordinate in the original image */
         int yy = y * height / downsampled_height;
-        for (int x = 0; x < downsampled_width; x++, n++) {
+        COUNTUP(x, downsampled_width) {
             /* x coordinate in the original image */
             int xx = x * width / downsampled_width;
             /* index within the original image */
             int n2 = ((yy*width) + xx)*3;
             /* update downsampled image */
             downsampled[n] = (img[n2]+img[n2+1]+img[n2+2])/3;
+            n++;
         }
     }
 }
@@ -216,10 +217,10 @@ void deeplearn_downsample_colour(unsigned char img[],
 {
     int n=0;
 
-    for (int y = 0; y < downsampled_height; y++) {
+    COUNTUP(y, downsampled_height) {
         /* y coordinate in the original image */
         int yy = y * height / downsampled_height;
-        for (int x = 0; x < downsampled_width; x++, n+=3) {
+        COUNTUP(x, downsampled_width) {
             /* x coordinate in the original image */
             int xx = x * width / downsampled_width;
             /* index within the original image */
@@ -228,6 +229,7 @@ void deeplearn_downsample_colour(unsigned char img[],
             downsampled[n] = img[n2];
             downsampled[n+1] = img[n2+1];
             downsampled[n+2] = img[n2+2];
+            n+=3;
         }
     }
 }

@@ -85,11 +85,8 @@ static int create_img_patch(float img[],
                             int tx, int ty, int bx, int by,
                             ac * feature_autocoder)
 {
-    int i;
-    float f;
-
-    for (i = 0; i < feature_autocoder->NoOfHiddens; i++) {
-        f = autocoder_get_hidden(feature_autocoder, i);
+    COUNTUP(i, feature_autocoder->NoOfHiddens) {
+        float f = autocoder_get_hidden(feature_autocoder, i);
         for (int y = ty; y < by; y++) {
             for (int x = tx; x < bx; x++) {
                 int index_img =
@@ -237,8 +234,8 @@ int features_learn_from_img(int samples_across,
     }
 
     /* for each patch */
-    for (int fy = samples_down-1; fy >= 0; fy--) {
-        for (int fx = samples_across-1; fx >= 0; fx--) {
+    COUNTDOWN(fy, samples_down) {
+        COUNTDOWN(fx, samples_across) {
 
             /* get the coordinates of the patch in the image */
             int tx=0, ty=0, bx=0, by=0;
@@ -307,8 +304,8 @@ int features_learn_from_flt(int samples_across,
         return -2;
 
     /* for each patch */
-    for (int fy = samples_down-1; fy >= 0; fy--) {
-        for (int fx = samples_across-1; fx >= 0; fx--) {
+    COUNTDOWN(fy, samples_down) {
+        COUNTDOWN(fx, samples_across) {
 
             /* get the coordinates of the patch in the image */
             int tx=0, ty=0, bx=0, by=0;
@@ -378,8 +375,8 @@ int features_conv_img_to_neurons(int samples_across,
         patch_radius*patch_radius*4*img_depth)
         return -2;
 
-    for (int fy = samples_down-1; fy >= 0; fy--) {
-        for (int fx = samples_across-1; fx >= 0; fx--) {
+    COUNTDOWN(fy, samples_down) {
+        COUNTDOWN(fx, samples_across) {
             int tx=0, ty=0, bx=0, by=0;
             if (features_patch_coords(fx, fy,
                                       samples_across, samples_down,
@@ -452,8 +449,8 @@ int features_conv_img_to_flt(int samples_across,
         return -2;
 
     /* for each input image sample */
-    for (int fy = samples_down-1; fy >= 0; fy--) {
-        for (int fx = samples_across-1; fx >= 0; fx--) {
+    COUNTDOWN(fy, samples_down) {
+        COUNTDOWN(fx, samples_across) {
             /* starting position in the first layer,
                where the depth is the number of encoded features */
             int index_layer0 =
@@ -529,8 +526,8 @@ int features_deconv_flt_to_flt(int samples_across,
     memset((void*)img, '\0', img_width*img_height*img_depth*sizeof(float));
 
     /* for each input image sample */
-    for (int fy = samples_down-1; fy >= 0; fy--) {
-        for (int fx = samples_across-1; fx >= 0; fx--) {
+    COUNTDOWN(fy, samples_down) {
+        COUNTDOWN(fx, samples_across) {
             /* starting position in the first layer,
                where the depth is the number of encoded features */
             int index_layer =
@@ -678,8 +675,8 @@ int features_conv_flt_to_flt(int samples_across,
         patch_radius*patch_radius*4*floats_depth)
         return -2;
 
-    for (int fy = samples_down-1; fy >= 0; fy--) {
-        for (int fx = samples_across-1; fx >= 0; fx--) {
+    COUNTDOWN(fy, samples_down) {
+        COUNTDOWN(fx, samples_across) {
             int index_layer1 =
                 (fy * samples_across + fx) *
                 no_of_learned_features;

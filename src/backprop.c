@@ -111,8 +111,8 @@ int bp_init(bp * net,
     }
 
     /* create hiddens */
-    for (int l = 0; l < hidden_layers; l++) {
-        for (int i = 0; i < bp_hiddens_in_layer(net,l); i++) {
+    COUNTUP(l, hidden_layers) {
+        COUNTUP(i, bp_hiddens_in_layer(net,l)) {
             net->hiddens[l][i] =
                 (bp_neuron*)malloc(sizeof(bp_neuron));
             if (!net->hiddens[l][i])
@@ -140,7 +140,7 @@ int bp_init(bp * net,
     }
 
     /* create outputs */
-    for (int i = 0; i < net->NoOfOutputs; i++) {
+    COUNTUP(i, net->NoOfOutputs) {
         net->outputs[i] = (bp_neuron*)malloc(sizeof(bp_neuron));
         if (!net->outputs[i])
             return -10;
@@ -194,12 +194,10 @@ void bp_free(bp * net)
 */
 void bp_feed_forward(bp * net)
 {
-    int l;
-
     /* for each hidden layer */
-    for (l = 0; l < net->HiddenLayers; l++) {
+    COUNTUP(l, net->HiddenLayers) {
         /* For each unit within the layer */
-        for (int i = bp_hiddens_in_layer(net,l)-1; i >= 0; i--)
+        COUNTDOWN(i, bp_hiddens_in_layer(net,l))
             bp_neuron_feedForward(net->hiddens[l][i],
                                   net->noise, &net->random_seed);
     }
@@ -218,7 +216,7 @@ void bp_feed_forward(bp * net)
 void bp_feed_forward_layers(bp * net, int layers)
 {
     /* for each hidden layer */
-    for (int l = 0; l < layers; l++) {
+    COUNTUP(l, layers) {
         /* if this layer is a hidden layer */
         if (l < net->HiddenLayers) {
             /* For each unit within the layer */
@@ -334,15 +332,14 @@ void bp_backprop(bp * net, int current_hidden_layer)
  */
 void bp_reproject(bp * net, int layer, int neuron_index)
 {
-    int l;
     bp_neuron * n;
 
     /* clear all previous backprop errors */
-    for (int i = 0; i < net->NoOfInputs; i++)
+    COUNTUP(i, net->NoOfInputs)
         net->inputs[i]->value_reprojected = 0;
 
     /* for every hidden layer */
-    for (l = 0; l < layer; l++) {
+    COUNTUP(l, layer) {
         /* For each unit within the layer */
         COUNTDOWN(i, bp_hiddens_in_layer(net,l))
             net->hiddens[l][i]->value_reprojected = 0;
@@ -364,7 +361,7 @@ void bp_reproject(bp * net, int layer, int neuron_index)
     }
 
     /* reproject through the hidden layers */
-    for (l = layer-1; l > 0; l--) {
+    for (int l = layer-1; l > 0; l--) {
         /* for every unit in the hidden layer */
         COUNTDOWN(i, bp_hiddens_in_layer(net,l))
             bp_neuron_reproject(net->hiddens[l][i]);
@@ -521,7 +518,7 @@ int bp_plot_weights(bp * net,
                     int image_width, int image_height,
                     int input_image_width)
 {
-    int layer, neurons_x, neurons_y, ty, by, h, x, y, ix, iy;
+    int neurons_x, neurons_y, ty, by, h, ix, iy;
     int wx, wy, inputs_x, inputs_y, n, i, unit, no_of_neurons;
     int no_of_weights,wdth, max_unit;
     float neuronx, neurony, dw, db, min_bias, max_bias;
@@ -557,9 +554,9 @@ int bp_plot_weights(bp * net,
     h = (by-ty)*95/100;
     wdth = h;
     if (wdth>=image_width) wdth=image_width;
-    for (y = 0; y < h; y++) {
+    COUNTUP(y, h) {
         iy = y*inputs_y/h;
-        for (x = 0; x < wdth; x++) {
+        COUNTUP(x, wdth) {
             ix = x*inputs_x/wdth;
             unit = (iy*inputs_x) + ix;
             if (unit < net->NoOfInputs) {
@@ -571,8 +568,7 @@ int bp_plot_weights(bp * net,
         }
     }
 
-    for (layer = 0; layer < net->HiddenLayers+1; layer++) {
-
+    COUNTUP(layer, net->HiddenLayers+1) {
         /* vertical top and bottom coordinates */
         ty = (layer+1)*image_height/(net->HiddenLayers+3);
         by = (layer+2)*image_height/(net->HiddenLayers+3);
@@ -601,7 +597,7 @@ int bp_plot_weights(bp * net,
         }
 
         /* get the bias range within this layer */
-        for (y = 0; y < max_unit; y++) {
+        COUNTUP(y, max_unit) {
             if (neurons[y]->bias < min_bias) min_bias = neurons[y]->bias;
             if (neurons[y]->bias > max_bias) max_bias = neurons[y]->bias;
             if (neurons[y]->value < min_activation) min_activation = neurons[y]->value;
@@ -613,11 +609,11 @@ int bp_plot_weights(bp * net,
         da = max_activation - min_activation;
 
         /* for every pixel within the region */
-        for (y = ty; y < by; y++) {
+        for (int y = ty; y < by; y++) {
             neurony = (y-ty)*neurons_y/(float)h;
             /* y coordinate within the weights */
             wy = (neurony - (int)neurony)*inputs_y;
-            for (x = 0; x < image_width; x++) {
+            COUNTUP(x, image_width) {
                 neuronx = x*neurons_x/(float)image_width;
                 /* x coordinate within the weights */
                 wx = (neuronx - (int)neuronx)*inputs_x;
@@ -668,9 +664,9 @@ int bp_plot_weights(bp * net,
 
     wdth = h;
     if (wdth >= image_width) wdth = image_width;
-    for (y = 0; y < h; y++) {
+    COUNTUP(y, h) {
         iy = y*inputs_y/h;
-        for (x = 0; x < wdth; x++) {
+        COUNTUP(x, wdth) {
             ix = x*inputs_x/wdth;
             unit = (iy*inputs_x) + ix;
             if (unit < net->NoOfOutputs) {
@@ -827,12 +823,12 @@ int bp_save(FILE * fp, bp * net)
     if (fwrite(&net->DropoutPercent, sizeof(float), 1, fp) == 0)
         return -9;
 
-    for (int l = 0; l < net->HiddenLayers; l++) {
-        for (int i = 0; i < bp_hiddens_in_layer(net,l); i++)
+    COUNTUP(l, net->HiddenLayers) {
+        COUNTUP(i, bp_hiddens_in_layer(net,l))
             bp_neuron_save(fp,net->hiddens[l][i]);
     }
 
-    for (int i = 0; i < net->NoOfOutputs; i++)
+    COUNTUP(i, net->NoOfOutputs)
         bp_neuron_save(fp,net->outputs[i]);
 
     return 0;
@@ -848,7 +844,7 @@ int bp_save(FILE * fp, bp * net)
 int bp_load(FILE * fp, bp * net,
             unsigned int * random_seed)
 {
-    int retval,i,l;
+    int retval;
     int no_of_inputs=0, no_of_hiddens=0, no_of_outputs=0;
     int hidden_layers=0;
     float learning_rate=0, noise=0, BPerrorAverage=0;
@@ -896,13 +892,13 @@ int bp_load(FILE * fp, bp * net,
                 random_seed) != 0)
         return -10;
 
-    for (l = 0; l < net->HiddenLayers; l++) {
-        for (i = 0; i < bp_hiddens_in_layer(net,l); i++) {
+    COUNTUP(l, net->HiddenLayers) {
+        COUNTUP(i, bp_hiddens_in_layer(net,l)) {
             if (bp_neuron_load(fp,net->hiddens[l][i]) != 0)
                 return -11;
         }
     }
-    for (i = 0; i < net->NoOfOutputs; i++) {
+    COUNTUP(i, net->NoOfOutputs) {
         if (bp_neuron_load(fp,net->outputs[i]) != 0)
             return -12;
     }
@@ -926,7 +922,7 @@ int bp_load(FILE * fp, bp * net,
 */
 int bp_compare(bp * net1, bp * net2)
 {
-    int retval,i,l;
+    int retval;
 
     if (net1->NoOfInputs != net2->NoOfInputs)
         return -1;
@@ -946,8 +942,8 @@ int bp_compare(bp * net1, bp * net2)
     if (net1->noise != net2->noise)
         return -6;
 
-    for (l = net1->HiddenLayers-1; l >= 0; l--) {
-        for (i = bp_hiddens_in_layer(net1,l)-1; i >= 0; i--) {
+    COUNTDOWN(l, net1->HiddenLayers) {
+        COUNTDOWN(i, bp_hiddens_in_layer(net1,l)) {
             retval =
                 bp_neuron_compare(net1->hiddens[l][i],
                                   net2->hiddens[l][i]);
@@ -956,7 +952,7 @@ int bp_compare(bp * net1, bp * net2)
         }
     }
 
-    for (i = net1->NoOfOutputs-1; i >= 0; i--) {
+    COUNTDOWN(i, net1->NoOfOutputs) {
         retval = bp_neuron_compare(net1->outputs[i], net2->outputs[i]);
         if (retval == 0)
             return -8;
@@ -983,27 +979,27 @@ int bp_compare(bp * net1, bp * net2)
 void bp_get_classification_from_filename(char * filename,
                                          char * classification)
 {
-    int i,start=0;
+    int j, start=0;
 
     /* start with an empty classification string */
     classification[0] = 0;
 
     /* find the last separator */
-    for (i = 0; i < strlen(filename); i++) {
+    COUNTUP(i, strlen(filename)) {
         if (filename[i] == '/')
             start = i+1;
     }
 
     /* find the first full stop */
-    for (i = start; i < strlen(filename); i++) {
-        if ((filename[i] == '.') ||
-            (filename[i] == '-') ||
-            (filename[i] == '_')) break;
-        classification[i-start] = filename[i];
+    for (j = start; j < strlen(filename); j++) {
+        if ((filename[j] == '.') ||
+            (filename[j] == '-') ||
+            (filename[j] == '_')) break;
+        classification[j-start] = filename[j];
     }
 
     /* add a string terminator */
-    classification[i-start] = 0;
+    classification[j-start] = 0;
 }
 
 /**
@@ -1020,7 +1016,7 @@ int bp_classifications_to_numbers(int no_of_instances,
                                   char ** instance_classification,
                                   int * numbers)
 {
-    int i,j;
+    int j;
     int unique_ctr = 0;
     char ** unique_classification;
 
@@ -1032,7 +1028,7 @@ int bp_classifications_to_numbers(int no_of_instances,
         return -1;
 
     /* create a list of unique classification names */
-    for (i = 0; i < no_of_instances; i++) {
+    COUNTUP(i, no_of_instances) {
         /* for every class number assigned so far */
         for (j = 0; j < unique_ctr; j++) {
             /* is this instance description (label) the same as a previous
@@ -1065,7 +1061,7 @@ int bp_classifications_to_numbers(int no_of_instances,
     }
 
     /* free memory which was used to store descriptions */
-    for (i = 0; i < unique_ctr; i++)
+    COUNTDOWN(i, unique_ctr)
         free(unique_classification[i]);
 
     free(unique_classification);
