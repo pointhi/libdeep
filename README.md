@@ -76,12 +76,12 @@ There are also some example programs within the examples directory. Reading the 
 Using trained neural nets in your system
 ========================================
 
-You can export trained neural nets either as a C program or a Python program. These programs are completely independent and can be used either as commands or integrated into a larger software application. This makes it easy to use the resulting neural net without needing to link to libdeep. See the source code in the examples directory for how to use the export function.
+You can export trained neural nets either as a C program or a Python program. These programs are completely independent and can be used either as commands or integrated into a larger software application. This makes it easy to use the resulting neural net without needing to link to libdeep. See the source code in the examples directory for how to use the export function. If you include the word "sketch" or "arduino" within the filename to be exported to then it will appear as Arduino compatible C suitable for use within an Arduino IDE rather than as standard C.
 
 Portability
 ===========
 
-Although this software was primarily written to run on Linux-based systems it's pretty much just vanilla C code and so it should be easily portable to other platforms, such as Microsoft Windows and Mac systems. The independent random number generator should mean that results are consistent across different compilers and platforms.
+Although this software was primarily written to run on Linux-based systems it's pretty much just vanilla C99 standard code and so it should be easily portable to other platforms, such as Microsoft Windows and Mac systems. The independent random number generator should mean that results are consistent across different compilers and platforms.
 
 Packaging
 =========
