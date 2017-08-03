@@ -239,7 +239,7 @@ void bp_feed_forward_layers(bp * net, int layers)
 */
 void bp_backprop(bp * net, int current_hidden_layer)
 {
-    int l, neuron_count=0;
+    int neuron_count=0;
     bp_neuron * n;
     int start_hidden_layer = current_hidden_layer-1;
     float errorPercent=0;
@@ -252,7 +252,7 @@ void bp_backprop(bp * net, int current_hidden_layer)
     if (start_hidden_layer < 0)
         start_hidden_layer = 0;
 
-    for (l = start_hidden_layer; l < net->HiddenLayers; l++) {
+    FOR(l, start_hidden_layer, net->HiddenLayers) {
         /* For each unit within the layer */
         COUNTDOWN(i, bp_hiddens_in_layer(net,l))
             net->hiddens[l][i]->BPerror = 0;
@@ -298,7 +298,7 @@ void bp_backprop(bp * net, int current_hidden_layer)
     }
 
     /* back-propogate through the hidden layers */
-    for (l = net->HiddenLayers-1; l >= start_hidden_layer; l--) {
+    for (int l = net->HiddenLayers-1; l >= start_hidden_layer; l--) {
         /* for every unit in the hidden layer */
         COUNTDOWN(i, bp_hiddens_in_layer(net,l)) {
             /* get the neuron object */
@@ -382,14 +382,13 @@ void bp_reproject(bp * net, int layer, int neuron_index)
 */
 void bp_learn(bp * net, int current_hidden_layer)
 {
-    int l;
     int start_hidden_layer = current_hidden_layer-1;
 
     /* for each hidden layers */
     if (start_hidden_layer < 0)
         start_hidden_layer = 0;
 
-    for (l = start_hidden_layer; l < net->HiddenLayers; l++) {
+    FOR(l, start_hidden_layer, net->HiddenLayers) {
         COUNTDOWN(i, bp_hiddens_in_layer(net,l))
             bp_neuron_learn(net->hiddens[l][i],net->learningRate);
     }
@@ -457,7 +456,7 @@ void bp_inputs_from_image_patch(bp * net,
                                 int image_width, int image_height,
                                 int tx, int ty)
 {
-    int px, py, i = 0, idx;
+    int i = 0, idx;
 
     /* The patch size is calculated from the number of inputs
         of the neural net.  It's assumed to be square. */
@@ -467,9 +466,9 @@ void bp_inputs_from_image_patch(bp * net,
     assert(patch_size*patch_size <= net->NoOfInputs);
 
     /* set the inputs from the patch */
-    for (py = ty; py < ty+patch_size; py++) {
+    FOR(py, ty, ty+patch_size) {
         if (py >= image_height) break;
-        for (px = tx; px < tx+patch_size; px++, i++) {
+        FOR(px, tx, tx+patch_size) {
             if (px >= image_width) break;
 
             /* array index within the image */
@@ -477,6 +476,7 @@ void bp_inputs_from_image_patch(bp * net,
 
             /* set the input value within the range 0.25 to 0.75 */
             bp_set_input(net, i, 0.25f + (img[idx]*0.5f/255.0f));
+            i++;
         }
     }
 }
@@ -609,7 +609,7 @@ int bp_plot_weights(bp * net,
         da = max_activation - min_activation;
 
         /* for every pixel within the region */
-        for (int y = ty; y < by; y++) {
+        FOR(y, ty, by) {
             neurony = (y-ty)*neurons_y/(float)h;
             /* y coordinate within the weights */
             wy = (neurony - (int)neurony)*inputs_y;

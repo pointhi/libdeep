@@ -490,7 +490,7 @@ void autocoder_normalise_inputs(ac * autocoder)
     float min = autocoder->inputs[0];
     float max = autocoder->inputs[0];
 
-    for (int i = 1; i < autocoder->NoOfInputs; i++) {
+    FOR(i, 1, autocoder->NoOfInputs) {
         if (autocoder->inputs[i] < min)
             min = autocoder->inputs[i];
 
@@ -568,7 +568,7 @@ int autocoder_plot_weights(ac * autocoder,
     float min_weight = autocoder->weights[0];
     float max_weight = min_weight;
     int start_index = feature_index*no_of_weights;
-    for (int i = start_index; i < start_index + no_of_weights; i++) {
+    FOR(i, start_index, start_index + no_of_weights) {
         if (autocoder->weights[i] < min_weight)
             min_weight = autocoder->weights[i];
 
@@ -580,9 +580,9 @@ int autocoder_plot_weights(ac * autocoder,
     if (weight_range <= 0.0f) return -2;
 
     /* for every pixel in the output image */
-    for (int y = img_ty; y < img_by; y++) {
+    FOR(y, img_ty, img_by) {
         int patch_y = (y - img_ty) * patch_width / img_y_range;
-        for (int x = img_tx; x < img_bx; x++) {
+        FOR(x, img_tx, img_bx) {
             int patch_x = (x - img_tx) * patch_width / img_x_range;
 
             /* position in the image */
