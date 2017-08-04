@@ -45,43 +45,35 @@ int autocoder_init(ac * autocoder,
     autocoder->NoOfInputs = no_of_inputs;
     autocoder->NoOfHiddens = no_of_hiddens;
 
-    autocoder->inputs =
-        (float*)malloc(no_of_inputs*sizeof(float));
+    FLOATALLOC(autocoder->inputs, no_of_inputs);
     if (!autocoder->inputs)
         return -1;
 
-    autocoder->hiddens =
-        (float*)malloc(no_of_hiddens*sizeof(float));
+    FLOATALLOC(autocoder->hiddens, no_of_hiddens);
     if (!autocoder->hiddens)
         return -2;
 
-    autocoder->bias =
-        (float*)malloc(no_of_hiddens*sizeof(float));
+    FLOATALLOC(autocoder->bias, no_of_hiddens);
     if (!autocoder->bias)
         return -3;
 
-    autocoder->weights =
-        (float*)malloc(no_of_hiddens*no_of_inputs*sizeof(float));
+    FLOATALLOC(autocoder->weights, no_of_hiddens*no_of_inputs);
     if (!autocoder->weights)
         return -4;
 
-    autocoder->lastWeightChange =
-        (float*)malloc(no_of_hiddens*no_of_inputs*sizeof(float));
+    FLOATALLOC(autocoder->lastWeightChange, no_of_hiddens*no_of_inputs);
     if (!autocoder->lastWeightChange)
         return -5;
 
-    autocoder->outputs =
-        (float*)malloc(no_of_inputs*sizeof(float));
+    FLOATALLOC(autocoder->outputs, no_of_inputs);
     if (!autocoder->outputs)
         return -6;
 
-    autocoder->bperr =
-        (float*)malloc(no_of_hiddens*sizeof(float));
+    FLOATALLOC(autocoder->bperr, no_of_hiddens);
     if (!autocoder->bperr)
         return -7;
 
-    autocoder->lastBiasChange =
-        (float*)malloc(no_of_hiddens*sizeof(float));
+    FLOATALLOC(autocoder->lastBiasChange, no_of_hiddens);
     if (!autocoder->lastBiasChange)
         return -8;
 

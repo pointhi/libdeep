@@ -64,4 +64,6 @@
 #define COUNTUP(i, end) for (int (i) = 0; (i) < (end); (i)++)
 #define COUNTDOWN(i, end) for (int (i) = (end-1); (i) >= 0; (i)--)
 
+#define FLOATALLOC(m, size) m = (float*)malloc((size)*sizeof(float));
+
 #endif

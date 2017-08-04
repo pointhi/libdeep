@@ -103,11 +103,11 @@ int bp_neuron_init(bp_neuron * n,
     n->NoOfInputs = no_of_inputs;
 
     /* create some weights */
-    n->weights = (float*)malloc(no_of_inputs*sizeof(float));
+    FLOATALLOC(n->weights, no_of_inputs);
     if (!n->weights)
         return -1;
 
-    n->lastWeightChange = (float*)malloc(no_of_inputs*sizeof(float));
+    FLOATALLOC(n->lastWeightChange, no_of_inputs);
     if (!n->lastWeightChange)
         return -2;
 

@@ -591,6 +591,7 @@ int features_deconv_img_to_flt(int samples_across,
                                ac * feature_autocoder)
 {
     int retval;
+    float * deconv_img;
 
     /* the patch size doesn't match the feature
        learner inputs */
@@ -599,8 +600,7 @@ int features_deconv_img_to_flt(int samples_across,
         return -2;
 
     /* create a temporary floats image */
-    float * deconv_img =
-        (float*)malloc(img_width*img_height*img_depth*sizeof(float));
+    FLOATALLOC(deconv_img, img_width*img_height*img_depth);
     memset((void*)deconv_img, '\0', img_width*img_height*img_depth*sizeof(float));
 
     /* clear the original image */

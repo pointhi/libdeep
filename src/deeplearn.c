@@ -130,19 +130,19 @@ int deeplearn_init(deeplearn * learner,
     sprintf(learner->history_plot_filename,"%s","training.png");
     sprintf(learner->history_plot_title,"%s","Training History");
 
-    learner->input_range_min = (float*)malloc(no_of_inputs*sizeof(float));
+    FLOATALLOC(learner->input_range_min, no_of_inputs);
     if (!learner->input_range_min)
         return -1;
 
-    learner->input_range_max = (float*)malloc(no_of_inputs*sizeof(float));
+    FLOATALLOC(learner->input_range_max, no_of_inputs);
     if (!learner->input_range_max)
         return -2;
 
-    learner->output_range_min = (float*)malloc(no_of_outputs*sizeof(float));
+    FLOATALLOC(learner->output_range_min, no_of_outputs);
     if (!learner->output_range_min)
         return -3;
 
-    learner->output_range_max = (float*)malloc(no_of_outputs*sizeof(float));
+    FLOATALLOC(learner->output_range_max, no_of_outputs);
     if (!learner->output_range_max)
         return -4;
 
@@ -160,9 +160,7 @@ int deeplearn_init(deeplearn * learner,
     learner->training_complete = 0;
 
     /* create the error thresholds for each layer */
-    learner->error_threshold =
-        (float*)malloc((hidden_layers+1)*sizeof(float));
-
+    FLOATALLOC(learner->error_threshold, hidden_layers+1);
     if (!learner->error_threshold)
         return -5;
 
@@ -825,27 +823,25 @@ int deeplearn_load(FILE * fp, deeplearn * learner,
     }
 
     /* load error thresholds */
-    learner->error_threshold =
-        (float*)malloc((learner->net->HiddenLayers+1)*
-                       sizeof(float));
+    FLOATALLOC(learner->error_threshold, learner->net->HiddenLayers+1);
     if (fread(learner->error_threshold, sizeof(float),
               learner->net->HiddenLayers+1, fp) == 0)
         return -10;
 
     /* load ranges */
-    learner->input_range_min = (float*)malloc(learner->net->NoOfInputs*sizeof(float));
+    FLOATALLOC(learner->input_range_min, learner->net->NoOfInputs);
     if (!learner->input_range_min)
         return -15;
 
-    learner->input_range_max = (float*)malloc(learner->net->NoOfInputs*sizeof(float));
+    FLOATALLOC(learner->input_range_max, learner->net->NoOfInputs);
     if (!learner->input_range_max)
         return -16;
 
-    learner->output_range_min = (float*)malloc(learner->net->NoOfOutputs*sizeof(float));
+    FLOATALLOC(learner->output_range_min, learner->net->NoOfOutputs);
     if (!learner->output_range_min)
         return -17;
 
-    learner->output_range_max = (float*)malloc(learner->net->NoOfOutputs*sizeof(float));
+    FLOATALLOC(learner->output_range_max, learner->net->NoOfOutputs);
     if (!learner->output_range_max)
         return -18;
 

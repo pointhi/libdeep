@@ -61,8 +61,7 @@ int deeplearndata_add(deeplearndata ** datalist,
         return -1;
 
     /* create arrays to store the data */
-    data->inputs =
-      (float*)malloc(no_of_input_fields*sizeof(float));
+    FLOATALLOC(data->inputs, no_of_input_fields);
     if (!data->inputs)
         return -2;
 
@@ -80,8 +79,7 @@ int deeplearndata_add(deeplearndata ** datalist,
             }
         }
     }
-    data->outputs =
-      (float*)malloc(no_of_outputs*sizeof(float));
+    FLOATALLOC(data->outputs, no_of_outputs);
     if (!data->outputs)
         return -3;
 
@@ -755,7 +753,9 @@ float deeplearndata_get_performance(deeplearn * learner)
 {
     int hits=0;
     float error_percent, total_error=0, average_error;
-    float * outputs = (float*)malloc(learner->net->NoOfOutputs*sizeof(float));
+    float * outputs;
+
+    FLOATALLOC(outputs, learner->net->NoOfOutputs);
 
     COUNTUP(index, learner->test_data_samples) {
         deeplearndata * sample = deeplearndata_get_test(learner, index);

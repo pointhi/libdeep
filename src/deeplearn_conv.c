@@ -100,8 +100,7 @@ int conv_init(int no_of_layers,
         conv->layer[i].units_across = across;
         conv->layer[i].units_down = down;
         conv->layer[i].pooling_factor = pooling_factor;
-        conv->layer[i].convolution =
-            (float*)malloc(sizeof(float)*across*down*conv_layer_features(conv, i));
+        FLOATALLOC(conv->layer[i].convolution, across*down*conv_layer_features(conv, i));
 
         if (!conv->layer[i].convolution)
             return -2;
@@ -140,9 +139,7 @@ int conv_init(int no_of_layers,
         if (down < 4) down = 4;
 
         /* create a pooling array */
-        conv->layer[i].pooling =
-            (float*)malloc(sizeof(float)*across*down*
-                           conv_layer_features(conv, i));
+        FLOATALLOC(conv->layer[i].pooling, across*down*conv_layer_features(conv, i));
         if (!conv->layer[i].pooling)
             return -4;
     }
@@ -848,7 +845,7 @@ int conv_load(FILE * fp, deeplearn_conv * conv)
     if (fread(&conv->itterations, sizeof(unsigned int), 1, fp) == 0)
         return -13;
 
-    error_threshold = (float*)malloc(sizeof(float)*conv->no_of_layers);
+    FLOATALLOC(error_threshold, conv->no_of_layers);
     if (!error_threshold)
         return -14;
 
