@@ -140,7 +140,7 @@ int bp_init(bp * net,
     }
 
     /* create outputs */
-    COUNTUP(i, net->NoOfOutputs) {
+    COUNTDOWN(i, net->NoOfOutputs) {
         net->outputs[i] = (bp_neuron*)malloc(sizeof(bp_neuron));
         if (!net->outputs[i])
             return -10;
