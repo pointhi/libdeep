@@ -77,32 +77,30 @@ int bp_init(bp * net,
     net->DropoutPercent = 20;
 
     net->NoOfInputs = no_of_inputs;
-    net->inputs = (bp_neuron**)malloc(no_of_inputs*sizeof(bp_neuron*));
+    NEURON_ARRAY_ALLOC(net->inputs, no_of_inputs);
     if (!net->inputs)
         return -1;
 
     net->NoOfHiddens = no_of_hiddens;
     net->NoOfOutputs = no_of_outputs;
     net->HiddenLayers = hidden_layers;
-    net->hiddens =
-        (bp_neuron***)malloc(hidden_layers*sizeof(bp_neuron**));
+    NEURON_LAYERS_ALLOC(net->hiddens, hidden_layers);
     if (!net->hiddens)
         return -2;
 
     COUNTDOWN(l, hidden_layers) {
-        net->hiddens[l] =
-            (bp_neuron**)malloc(bp_hiddens_in_layer(net,l)*sizeof(bp_neuron*));
+        NEURON_ARRAY_ALLOC(net->hiddens[l], bp_hiddens_in_layer(net,l));
         if (!net->hiddens[l])
             return -3;
     }
 
-    net->outputs = (bp_neuron**)malloc(no_of_outputs*sizeof(bp_neuron*));
+    NEURON_ARRAY_ALLOC(net->outputs, no_of_outputs);
     if (!net->outputs)
         return -4;
 
     /* create inputs */
     COUNTDOWN(i, net->NoOfInputs) {
-        net->inputs[i] = (bp_neuron*)malloc(sizeof(struct bp_n));
+        NEURONALLOC(net->inputs[i]);
         if (!net->inputs[i])
             return -5;
 
@@ -141,7 +139,7 @@ int bp_init(bp * net,
 
     /* create outputs */
     COUNTDOWN(i, net->NoOfOutputs) {
-        net->outputs[i] = (bp_neuron*)malloc(sizeof(bp_neuron));
+        NEURONALLOC(net->outputs[i]);
         if (!net->outputs[i])
             return -10;
 
@@ -335,11 +333,11 @@ void bp_reproject(bp * net, int layer, int neuron_index)
     bp_neuron * n;
 
     /* clear all previous backprop errors */
-    COUNTUP(i, net->NoOfInputs)
+    COUNTDOWN(i, net->NoOfInputs)
         net->inputs[i]->value_reprojected = 0;
 
     /* for every hidden layer */
-    COUNTUP(l, layer) {
+    COUNTDOWN(l, layer) {
         /* For each unit within the layer */
         COUNTDOWN(i, bp_hiddens_in_layer(net,l))
             net->hiddens[l][i]->value_reprojected = 0;
@@ -527,12 +525,12 @@ int bp_plot_weights(bp * net,
     unsigned char * img;
 
     /* allocate memory for the image */
-    img = (unsigned char*)malloc(image_width*image_height*3);
+    img = (unsigned char*)malloc(image_width*image_height*3*sizeof(unsigned char));
     if (!img)
         return -1;
 
     /* clear the image with a white background */
-    memset((void*)img,'\255',image_width*image_height*3);
+    memset((void*)img,'\255',image_width*image_height*3*sizeof(unsigned char));
 
     /* dimension of the neurons matrix for each layer */
     neurons_x = (int)sqrt(net->NoOfHiddens);
@@ -898,6 +896,7 @@ int bp_load(FILE * fp, bp * net,
                 return -11;
         }
     }
+
     COUNTUP(i, net->NoOfOutputs) {
         if (bp_neuron_load(fp,net->outputs[i]) != 0)
             return -12;
