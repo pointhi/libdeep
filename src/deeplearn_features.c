@@ -47,8 +47,8 @@ static int scan_img_patch(unsigned char img[],
                           ac * feature_autocoder)
 {
     int index_feature_input = 0;
-    for (int y = ty; y < by; y++) {
-        for (int x = tx; x < bx; x++) {
+    FOR(y, ty, by) {
+        FOR(x, tx, bx) {
             int index_img =
                 ((y*img_width) + x) * img_depth;
 
@@ -87,8 +87,8 @@ static int create_img_patch(float img[],
 {
     COUNTUP(i, feature_autocoder->NoOfHiddens) {
         float f = autocoder_get_hidden(feature_autocoder, i);
-        for (int y = ty; y < by; y++) {
-            for (int x = tx; x < bx; x++) {
+        FOR(y, ty, by) {
+            FOR(x, tx, bx) {
                 int index_img =
                     ((y*img_width) + x) * img_depth;
 
@@ -120,8 +120,8 @@ static int scan_floats_patch(float inputs_floats[],
                              ac * feature_autocoder)
 {
     int index_feature_input = 0;
-    for (int y = ty; y < by; y++) {
-        for (int x = tx; x < bx; x++) {
+    FOR(y, ty, by) {
+        FOR(x, tx, bx) {
             int index_inputs =
                 ((y*inputs_width) + x) * inputs_depth;
 
