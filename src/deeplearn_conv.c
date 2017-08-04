@@ -90,7 +90,7 @@ int conv_init(int no_of_layers,
     conv->inputs_depth = inputs_depth;
     conv->max_features = max_features;
 
-    for (int i = 0; i < no_of_layers; i++) {
+    COUNTUP(i, no_of_layers) {
         /* reduce the array dimensions */
         across /= reduction_factor;
         down /= reduction_factor;
@@ -152,7 +152,7 @@ int conv_init(int no_of_layers,
  */
 void conv_free(deeplearn_conv * conv)
 {
-    for (int i = 0; i < conv->no_of_layers; i++) {
+    COUNTDOWN(i, conv->no_of_layers) {
         free(conv->layer[i].convolution);
         free(conv->layer[i].pooling);
         autocoder_free(conv->layer[i].autocoder);
@@ -607,7 +607,7 @@ int conv_img(unsigned char img[],
     int max_layer = get_max_layer(conv);
     float BPerror;
 
-    for (int i = 0; i < max_layer; i++) {
+    COUNTUP(i, max_layer) {
         conv_enable_learning(i, conv);
 
         BPerror = 0;
@@ -650,7 +650,7 @@ int conv_plot_history(deeplearn_conv * conv,
                       char * filename, char * title,
                       int img_width, int img_height)
 {
-    int index,retval=0;
+    int retval=0;
     FILE * fp;
     char data_filename[256];
     char plot_filename[256];
@@ -669,7 +669,7 @@ int conv_plot_history(deeplearn_conv * conv,
     if (!fp)
         return -1;
 
-    for (index = 0; index < conv->history_index; index++) {
+    COUNTUP(index, conv->history_index) {
         value = conv->history[index];
         fprintf(fp,"%d    %.10f\n",
                 index*conv->history_step,value);
@@ -864,7 +864,7 @@ int conv_load(FILE * fp, deeplearn_conv * conv)
     }
     free(error_threshold);
 
-    for (int i = 0; i < conv->no_of_layers; i++) {
+    COUNTUP(i, conv->no_of_layers) {
         if (autocoder_load(fp, conv->layer[i].autocoder, 0) != 0)
             return -17;
 
@@ -891,7 +891,7 @@ int conv_load(FILE * fp, deeplearn_conv * conv)
  */
 void conv_set_learning_rate(deeplearn_conv * conv, float rate)
 {
-    for (int i = 0; i < conv->no_of_layers; i++)
+    COUNTDOWN(i, conv->no_of_layers)
         conv->layer[i].autocoder->learningRate = rate;
 }
 
@@ -902,7 +902,7 @@ void conv_set_learning_rate(deeplearn_conv * conv, float rate)
  */
 void conv_set_dropouts(deeplearn_conv * conv, float dropout_percent)
 {
-    for (int i = 0; i < conv->no_of_layers; i++)
+    COUNTDOWN(i, conv->no_of_layers)
         conv->layer[i].autocoder->DropoutPercent = dropout_percent;
 }
 
@@ -935,10 +935,10 @@ int conv_plot_features(deeplearn_conv * conv, int layer_index,
         patch_depth = conv->inputs_depth;
 
     /* for every feature within the autocoder */
-    for (int y = 0; y < fy; y++) {
+    COUNTUP(y, fy) {
         int img_ty = y * img_height / fy;
         int img_by = img_ty + (img_height/fy) - 2;
-        for (int x = 0; x < fx; x++) {
+        COUNTUP(x, fx) {
             int feature_index = (y*fx + x);
             if (feature_index >=
                 conv_layer_features(conv, layer_index)) continue;
