@@ -776,7 +776,7 @@ int conv_save(FILE * fp, deeplearn_conv * conv)
                sizeof(float), conv->no_of_layers, fp) == 0)
         return -14;
 
-    for (int i = 0; i < conv->no_of_layers; i++) {
+    COUNTUP(i, conv->no_of_layers) {
         ac * net = conv->layer[i].autocoder;
         if (autocoder_save(fp, net) != 0)
             return -15;
