@@ -223,7 +223,7 @@ static void test_data_training_test()
 
 static void test_read_images()
 {
-    float error_threshold[] = { 0.01f, 0.01f, 0.01f, 0.01f };
+    float error_threshold[] = { 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f };
     unsigned int random_seed = 123;
     deepconvnet convnet;
     int image_width = 512;

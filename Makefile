@@ -16,7 +16,7 @@ endif
 all:
 	gcc -shared -Wl,-soname,${SONAME} -std=c99 -pedantic -fPIC -O3 -o ${LIBNAME} src/*.c -Isrc -lm -fopenmp
 debug:
-	gcc -shared -Wl,-soname,${SONAME} -std=c99 -pedantic -fPIC -g -o ${LIBNAME} src/*.c -Isrc -lm -fopenmp
+	gcc -shared -Wl,-soname,${SONAME} -std=c99 -pedantic -fsanitize=address -fPIC -g -o ${LIBNAME} src/*.c -Isrc -lm -fopenmp
 source:
 	tar -cvf ../${APP}_${VERSION}.orig.tar ../${APP}-${VERSION} --exclude-vcs
 	gzip -f9n ../${APP}_${VERSION}.orig.tar
