@@ -47,6 +47,8 @@ static int scan_img_patch(unsigned char img[],
                           ac * feature_autocoder)
 {
     int index_feature_input = 0;
+
+    /* for each pixel in the patch */
     FOR(y, ty, by) {
         FOR(x, tx, bx) {
             int index_img =
@@ -86,7 +88,11 @@ static int create_img_patch(float img[],
                             ac * feature_autocoder)
 {
     COUNTUP(i, feature_autocoder->NoOfHiddens) {
+
+        /* get the hidden unit output at this index */
         float f = autocoder_get_hidden(feature_autocoder, i);
+
+        /* for each pixel in the patch */
         FOR(y, ty, by) {
             FOR(x, tx, bx) {
                 int index_img =
@@ -120,6 +126,8 @@ static int scan_floats_patch(float inputs_floats[],
                              ac * feature_autocoder)
 {
     int index_feature_input = 0;
+
+    /* for each pixel in the patch */
     FOR(y, ty, by) {
         FOR(x, tx, bx) {
             int index_inputs =
@@ -204,18 +212,19 @@ int features_patch_coords(int x, int y,
  * @param BPerror Returned total learning error
  * @returns zero on success
  */
-int features_learn_from_img(int samples_across,
-                            int samples_down,
-                            int patch_radius,
-                            int img_width,
-                            int img_height,
-                            int img_depth,
-                            unsigned char img[],
-                            int layer0_units,
-                            ac * feature_autocoder,
-                            float * BPerror)
+int features_learn_from_image(int samples_across,
+                              int samples_down,
+                              int patch_radius,
+                              int img_width,
+                              int img_height,
+                              int img_depth,
+                              unsigned char img[],
+                              int layer0_units,
+                              ac * feature_autocoder,
+                              float * BPerror)
 {
     int no_of_learned_features = feature_autocoder->NoOfHiddens;
+
     *BPerror = 0;
 
     /* across*down doesn't equal the second layer units */
@@ -278,16 +287,16 @@ int features_learn_from_img(int samples_across,
  * @param BPerror Returned total backprop error
  * @returns zero on success
  */
-int features_learn_from_flt(int samples_across,
-                            int samples_down,
-                            int patch_radius,
-                            int inputs_width,
-                            int inputs_height,
-                            int inputs_depth,
-                            float inputs_floats[],
-                            int layer0_units,
-                            ac * feature_autocoder,
-                            float * BPerror)
+int features_learn(int samples_across,
+                   int samples_down,
+                   int patch_radius,
+                   int inputs_width,
+                   int inputs_height,
+                   int inputs_depth,
+                   float inputs_floats[],
+                   int layer0_units,
+                   ac * feature_autocoder,
+                   float * BPerror)
 {
     int no_of_learned_features = feature_autocoder->NoOfHiddens;
     *BPerror = 0;
@@ -351,16 +360,16 @@ int features_learn_from_flt(int samples_across,
  * @param use_dropouts non-zero if dropouts are used
  * @returns zero on success
  */
-int features_conv_img_to_neurons(int samples_across,
-                                 int samples_down,
-                                 int patch_radius,
-                                 int img_width,
-                                 int img_height,
-                                 int img_depth,
-                                 unsigned char img[],
-                                 bp * net,
-                                 ac * feature_autocoder,
-                                 unsigned char use_dropouts)
+int features_convolve_image_to_neurons(int samples_across,
+                                       int samples_down,
+                                       int patch_radius,
+                                       int img_width,
+                                       int img_height,
+                                       int img_depth,
+                                       unsigned char img[],
+                                       bp * net,
+                                       ac * feature_autocoder,
+                                       unsigned char use_dropouts)
 {
     int no_of_learned_features = feature_autocoder->NoOfHiddens;
 
@@ -423,17 +432,17 @@ int features_conv_img_to_neurons(int samples_across,
  * @param use_dropouts Non-zero if dropouts are to be used
  * @returns zero on success
  */
-int features_conv_img_to_flt(int samples_across,
-                             int samples_down,
-                             int patch_radius,
-                             int img_width,
-                             int img_height,
-                             int img_depth,
-                             unsigned char img[],
-                             int layer0_units,
-                             float layer0[],
-                             ac * feature_autocoder,
-                             unsigned char use_dropouts)
+int features_convolve_image(int samples_across,
+                            int samples_down,
+                            int patch_radius,
+                            int img_width,
+                            int img_height,
+                            int img_depth,
+                            unsigned char img[],
+                            int layer0_units,
+                            float layer0[],
+                            ac * feature_autocoder,
+                            unsigned char use_dropouts)
 {
     int no_of_learned_features = feature_autocoder->NoOfHiddens;
 
@@ -502,16 +511,16 @@ int features_conv_img_to_flt(int samples_across,
  * @param feature_autocoder An autocoder containing learned features
  * @returns zero on success
  */
-int features_deconv_flt_to_flt(int samples_across,
-                               int samples_down,
-                               int patch_radius,
-                               int img_width,
-                               int img_height,
-                               int img_depth,
-                               float img[],
-                               int layer_units,
-                               float layer[],
-                               ac * feature_autocoder)
+int features_deconvolve(int samples_across,
+                        int samples_down,
+                        int patch_radius,
+                        int img_width,
+                        int img_height,
+                        int img_depth,
+                        float img[],
+                        int layer_units,
+                        float layer[],
+                        ac * feature_autocoder)
 {
     int no_of_learned_features = feature_autocoder->NoOfHiddens;
 
@@ -579,16 +588,16 @@ int features_deconv_flt_to_flt(int samples_across,
  * @param feature_autocoder An autocoder containing learned features
  * @returns zero on success
  */
-int features_deconv_img_to_flt(int samples_across,
-                               int samples_down,
-                               int patch_radius,
-                               int img_width,
-                               int img_height,
-                               int img_depth,
-                               unsigned char img[],
-                               int layer_units,
-                               float layer[],
-                               ac * feature_autocoder)
+int features_deconvolve_image(int samples_across,
+                              int samples_down,
+                              int patch_radius,
+                              int img_width,
+                              int img_height,
+                              int img_depth,
+                              unsigned char img[],
+                              int layer_units,
+                              float layer[],
+                              ac * feature_autocoder)
 {
     int retval;
     float * deconv_img;
@@ -607,15 +616,15 @@ int features_deconv_img_to_flt(int samples_across,
     memset((void*)img, '\0', img_width*img_height*img_depth*sizeof(unsigned char));
 
     retval =
-        features_deconv_flt_to_flt(samples_across,
-                                   samples_down,
-                                   patch_radius,
-                                   img_width,
-                                   img_height,
-                                   img_depth,
-                                   deconv_img,
-                                   layer_units, layer,
-                                   feature_autocoder);
+        features_deconvolve(samples_across,
+                            samples_down,
+                            patch_radius,
+                            img_width,
+                            img_height,
+                            img_depth,
+                            deconv_img,
+                            layer_units, layer,
+                            feature_autocoder);
     if (retval != 0) {
         free(deconv_img);
         return retval;
@@ -650,17 +659,17 @@ int features_deconv_img_to_flt(int samples_across,
  * @param use_dropouts non-zero if dropouts are to be used
  * @returns zero on success
  */
-int features_conv_flt_to_flt(int samples_across,
-                             int samples_down,
-                             int patch_radius,
-                             int floats_width,
-                             int floats_height,
-                             int floats_depth,
-                             float layer0[],
-                             int layer1_units,
-                             float layer1[],
-                             ac * feature_autocoder,
-                             unsigned char use_dropouts)
+int features_convolve(int samples_across,
+                      int samples_down,
+                      int patch_radius,
+                      int floats_width,
+                      int floats_height,
+                      int floats_depth,
+                      float layer0[],
+                      int layer1_units,
+                      float layer1[],
+                      ac * feature_autocoder,
+                      unsigned char use_dropouts)
 {
     int no_of_learned_features = feature_autocoder->NoOfHiddens;
 

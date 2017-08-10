@@ -80,15 +80,15 @@ static void test_learn_from_image()
 
     for (i = 0; i < 8; i++) {
         result =
-            features_learn_from_img(samples_across,
-                                    samples_down,
-                                    patch_radius,
-                                    img_width,
-                                    img_height,
-                                    img_depth,
-                                    img, no_of_inputs,
-                                    &feature_autocoder,
-                                    &BPerror);
+            features_learn_from_image(samples_across,
+                                      samples_down,
+                                      patch_radius,
+                                      img_width,
+                                      img_height,
+                                      img_depth,
+                                      img, no_of_inputs,
+                                      &feature_autocoder,
+                                      &BPerror);
         if (result != 0) {
             printf("\nresult = %d\n",result);
         }
@@ -169,15 +169,15 @@ static void test_learn_from_flt()
 
     for (i = 0; i < 20; i++) {
         result =
-            features_learn_from_flt(samples_across,
-                                    samples_down,
-                                    patch_radius,
-                                    img_width,
-                                    img_height,
-                                    img_depth,
-                                    &flt[0], no_of_inputs,
-                                    &feature_autocoder,
-                                    &BPerror);
+            features_learn(samples_across,
+                           samples_down,
+                           patch_radius,
+                           img_width,
+                           img_height,
+                           img_depth,
+                           &flt[0], no_of_inputs,
+                           &feature_autocoder,
+                           &BPerror);
         if (result != 0) {
             printf("\nresult = %d\n",result);
         }
@@ -235,13 +235,13 @@ static void test_features_conv_img_to_flt()
     }
 
     int retval =
-        features_conv_img_to_flt(samples_across, samples_down,
-                                 patch_radius,
-                                 img_width, img_height,
-                                 img_depth,
-                                 img, layer0_units,
-                                 layer0, &feature_autocoder,
-                                 use_dropouts);
+        features_convolve_image(samples_across, samples_down,
+                                patch_radius,
+                                img_width, img_height,
+                                img_depth,
+                                img, layer0_units,
+                                layer0, &feature_autocoder,
+                                use_dropouts);
     if (retval != 0) {
         printf("\nretval = %d\n", retval);
     }

@@ -362,15 +362,15 @@ static int conv_img_initial(unsigned char img[],
     if (conv->enable_learning != 0) {
         /* do feature learning */
         retval =
-            features_learn_from_img(conv_layer_width(0,conv,BEFORE_POOLING),
-                                    conv_layer_height(0,conv,BEFORE_POOLING),
-                                    patch_radius,
-                                    conv->inputs_across,
-                                    conv->inputs_down,
-                                    conv->inputs_depth, img,
-                                    convolution_layer_units(0, conv),
-                                    conv->layer[0].autocoder,
-                                    &currBPerror);
+            features_learn_from_image(conv_layer_width(0,conv,BEFORE_POOLING),
+                                      conv_layer_height(0,conv,BEFORE_POOLING),
+                                      patch_radius,
+                                      conv->inputs_across,
+                                      conv->inputs_down,
+                                      conv->inputs_depth, img,
+                                      convolution_layer_units(0, conv),
+                                      conv->layer[0].autocoder,
+                                      &currBPerror);
 
         if (retval != 0)
             return -1;
@@ -380,16 +380,16 @@ static int conv_img_initial(unsigned char img[],
 
     /* do the convolution for this layer */
     retval =
-        features_conv_img_to_flt(conv_layer_width(0,conv,BEFORE_POOLING),
-                                 conv_layer_height(0,conv,BEFORE_POOLING),
-                                 patch_radius,
-                                 conv->inputs_across,
-                                 conv->inputs_down,
-                                 conv->inputs_depth, img,
-                                 convolution_layer_units(0,conv),
-                                 conv->layer[0].convolution,
-                                 conv->layer[0].autocoder,
-                                 use_dropouts);
+        features_convolve_image(conv_layer_width(0,conv,BEFORE_POOLING),
+                                conv_layer_height(0,conv,BEFORE_POOLING),
+                                patch_radius,
+                                conv->inputs_across,
+                                conv->inputs_down,
+                                conv->inputs_depth, img,
+                                convolution_layer_units(0,conv),
+                                conv->layer[0].convolution,
+                                conv->layer[0].autocoder,
+                                use_dropouts);
     if (retval != 0)
         return -2;
 
@@ -418,16 +418,16 @@ static int conv_subsequent(deeplearn_conv * conv,
     if (conv->enable_learning != 0) {
         /* do feature learning */
         retval =
-            features_learn_from_flt(conv_layer_width(layer_index,conv,BEFORE_POOLING),
-                                    conv_layer_height(layer_index,conv,BEFORE_POOLING),
-                                    patch_radius,
-                                    conv_layer_width(layer_index-1,conv,AFTER_POOLING),
-                                    conv_layer_height(layer_index-1,conv,AFTER_POOLING),
-                                    conv_layer_features(conv, layer_index),
-                                    conv->layer[layer_index-1].pooling,
-                                    convolution_layer_units(layer_index,conv),
-                                    conv->layer[layer_index].autocoder,
-                                    &currBPerror);
+            features_learn(conv_layer_width(layer_index,conv,BEFORE_POOLING),
+                           conv_layer_height(layer_index,conv,BEFORE_POOLING),
+                           patch_radius,
+                           conv_layer_width(layer_index-1,conv,AFTER_POOLING),
+                           conv_layer_height(layer_index-1,conv,AFTER_POOLING),
+                           conv_layer_features(conv, layer_index),
+                           conv->layer[layer_index-1].pooling,
+                           convolution_layer_units(layer_index,conv),
+                           conv->layer[layer_index].autocoder,
+                           &currBPerror);
 
         if (retval != 0)
             return -4;
@@ -437,17 +437,17 @@ static int conv_subsequent(deeplearn_conv * conv,
     }
     /* do the convolution for this layer */
     retval =
-        features_conv_flt_to_flt(conv_layer_width(layer_index,conv,BEFORE_POOLING),
-                                 conv_layer_height(layer_index,conv,BEFORE_POOLING),
-                                 patch_radius,
-                                 conv_layer_width(layer_index-1,conv,AFTER_POOLING),
-                                 conv_layer_height(layer_index-1,conv,AFTER_POOLING),
-                                 conv_layer_features(conv, layer_index),
-                                 conv->layer[layer_index-1].pooling,
-                                 convolution_layer_units(layer_index,conv),
-                                 conv->layer[layer_index].convolution,
-                                 conv->layer[layer_index].autocoder,
-                                 use_dropouts);
+        features_convolve(conv_layer_width(layer_index,conv,BEFORE_POOLING),
+                          conv_layer_height(layer_index,conv,BEFORE_POOLING),
+                          patch_radius,
+                          conv_layer_width(layer_index-1,conv,AFTER_POOLING),
+                          conv_layer_height(layer_index-1,conv,AFTER_POOLING),
+                          conv_layer_features(conv, layer_index),
+                          conv->layer[layer_index-1].pooling,
+                          convolution_layer_units(layer_index,conv),
+                          conv->layer[layer_index].convolution,
+                          conv->layer[layer_index].autocoder,
+                          use_dropouts);
     if (retval != 0)
         return -5;
 
@@ -575,7 +575,7 @@ int deconv_img(int start_layer,
 
         /* deconvolve from the current layer to the pooling of the
            previous layer */
-        features_deconv_flt_to_flt(
+        features_deconvolve(
             conv_layer_width(layer_index, conv, BEFORE_POOLING),
             conv_layer_height(layer_index, conv, BEFORE_POOLING),
             conv_patch_radius(layer_index, conv),
@@ -589,13 +589,13 @@ int deconv_img(int start_layer,
     }
 
     /* convert from the first layer back to the starting image */
-    features_deconv_img_to_flt(conv_layer_width(0, conv, BEFORE_POOLING),
-                               conv_layer_height(0, conv, BEFORE_POOLING),
-                               conv_patch_radius(0, conv),
-                               img_width, img_height, img_depth, img,
-                               convolution_layer_units(0, conv),
-                               conv->layer[0].convolution,
-                               conv->layer[0].autocoder);
+    features_deconvolve_image(conv_layer_width(0, conv, BEFORE_POOLING),
+                              conv_layer_height(0, conv, BEFORE_POOLING),
+                              conv_patch_radius(0, conv),
+                              img_width, img_height, img_depth, img,
+                              convolution_layer_units(0, conv),
+                              conv->layer[0].convolution,
+                              conv->layer[0].autocoder);
     return 0;
 }
 
