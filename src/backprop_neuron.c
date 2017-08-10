@@ -401,28 +401,28 @@ int bp_neuron_save(FILE * fp, bp_neuron * n)
 */
 int bp_neuron_load(FILE * fp, bp_neuron * n)
 {
-    if (fread(&n->NoOfInputs, sizeof(int), 1, fp) == 0)
+    if (INTREAD(n->NoOfInputs) == 0)
         return -1;
 
-    if (fread(n->weights, sizeof(float), n->NoOfInputs, fp) == 0)
+    if (FLOATREADARRAY(n->weights, n->NoOfInputs) == 0)
         return -2;
 
-    if (fread(n->lastWeightChange, sizeof(float), n->NoOfInputs, fp) == 0)
+    if (FLOATREADARRAY(n->lastWeightChange, n->NoOfInputs) == 0)
         return -3;
 
-    if (fread(&n->min_weight, sizeof(float), 1, fp) == 0)
+    if (FLOATREAD(n->min_weight) == 0)
         return -4;
 
-    if (fread(&n->max_weight, sizeof(float), 1, fp) == 0)
+    if (FLOATREAD(n->max_weight) == 0)
         return -5;
 
-    if (fread(&n->bias, sizeof(float), 1, fp) == 0)
+    if (FLOATREAD(n->bias) == 0)
         return -6;
 
-    if (fread(&n->lastBiasChange, sizeof(float), 1, fp) == 0)
+    if (FLOATREAD(n->lastBiasChange) == 0)
         return -7;
 
-    if (fread(&n->desiredValue, sizeof(float), 1, fp) == 0)
+    if (FLOATREAD(n->desiredValue) == 0)
         return -8;
 
     n->value = 0;

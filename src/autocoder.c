@@ -359,13 +359,13 @@ int autocoder_load(FILE * fp, ac * autocoder, int initialise)
     int no_of_hiddens = 0;
     unsigned int random_seed = 0;
 
-    if (fread(&no_of_inputs, sizeof(int), 1, fp) == 0)
+    if (INTREAD(no_of_inputs) == 0)
         return -1;
 
-    if (fread(&no_of_hiddens, sizeof(int), 1, fp) == 0)
+    if (INTREAD(no_of_hiddens) == 0)
         return -2;
 
-    if (fread(&random_seed, sizeof(unsigned int), 1, fp) == 0)
+    if (UINTREAD(random_seed) == 0)
         return -3;
 
     /* create the autocoder */
@@ -383,32 +383,30 @@ int autocoder_load(FILE * fp, ac * autocoder, int initialise)
         autocoder->random_seed = random_seed;
     }
 
-    if (fread(&autocoder->DropoutPercent, sizeof(float), 1, fp) == 0)
+    if (FLOATREAD(autocoder->DropoutPercent) == 0)
         return -5;
 
-    if (fread(autocoder->weights, sizeof(float),
-              autocoder->NoOfInputs*autocoder->NoOfHiddens, fp) == 0)
+    if (FLOATREADARRAY(autocoder->weights,
+                       autocoder->NoOfInputs*autocoder->NoOfHiddens) == 0)
         return -6;
 
-    if (fread(autocoder->lastWeightChange, sizeof(float),
-              autocoder->NoOfInputs*autocoder->NoOfHiddens, fp) == 0)
+    if (FLOATREADARRAY(autocoder->lastWeightChange,
+                       autocoder->NoOfInputs*autocoder->NoOfHiddens) == 0)
         return -7;
 
-    if (fread(autocoder->bias, sizeof(float),
-              autocoder->NoOfHiddens, fp) == 0)
+    if (FLOATREADARRAY(autocoder->bias, autocoder->NoOfHiddens) == 0)
         return -8;
 
-    if (fread(autocoder->lastBiasChange, sizeof(float),
-              autocoder->NoOfHiddens, fp) == 0)
+    if (FLOATREADARRAY(autocoder->lastBiasChange, autocoder->NoOfHiddens) == 0)
         return -9;
 
-    if (fread(&autocoder->learningRate, sizeof(float), 1, fp) == 0)
+    if (FLOATREAD(autocoder->learningRate) == 0)
         return -10;
 
-    if (fread(&autocoder->noise, sizeof(float), 1, fp) == 0)
+    if (FLOATREAD(autocoder->noise) == 0)
         return -11;
 
-    if (fread(&autocoder->itterations, sizeof(unsigned int), 1, fp) == 0)
+    if (UINTREAD(autocoder->itterations) == 0)
         return -12;
 
     return 0;

@@ -785,25 +785,25 @@ int deeplearn_load(FILE * fp, deeplearn * learner,
     learner->test_data = 0;
     learner->test_data_samples = 0;
 
-    if (fread(&learner->training_complete, sizeof(int), 1, fp) == 0)
+    if (INTREAD(learner->training_complete) == 0)
         return -1;
 
-    if (fread(&learner->itterations, sizeof(unsigned int), 1, fp) == 0)
+    if (UINTREAD(learner->itterations) == 0)
         return -2;
 
-    if (fread(&learner->current_hidden_layer, sizeof(int), 1, fp) == 0)
+    if (INTREAD(learner->current_hidden_layer) == 0)
         return -3;
 
-    if (fread(&learner->BPerror, sizeof(float), 1, fp) == 0)
+    if (FLOATREAD(learner->BPerror) == 0)
         return -4;
 
-    if (fread(&learner->no_of_input_fields, sizeof(int), 1, fp) == 0)
+    if (INTREAD(learner->no_of_input_fields) == 0)
         return -5;
 
     learner->field_length = 0;
     if (learner->no_of_input_fields > 0) {
         learner->field_length = (int*)malloc(learner->no_of_input_fields*sizeof(int));
-        if (fread(learner->field_length, sizeof(int), learner->no_of_input_fields, fp) == 0)
+        if (INTREADARRAY(learner->field_length, learner->no_of_input_fields) == 0)
             return -6;
     }
 
@@ -824,8 +824,8 @@ int deeplearn_load(FILE * fp, deeplearn * learner,
 
     /* load error thresholds */
     FLOATALLOC(learner->error_threshold, learner->net->HiddenLayers+1);
-    if (fread(learner->error_threshold, sizeof(float),
-              learner->net->HiddenLayers+1, fp) == 0)
+    if (FLOATREADARRAY(learner->error_threshold,
+                       learner->net->HiddenLayers+1) == 0)
         return -10;
 
     /* load ranges */
@@ -845,30 +845,29 @@ int deeplearn_load(FILE * fp, deeplearn * learner,
     if (!learner->output_range_max)
         return -18;
 
-    if (fread(learner->input_range_min, sizeof(float), learner->net->NoOfInputs, fp) == 0)
+    if (FLOATREADARRAY(learner->input_range_min, learner->net->NoOfInputs) == 0)
         return -19;
 
-    if (fread(learner->input_range_max, sizeof(float), learner->net->NoOfInputs, fp) == 0)
+    if (FLOATREADARRAY(learner->input_range_max, learner->net->NoOfInputs) == 0)
         return -20;
 
-    if (fread(learner->output_range_min, sizeof(float), learner->net->NoOfOutputs, fp) == 0)
+    if (FLOATREADARRAY(learner->output_range_min, learner->net->NoOfOutputs) == 0)
         return -21;
 
-    if (fread(learner->output_range_max, sizeof(float), learner->net->NoOfOutputs, fp) == 0)
+    if (FLOATREADARRAY(learner->output_range_max, learner->net->NoOfOutputs) == 0)
         return -22;
 
     /* load the history */
-    if (fread(&learner->history_index, sizeof(int), 1, fp) == 0)
+    if (INTREAD(learner->history_index) == 0)
         return -11;
 
-    if (fread(&learner->history_ctr, sizeof(int), 1, fp) == 0)
+    if (INTREAD(learner->history_ctr) == 0)
         return -12;
 
-    if (fread(&learner->history_step, sizeof(int), 1, fp) == 0)
+    if (INTREAD(learner->history_step) == 0)
         return -13;
 
-    if (fread(learner->history, sizeof(float),
-              learner->history_index, fp) == 0)
+    if (FLOATREADARRAY(learner->history, learner->history_index) == 0)
         return -14;
 
     return 0;

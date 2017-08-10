@@ -842,47 +842,37 @@ int bp_save(FILE * fp, bp * net)
 int bp_load(FILE * fp, bp * net,
             unsigned int * random_seed)
 {
-    int retval;
     int no_of_inputs=0, no_of_hiddens=0, no_of_outputs=0;
     int hidden_layers=0;
     float learning_rate=0, noise=0, BPerrorAverage=0;
     float DropoutPercent=0;
     unsigned int itterations=0;
 
-    retval = fread(&itterations, sizeof(unsigned int), 1, fp);
-    if (retval == 0)
+    if (UINTREAD(itterations) == 0)
         return -1;
 
-    retval = fread(&no_of_inputs, sizeof(int), 1, fp);
-    if (retval == 0)
+    if (INTREAD(no_of_inputs) == 0)
         return -2;
 
-    retval = fread(&no_of_hiddens, sizeof(int), 1, fp);
-    if (retval == 0)
+    if (INTREAD(no_of_hiddens) == 0)
         return -3;
 
-    retval = fread(&no_of_outputs, sizeof(int), 1, fp);
-    if (retval == 0)
+    if (INTREAD(no_of_outputs) == 0)
         return -4;
 
-    retval = fread(&hidden_layers, sizeof(int), 1, fp);
-    if (retval == 0)
+    if (INTREAD(hidden_layers) == 0)
         return -5;
 
-    retval = fread(&learning_rate, sizeof(float), 1, fp);
-    if (retval == 0)
+    if (FLOATREAD(learning_rate) == 0)
         return -6;
 
-    retval = fread(&noise, sizeof(float), 1, fp);
-    if (retval == 0)
+    if (FLOATREAD(noise) == 0)
         return -7;
 
-    retval = fread(&BPerrorAverage, sizeof(float), 1, fp);
-    if (retval == 0)
+    if (FLOATREAD(BPerrorAverage) == 0)
         return -8;
 
-    retval = fread(&DropoutPercent, sizeof(float), 1, fp);
-    if (retval == 0)
+    if (FLOATREAD(DropoutPercent) == 0)
         return -9;
 
     if (bp_init(net, no_of_inputs, no_of_hiddens,

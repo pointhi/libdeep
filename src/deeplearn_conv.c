@@ -791,50 +791,47 @@ int conv_load(FILE * fp, deeplearn_conv * conv)
 {
     float * error_threshold;
 
-    if (fread(&conv->reduction_factor, sizeof(int), 1, fp) == 0)
+    if (INTREAD(conv->reduction_factor) == 0)
         return -1;
 
-    if (fread(&conv->pooling_factor, sizeof(int), 1, fp) == 0)
+    if (INTREAD(conv->pooling_factor) == 0)
         return -2;
 
-    if (fread(&conv->random_seed, sizeof(unsigned int), 1, fp) == 0)
+    if (UINTREAD(conv->random_seed) == 0)
         return -3;
 
-    if (fread(&conv->inputs_across, sizeof(int), 1, fp) == 0)
+    if (INTREAD(conv->inputs_across) == 0)
         return -4;
 
-    if (fread(&conv->inputs_down, sizeof(int), 1, fp) == 0)
+    if (INTREAD(conv->inputs_down) == 0)
         return -5;
 
-    if (fread(&conv->inputs_depth, sizeof(int), 1, fp) == 0)
+    if (INTREAD(conv->inputs_depth) == 0)
         return -6;
 
-    if (fread(&conv->max_features, sizeof(int), 1, fp) == 0)
+    if (INTREAD(conv->max_features) == 0)
         return -7;
 
-    if (fread(&conv->no_of_layers, sizeof(int), 1, fp) == 0)
+    if (INTREAD(conv->no_of_layers) == 0)
         return -8;
 
-    if (fread(&conv->enable_learning,
-              sizeof(unsigned char), 1, fp) == 0)
+    if (BYTEREAD(conv->enable_learning) == 0)
         return -9;
 
-    if (fread(&conv->current_layer, sizeof(int), 1, fp) == 0)
+    if (INTREAD(conv->current_layer) == 0)
         return -11;
 
-    if (fread(&conv->training_complete,
-              sizeof(unsigned char), 1, fp) == 0)
+    if (BYTEREAD(conv->training_complete) == 0)
         return -12;
 
-    if (fread(&conv->itterations, sizeof(unsigned int), 1, fp) == 0)
+    if (UINTREAD(conv->itterations) == 0)
         return -13;
 
     FLOATALLOC(error_threshold, conv->no_of_layers);
     if (!error_threshold)
         return -14;
 
-    if (fread(error_threshold,
-              sizeof(float), conv->no_of_layers, fp) == 0)
+    if (FLOATREADARRAY(error_threshold, conv->no_of_layers) == 0)
         return -15;
 
     if (conv_init(conv->no_of_layers,
@@ -852,16 +849,13 @@ int conv_load(FILE * fp, deeplearn_conv * conv)
         if (autocoder_load(fp, conv->layer[i].autocoder, 0) != 0)
             return -17;
 
-        if (fread(&conv->layer[i].units_across,
-                  sizeof(int), 1, fp) == 0)
+        if (INTREAD(conv->layer[i].units_across) == 0)
             return -18;
 
-        if (fread(&conv->layer[i].units_down,
-                  sizeof(int), 1, fp) == 0)
+        if (INTREAD(conv->layer[i].units_down) == 0)
             return -19;
 
-        if (fread(&conv->layer[i].pooling_factor,
-                  sizeof(int), 1, fp) == 0)
+        if (INTREAD(conv->layer[i].pooling_factor) == 0)
             return -20;
     }
 

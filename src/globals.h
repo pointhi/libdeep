@@ -77,4 +77,14 @@
 #define UINTWRITE(m) WRITEVAR(m, unsigned int)
 #define BYTEWRITE(m) WRITEVAR(m, unsigned char)
 
+#define READVAR(m, type) fread(&m, sizeof(type), 1, fp)
+#define READARRAY(m, type, size) fread(m, sizeof(type), size, fp)
+
+#define FLOATREAD(m) READVAR(m, float)
+#define FLOATREADARRAY(m, size) READARRAY(m, float, size)
+#define INTREADARRAY(m, size) READARRAY(m, int, size)
+#define INTREAD(m) READVAR(m, int)
+#define UINTREAD(m) READVAR(m, unsigned int)
+#define BYTEREAD(m) READVAR(m, unsigned char)
+
 #endif
