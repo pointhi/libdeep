@@ -90,19 +90,24 @@ int conv_init(int no_of_layers,
     conv->inputs_depth = inputs_depth;
     conv->max_features = max_features;
 
-    COUNTUP(i, no_of_layers) {
-        /* reduce the array dimensions */
+    COUNTUP(l, no_of_layers) {
+        /* reduce the dimensions for each layer */
         across /= reduction_factor;
         down /= reduction_factor;
+
+        /* set a minimum layer dimension */
         if (across < 4) across = 4;
         if (down < 4) down = 4;
 
-        conv->layer[i].units_across = across;
-        conv->layer[i].units_down = down;
-        conv->layer[i].pooling_factor = pooling_factor;
-        FLOATALLOC(conv->layer[i].convolution, across*down*conv_layer_features(conv, i));
+        /* set the layer parameters */
+        conv->layer[l].units_across = across;
+        conv->layer[l].units_down = down;
+        conv->layer[l].pooling_factor = pooling_factor;
 
-        if (!conv->layer[i].convolution)
+        /* create the layer */
+        FLOATALLOC(conv->layer[l].convolution, across*down*conv_layer_features(conv, l));
+
+        if (!conv->layer[l].convolution)
             return -2;
 
         /* ensure that the random seed is different for each
@@ -110,25 +115,27 @@ int conv_init(int no_of_layers,
         rand_num(random_seed);
 
         /* create an autocoder for feature learning on this layer */
-        conv->layer[i].autocoder = (ac*)malloc(sizeof(ac));
+        conv->layer[l].autocoder = (ac*)malloc(sizeof(ac));
 
-        int depth = conv_layer_features(conv, i);
+        /* how many features are there on this layer? */
+        int depth = conv_layer_features(conv, l);
 
         /* on the first layer the depth is the same as the
            inputs or image */
-        if (i == 0)
+        if (l == 0)
             depth = inputs_depth;
+
+        /* how wide is each patch on the previous layer? */
+        int patch_dimension = conv_patch_radius(l,conv)*2;
 
         /* the number of units/pixels within an input patch of
            the previous layer, not including depth */
-        int patch_pixels =
-            conv_patch_radius(i,conv)*
-            conv_patch_radius(i,conv)*4;
+        int patch_pixels = patch_dimension*patch_dimension;
 
         /* initialise the autocoder for this layer */
-        if (autocoder_init(conv->layer[i].autocoder,
+        if (autocoder_init(conv->layer[l].autocoder,
                            patch_pixels*depth,
-                           conv_layer_features(conv, i),
+                           conv_layer_features(conv, l),
                            *random_seed) != 0)
             return -3;
 
@@ -139,8 +146,8 @@ int conv_init(int no_of_layers,
         if (down < 4) down = 4;
 
         /* create a pooling array */
-        FLOATALLOC(conv->layer[i].pooling, across*down*conv_layer_features(conv, i));
-        if (!conv->layer[i].pooling)
+        FLOATALLOC(conv->layer[l].pooling, across*down*conv_layer_features(conv, l));
+        if (!conv->layer[l].pooling)
             return -4;
     }
     return 0;
@@ -228,11 +235,12 @@ int conv_patch_radius(int layer_index,
         radius = conv->inputs_across/conv->layer[0].units_across;
     }
     else {
-        int prev_pooling_factor =
+        int prev_layer_dimension_after_pooling =
+            conv->layer[layer_index-1].units_across /
             conv->layer[layer_index-1].pooling_factor;
 
-        radius = (conv->layer[layer_index-1].units_across /
-                  prev_pooling_factor) /
+        radius =
+            prev_layer_dimension_after_pooling /
             conv->layer[layer_index].units_across;
     }
 
@@ -553,17 +561,17 @@ int deconv_img(int start_layer,
 
     for (int layer_index = start_layer; layer_index > 0; layer_index--) {
         /* unpool the current layer */
-        unpooling_from_flt_to_flt(conv_layer_features(conv, layer_index),
-                                  conv_layer_width(layer_index,
-                                                   conv, AFTER_POOLING),
-                                  conv_layer_height(layer_index,
-                                                    conv, AFTER_POOLING),
-                                  conv->layer[layer_index].pooling,
-                                  conv_layer_width(layer_index,
-                                                   conv, BEFORE_POOLING),
-                                  conv_layer_height(layer_index,
-                                                    conv, BEFORE_POOLING),
-                                  conv->layer[layer_index].convolution);
+        unpooling_update(conv_layer_features(conv, layer_index),
+                         conv_layer_width(layer_index,
+                                          conv, AFTER_POOLING),
+                         conv_layer_height(layer_index,
+                                           conv, AFTER_POOLING),
+                         conv->layer[layer_index].pooling,
+                         conv_layer_width(layer_index,
+                                          conv, BEFORE_POOLING),
+                         conv_layer_height(layer_index,
+                                           conv, BEFORE_POOLING),
+                         conv->layer[layer_index].convolution);
 
         /* deconvolve from the current layer to the pooling of the
            previous layer */
@@ -624,13 +632,13 @@ int conv_img(unsigned char img[],
 
         /* pooling */
         retval =
-            pooling_from_flt_to_flt(conv_layer_features(conv, i),
-                                    conv_layer_width(i,conv,BEFORE_POOLING),
-                                    conv_layer_height(i,conv,BEFORE_POOLING),
-                                    conv->layer[i].convolution,
-                                    conv_layer_width(i,conv,AFTER_POOLING),
-                                    conv_layer_height(i,conv,AFTER_POOLING),
-                                    conv->layer[i].pooling);
+            pooling_update(conv_layer_features(conv, i),
+                           conv_layer_width(i,conv,BEFORE_POOLING),
+                           conv_layer_height(i,conv,BEFORE_POOLING),
+                           conv->layer[i].convolution,
+                           conv_layer_width(i,conv,AFTER_POOLING),
+                           conv_layer_height(i,conv,AFTER_POOLING),
+                           conv->layer[i].pooling);
         if (retval != 0)
             return -6;
     }

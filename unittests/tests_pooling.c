@@ -28,9 +28,9 @@
 
 #include "tests_pooling.h"
 
-static void test_pooling_from_floats_to_floats()
+static void test_pooling_update()
 {
-    printf("test_pooling_from_floats_to_floats...");
+    printf("test_pooling_update...");
 
     float layer0[20*10*3];
     float layer1[2*2*3];
@@ -49,13 +49,13 @@ static void test_pooling_from_floats_to_floats()
         }
     }
 
-    assert(pooling_from_flt_to_flt(depth,
-                                   layer0_across,
-                                   layer0_down,
-                                   layer0,
-                                   layer1_across,
-                                   layer1_down,
-                                   layer1)==0);
+    assert(pooling_update(depth,
+                          layer0_across,
+                          layer0_down,
+                          layer0,
+                          layer1_across,
+                          layer1_down,
+                          layer1)==0);
 
     for (int y = 0; y < layer1_down; y++) {
         for (int x = 0; x < layer1_across; x++) {
@@ -74,7 +74,7 @@ int run_tests_pooling()
 {
     printf("\nRunning pooling tests\n");
 
-    test_pooling_from_floats_to_floats();
+    test_pooling_update();
 
     printf("All pooling tests completed\n");
     return 1;

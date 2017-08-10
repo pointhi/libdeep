@@ -40,13 +40,13 @@
  * @param layer1 Array containing the second layer values
  * @returns zero on success
  */
-int pooling_from_flt_to_flt(int depth,
-                            int layer0_across,
-                            int layer0_down,
-                            float layer0[],
-                            int layer1_across,
-                            int layer1_down,
-                            float layer1[])
+int pooling_update(int depth,
+                   int layer0_across,
+                   int layer0_down,
+                   float layer0[],
+                   int layer1_across,
+                   int layer1_down,
+                   float layer1[])
 {
     /* second layer must be smaller than the first */
     if (layer1_across*layer1_down >
@@ -91,13 +91,13 @@ int pooling_from_flt_to_flt(int depth,
  * @param layer1 Array containing the second layer values
  * @returns zero on success
  */
-int unpooling_from_flt_to_flt(int depth,
-                              int pooled_layer_across,
-                              int pooled_layer_down,
-                              float pooled_layer[],
-                              int original_layer_across,
-                              int original_layer_down,
-                              float original_layer[])
+int unpooling_update(int depth,
+                     int pooled_layer_across,
+                     int pooled_layer_down,
+                     float pooled_layer[],
+                     int original_layer_across,
+                     int original_layer_down,
+                     float original_layer[])
 {
     /* second layer must be smaller than the first */
     if (original_layer_across*original_layer_down >
