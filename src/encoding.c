@@ -45,9 +45,12 @@ int enc_text_to_binary(char * text,
 {
     int pos = offset, max_chars = strlen(text);
 
+    /* are there enough inputs to cover the given string length? */
     if (max_chars > (no_of_inputs-offset)/CHAR_BITS)
         max_chars = ((no_of_inputs-offset)/CHAR_BITS);
 
+    /* Is the string length within the limit?
+       If not then truncate */
     if (max_chars > max_field_length_chars)
         max_chars = max_field_length_chars;
 
@@ -56,13 +59,13 @@ int enc_text_to_binary(char * text,
         /* set the bits for this character */
         COUNTUP(bit, CHAR_BITS) {
             if (text[c] & (1<<bit))
-                inputs[pos++]->value = 0.75f;
+                inputs[pos++]->value = 0.75f; /* input high */
             else
-                inputs[pos++]->value = 0.25f;
+                inputs[pos++]->value = 0.25f; /* input low */
         }
     }
 
-    /* set the remaining inputs within the field to neutral */
+    /* set the remaining inputs within the field to neutral (unknown) */
     FOR(i, max_chars, max_field_length_chars) {
         COUNTUP(bit, CHAR_BITS) {
             if (pos >= no_of_inputs) {
