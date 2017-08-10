@@ -794,31 +794,31 @@ void bp_update(bp * net, int current_hidden_layer)
 */
 int bp_save(FILE * fp, bp * net)
 {
-    if (fwrite(&net->itterations, sizeof(unsigned int), 1, fp) == 0)
+    if (UINTWRITE(net->itterations) == 0)
         return -1;
 
-    if (fwrite(&net->NoOfInputs, sizeof(int), 1, fp) == 0)
+    if (INTWRITE(net->NoOfInputs) == 0)
         return -2;
 
-    if (fwrite(&net->NoOfHiddens, sizeof(int), 1, fp) == 0)
+    if (INTWRITE(net->NoOfHiddens) == 0)
         return -3;
 
-    if (fwrite(&net->NoOfOutputs, sizeof(int), 1, fp) == 0)
+    if (INTWRITE(net->NoOfOutputs) == 0)
         return -4;
 
-    if (fwrite(&net->HiddenLayers, sizeof(int), 1, fp) == 0)
+    if (INTWRITE(net->HiddenLayers) == 0)
         return -5;
 
-    if (fwrite(&net->learningRate, sizeof(float), 1, fp) == 0)
+    if (FLOATWRITE(net->learningRate) == 0)
         return -6;
 
-    if (fwrite(&net->noise, sizeof(float), 1, fp) == 0)
+    if (FLOATWRITE(net->noise) == 0)
         return -7;
 
-    if (fwrite(&net->BPerrorAverage, sizeof(float), 1, fp) == 0)
+    if (FLOATWRITE(net->BPerrorAverage) == 0)
         return -8;
 
-    if (fwrite(&net->DropoutPercent, sizeof(float), 1, fp) == 0)
+    if (FLOATWRITE(net->DropoutPercent) == 0)
         return -9;
 
     COUNTUP(l, net->HiddenLayers) {

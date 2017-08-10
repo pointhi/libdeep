@@ -307,41 +307,40 @@ void autocoder_learn(ac * autocoder)
  */
 int autocoder_save(FILE * fp, ac * autocoder)
 {
-    if (fwrite(&autocoder->NoOfInputs, sizeof(int), 1, fp) == 0)
+    if (INTWRITE(autocoder->NoOfInputs) == 0)
         return -1;
 
-    if (fwrite(&autocoder->NoOfHiddens, sizeof(int), 1, fp) == 0)
+    if (INTWRITE(autocoder->NoOfHiddens) == 0)
         return -2;
 
-    if (fwrite(&autocoder->random_seed, sizeof(unsigned int), 1, fp) == 0)
+    if (UINTWRITE(autocoder->random_seed) == 0)
         return -3;
 
-    if (fwrite(&autocoder->DropoutPercent, sizeof(float), 1, fp) == 0)
+    if (FLOATWRITE(autocoder->DropoutPercent) == 0)
         return -4;
 
-    if (fwrite(autocoder->weights, sizeof(float),
-               autocoder->NoOfInputs*autocoder->NoOfHiddens, fp) == 0)
+    if (FLOATWRITEARRAY(autocoder->weights,
+                        autocoder->NoOfInputs*autocoder->NoOfHiddens) == 0)
         return -5;
 
-    if (fwrite(autocoder->lastWeightChange, sizeof(float),
-               autocoder->NoOfInputs*autocoder->NoOfHiddens, fp) == 0)
+    if (FLOATWRITEARRAY(autocoder->lastWeightChange,
+                        autocoder->NoOfInputs*autocoder->NoOfHiddens) == 0)
         return -6;
 
-    if (fwrite(autocoder->bias, sizeof(float),
-               autocoder->NoOfHiddens, fp) == 0)
+    if (FLOATWRITEARRAY(autocoder->bias, autocoder->NoOfHiddens) == 0)
         return -7;
 
-    if (fwrite(autocoder->lastBiasChange, sizeof(float),
-               autocoder->NoOfHiddens, fp) == 0)
+    if (FLOATWRITEARRAY(autocoder->lastBiasChange,
+                        autocoder->NoOfHiddens) == 0)
         return -8;
 
-    if (fwrite(&autocoder->learningRate, sizeof(float), 1, fp) == 0)
+    if (FLOATWRITE(autocoder->learningRate) == 0)
         return -9;
 
-    if (fwrite(&autocoder->noise, sizeof(float), 1, fp) == 0)
+    if (FLOATWRITE(autocoder->noise) == 0)
         return -10;
 
-    if (fwrite(&autocoder->itterations, sizeof(unsigned int), 1, fp) == 0)
+    if (UINTWRITE(autocoder->itterations) == 0)
         return -11;
 
     return 0;
@@ -607,9 +606,8 @@ int autocoder_plot_weight_matrix(ac * net,
 
     /* allocate memory for the image */
     img = (unsigned char*)malloc(image_width*image_height*3);
-    if (!img) {
+    if (!img)
         return -1;
-    }
 
     /* clear the image with a white background */
     memset((void*)img, '\255', image_width*image_height*3*sizeof(unsigned char));

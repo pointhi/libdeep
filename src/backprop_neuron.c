@@ -366,28 +366,28 @@ void bp_weights_test_pattern(bp_neuron * n, int depth)
 */
 int bp_neuron_save(FILE * fp, bp_neuron * n)
 {
-    if (fwrite(&n->NoOfInputs, sizeof(int), 1, fp) == 0)
+    if (INTWRITE(n->NoOfInputs) == 0)
         return -1;
 
-    if (fwrite(n->weights, sizeof(float), n->NoOfInputs, fp) == 0)
+    if (FLOATWRITEARRAY(n->weights, n->NoOfInputs) == 0)
         return -2;
 
-    if (fwrite(n->lastWeightChange, sizeof(float), n->NoOfInputs, fp) == 0)
+    if (FLOATWRITEARRAY(n->lastWeightChange, n->NoOfInputs) == 0)
         return -3;
 
-    if (fwrite(&n->min_weight, sizeof(float), 1, fp) == 0)
+    if (FLOATWRITE(n->min_weight) == 0)
         return -4;
 
-    if (fwrite(&n->max_weight, sizeof(float), 1, fp) == 0)
+    if (FLOATWRITE(n->max_weight) == 0)
         return -5;
 
-    if (fwrite(&n->bias, sizeof(float), 1, fp) == 0)
+    if (FLOATWRITE(n->bias) == 0)
         return -6;
 
-    if (fwrite(&n->lastBiasChange, sizeof(float), 1, fp) == 0)
+    if (FLOATWRITE(n->lastBiasChange) == 0)
         return -7;
 
-    if (fwrite(&n->desiredValue, sizeof(float), 1, fp) == 0)
+    if (FLOATWRITE(n->desiredValue) == 0)
         return -8;
 
     return 0;

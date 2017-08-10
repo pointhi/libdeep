@@ -64,7 +64,17 @@
 #define COUNTUP(i, end) for (int (i) = 0; (i) < (end); (i)++)
 #define COUNTDOWN(i, end) for (int (i) = (end-1); (i) >= 0; (i)--)
 
-#define FLOATALLOC(m, size) m = (float*)malloc((size)*sizeof(float));
-#define FLOATCLEAR(m, size) memset((void*)m, '\0', size*sizeof(float));
+#define FLOATALLOC(m, size) m = (float*)malloc((size)*sizeof(float))
+#define FLOATCLEAR(m, size) memset((void*)m, '\0', size*sizeof(float))
+
+#define WRITEVAR(m, type) fwrite(&m, sizeof(type), 1, fp)
+#define WRITEARRAY(m, type, size) fwrite(m, sizeof(type), size, fp)
+
+#define FLOATWRITE(m) WRITEVAR(m, float)
+#define FLOATWRITEARRAY(m, size) WRITEARRAY(m, float, size)
+#define INTWRITEARRAY(m, size) WRITEARRAY(m, int, size)
+#define INTWRITE(m) WRITEVAR(m, int)
+#define UINTWRITE(m) WRITEVAR(m, unsigned int)
+#define BYTEWRITE(m) WRITEVAR(m, unsigned char)
 
 #endif

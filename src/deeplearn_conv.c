@@ -724,56 +724,43 @@ int conv_plot_history(deeplearn_conv * conv,
  */
 int conv_save(FILE * fp, deeplearn_conv * conv)
 {
-    if (fwrite(&conv->reduction_factor,
-               sizeof(int), 1, fp) == 0)
+    if (FLOATWRITE(conv->reduction_factor) == 0)
         return -1;
 
-    if (fwrite(&conv->pooling_factor,
-               sizeof(int), 1, fp) == 0)
+    if (INTWRITE(conv->pooling_factor) == 0)
         return -2;
 
-    if (fwrite(&conv->random_seed,
-               sizeof(unsigned int), 1, fp) == 0)
+    if (UINTWRITE(conv->random_seed) == 0)
         return -3;
 
-    if (fwrite(&conv->inputs_across,
-               sizeof(int), 1, fp) == 0)
+    if (INTWRITE(conv->inputs_across) == 0)
         return -4;
 
-    if (fwrite(&conv->inputs_down,
-               sizeof(int), 1, fp) == 0)
+    if (INTWRITE(conv->inputs_down) == 0)
         return -5;
 
-    if (fwrite(&conv->inputs_depth,
-               sizeof(int), 1, fp) == 0)
+    if (INTWRITE(conv->inputs_depth) == 0)
         return -6;
 
-    if (fwrite(&conv->max_features,
-               sizeof(int), 1, fp) == 0)
+    if (INTWRITE(conv->max_features) == 0)
         return -7;
 
-    if (fwrite(&conv->no_of_layers,
-               sizeof(int), 1, fp) == 0)
+    if (INTWRITE(conv->no_of_layers) == 0)
         return -8;
 
-    if (fwrite(&conv->enable_learning,
-               sizeof(unsigned char), 1, fp) == 0)
+    if (BYTEWRITE(conv->enable_learning) == 0)
         return -9;
 
-    if (fwrite(&conv->current_layer,
-               sizeof(int), 1, fp) == 0)
+    if (INTWRITE(conv->current_layer) == 0)
         return -11;
 
-    if (fwrite(&conv->training_complete,
-               sizeof(unsigned char), 1, fp) == 0)
+    if (BYTEWRITE(conv->training_complete) == 0)
         return -12;
 
-    if (fwrite(&conv->itterations,
-               sizeof(unsigned int), 1, fp) == 0)
+    if (UINTWRITE(conv->itterations) == 0)
         return -13;
 
-    if (fwrite(conv->error_threshold,
-               sizeof(float), conv->no_of_layers, fp) == 0)
+    if (FLOATWRITEARRAY(conv->error_threshold, conv->no_of_layers) == 0)
         return -14;
 
     COUNTUP(i, conv->no_of_layers) {
@@ -781,16 +768,13 @@ int conv_save(FILE * fp, deeplearn_conv * conv)
         if (autocoder_save(fp, net) != 0)
             return -15;
 
-        if (fwrite(&conv->layer[i].units_across,
-                   sizeof(int), 1, fp) == 0)
+        if (INTWRITE(conv->layer[i].units_across) == 0)
             return -16;
 
-        if (fwrite(&conv->layer[i].units_down,
-                   sizeof(int), 1, fp) == 0)
+        if (INTWRITE(conv->layer[i].units_down) == 0)
             return -17;
 
-        if (fwrite(&conv->layer[i].pooling_factor,
-                   sizeof(int), 1, fp) == 0)
+        if (INTWRITE(conv->layer[i].pooling_factor) == 0)
             return -18;
     }
 

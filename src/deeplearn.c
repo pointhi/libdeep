@@ -700,24 +700,24 @@ void deeplearn_set_class(deeplearn * learner, int class)
  */
 int deeplearn_save(FILE * fp, deeplearn * learner)
 {
-    if (fwrite(&learner->training_complete, sizeof(int), 1, fp) == 0)
+    if (INTWRITE(learner->training_complete) == 0)
         return -1;
 
-    if (fwrite(&learner->itterations, sizeof(unsigned int), 1, fp) == 0)
+    if (UINTWRITE(learner->itterations) == 0)
         return -2;
 
-    if (fwrite(&learner->current_hidden_layer, sizeof(int), 1, fp) == 0)
+    if (INTWRITE(learner->current_hidden_layer) == 0)
         return -3;
 
-    if (fwrite(&learner->BPerror, sizeof(float), 1, fp) == 0)
+    if (FLOATWRITE(learner->BPerror) == 0)
         return -4;
 
-    if (fwrite(&learner->no_of_input_fields, sizeof(int), 1, fp) == 0)
+    if (INTWRITE(learner->no_of_input_fields) == 0)
         return -5;
 
     if (learner->no_of_input_fields > 0) {
-        if (fwrite(learner->field_length, sizeof(int),
-                   learner->no_of_input_fields, fp) == 0)
+        if (INTWRITEARRAY(learner->field_length,
+                          learner->no_of_input_fields) == 0)
             return -6;
     }
 
@@ -730,36 +730,36 @@ int deeplearn_save(FILE * fp, deeplearn * learner)
     }
 
     /* save error thresholds */
-    if (fwrite(learner->error_threshold, sizeof(float),
-               learner->net->HiddenLayers+1, fp) == 0) {
+    if (FLOATWRITEARRAY(learner->error_threshold,
+                        learner->net->HiddenLayers+1) == 0) {
         return -9;
     }
 
     /* save ranges */
-    if (fwrite(learner->input_range_min, sizeof(float), learner->net->NoOfInputs, fp) == 0)
+    if (FLOATWRITEARRAY(learner->input_range_min, learner->net->NoOfInputs) == 0)
         return -10;
 
-    if (fwrite(learner->input_range_max, sizeof(float), learner->net->NoOfInputs, fp) == 0)
+    if (FLOATWRITEARRAY(learner->input_range_max, learner->net->NoOfInputs) == 0)
         return -11;
 
-    if (fwrite(learner->output_range_min, sizeof(float), learner->net->NoOfOutputs, fp) == 0)
+    if (FLOATWRITEARRAY(learner->output_range_min, learner->net->NoOfOutputs) == 0)
         return -12;
 
-    if (fwrite(learner->output_range_max, sizeof(float), learner->net->NoOfOutputs, fp) == 0)
+    if (FLOATWRITEARRAY(learner->output_range_max, learner->net->NoOfOutputs) == 0)
         return -13;
 
     /* save the history */
-    if (fwrite(&learner->history_index, sizeof(int), 1, fp) == 0)
+    if (INTWRITE(learner->history_index) == 0)
         return -14;
 
-    if (fwrite(&learner->history_ctr, sizeof(int), 1, fp) == 0)
+    if (INTWRITE(learner->history_ctr) == 0)
         return -15;
 
-    if (fwrite(&learner->history_step, sizeof(int), 1, fp) == 0)
+    if (INTWRITE(learner->history_step) == 0)
         return -16;
 
-    if (fwrite(learner->history, sizeof(float),
-               learner->history_index, fp) == 0)
+    if (FLOATWRITEARRAY(learner->history,
+                        learner->history_index) == 0)
         return -17;
 
     return 0;
