@@ -84,7 +84,7 @@ void bp_neuron_copy(bp_neuron * source,
     dest->max_weight = source->max_weight;
 
     /* clear the previous weight changes */
-    memset(dest->lastWeightChange,'\0',dest->NoOfInputs*sizeof(float));
+    FLOATCLEAR(dest->lastWeightChange, dest->NoOfInputs);
 }
 
 /**
@@ -123,7 +123,7 @@ int bp_neuron_init(bp_neuron * n,
     if (!n->inputs)
         return -3;
 
-    memset(n->inputs,'\0',no_of_inputs*sizeof(struct bp_n *));
+    memset(n->inputs, '\0', no_of_inputs*sizeof(struct bp_n *));
 
     return 0;
 }

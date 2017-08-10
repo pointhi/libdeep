@@ -929,7 +929,7 @@ int conv_plot_features(deeplearn_conv * conv, int layer_index,
         return -100;
 
     /* clear the img with a white background */
-    memset((void*)img,'\255',img_width*img_height*3);
+    memset((void*)img, '\255', img_width*img_height*3*sizeof(unsigned char));
 
     if (layer_index == 0)
         patch_depth = conv->inputs_depth;

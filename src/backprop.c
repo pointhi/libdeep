@@ -530,7 +530,7 @@ int bp_plot_weights(bp * net,
         return -1;
 
     /* clear the image with a white background */
-    memset((void*)img,'\255',image_width*image_height*3*sizeof(unsigned char));
+    memset((void*)img, '\255', image_width*image_height*3*sizeof(unsigned char));
 
     /* dimension of the neurons matrix for each layer */
     neurons_x = (int)sqrt(net->NoOfHiddens);

@@ -61,7 +61,7 @@ int pooling_from_flt_to_flt(int depth,
         return 0;
     }
 
-    memset((void*)layer1,'\0',layer1_across*layer1_down*depth*sizeof(float));
+    FLOATCLEAR(layer1, layer1_across*layer1_down*depth);
 
     /*#pragma omp parallel for*/
     COUNTDOWN(y0, layer0_down) {

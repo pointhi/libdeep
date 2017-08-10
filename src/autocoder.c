@@ -77,16 +77,12 @@ int autocoder_init(ac * autocoder,
     if (!autocoder->lastBiasChange)
         return -8;
 
-    memset((void*)autocoder->inputs,'\0',no_of_inputs*sizeof(float));
-    memset((void*)autocoder->outputs,'\0',no_of_inputs*sizeof(float));
-    memset((void*)autocoder->hiddens,'\0',
-           no_of_hiddens*sizeof(float));
-    memset((void*)autocoder->lastWeightChange,'\0',
-           no_of_hiddens*no_of_inputs*sizeof(float));
-    memset((void*)autocoder->bperr,'\0',
-           autocoder->NoOfHiddens*sizeof(float));
-    memset((void*)autocoder->lastBiasChange,'\0',
-           autocoder->NoOfHiddens*sizeof(float));
+    FLOATCLEAR(autocoder->inputs, no_of_inputs);
+    FLOATCLEAR(autocoder->outputs, no_of_inputs);
+    FLOATCLEAR(autocoder->hiddens, no_of_hiddens);
+    FLOATCLEAR(autocoder->lastWeightChange, no_of_hiddens*no_of_inputs);
+    FLOATCLEAR(autocoder->bperr, no_of_hiddens);
+    FLOATCLEAR(autocoder->lastBiasChange, no_of_hiddens);
     autocoder->BPerror = AUTOCODER_UNKNOWN;
     autocoder->BPerrorAverage = AUTOCODER_UNKNOWN;
     autocoder->learningRate = 0.2f;
@@ -209,7 +205,7 @@ void autocoder_feed_forward(ac * autocoder)
 void autocoder_backprop(ac * autocoder)
 {
     /* clear the backptop error for each hidden unit */
-    memset((void*)autocoder->bperr,'\0',autocoder->NoOfHiddens*sizeof(float));
+    FLOATCLEAR(autocoder->bperr, autocoder->NoOfHiddens);
 
     /* backprop from outputs to hiddens */
     autocoder->BPerror = 0;
@@ -616,7 +612,7 @@ int autocoder_plot_weight_matrix(ac * net,
     }
 
     /* clear the image with a white background */
-    memset((void*)img,'\255',image_width*image_height*3);
+    memset((void*)img, '\255', image_width*image_height*3*sizeof(unsigned char));
 
     /* get the weight range */
     COUNTDOWN(h, net->NoOfHiddens) {

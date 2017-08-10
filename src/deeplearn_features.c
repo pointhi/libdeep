@@ -523,7 +523,7 @@ int features_deconv_flt_to_flt(int samples_across,
         return -2;
 
     /* clear the original image */
-    memset((void*)img, '\0', img_width*img_height*img_depth*sizeof(float));
+    FLOATCLEAR(img, img_width*img_height*img_depth);
 
     /* for each input image sample */
     COUNTDOWN(fy, samples_down) {
@@ -601,7 +601,7 @@ int features_deconv_img_to_flt(int samples_across,
 
     /* create a temporary floats image */
     FLOATALLOC(deconv_img, img_width*img_height*img_depth);
-    memset((void*)deconv_img, '\0', img_width*img_height*img_depth*sizeof(float));
+    FLOATCLEAR(deconv_img, img_width*img_height*img_depth);
 
     /* clear the original image */
     memset((void*)img, '\0', img_width*img_height*img_depth*sizeof(unsigned char));
