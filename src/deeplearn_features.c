@@ -41,10 +41,10 @@
  * @param feature_autocoder Autocoder object
  * @return zero on success
  */
-static int scan_img_patch(unsigned char img[],
-                          int img_width, int img_depth,
-                          int tx, int ty, int bx, int by,
-                          ac * feature_autocoder)
+static int scan_image_patch(unsigned char img[],
+                            int img_width, int img_depth,
+                            int tx, int ty, int bx, int by,
+                            ac * feature_autocoder)
 {
     int index_feature_input = 0;
 
@@ -82,7 +82,7 @@ static int scan_img_patch(unsigned char img[],
  * @param feature_autocoder Autocoder object
  * @return zero on success
  */
-static int create_img_patch(float img[],
+static int create_image_patch(float img[],
                             int img_width, int img_depth,
                             int tx, int ty, int bx, int by,
                             ac * feature_autocoder)
@@ -120,10 +120,10 @@ static int create_img_patch(float img[],
  * @param feature_autocoder Autocoder object
  * @return zero on success
  */
-static int scan_floats_patch(float inputs_floats[],
-                             int inputs_width, int inputs_depth,
-                             int tx, int ty, int bx, int by,
-                             ac * feature_autocoder)
+static int scan_patch(float inputs_floats[],
+                      int inputs_width, int inputs_depth,
+                      int tx, int ty, int bx, int by,
+                      ac * feature_autocoder)
 {
     int index_feature_input = 0;
 
@@ -256,9 +256,9 @@ int features_learn_from_image(int samples_across,
                 continue;
 
             /* scan the patch into the feature autocoder inputs */
-            if (scan_img_patch(img, img_width, img_depth,
-                               tx, ty, bx, by,
-                               feature_autocoder) != 0)
+            if (scan_image_patch(img, img_width, img_depth,
+                                 tx, ty, bx, by,
+                                 feature_autocoder) != 0)
                 return -4;
 
             /* feature autocoder learns and the total error is incremented */
@@ -326,10 +326,10 @@ int features_learn(int samples_across,
                 continue;
 
             /* scan the patch into the feature autocoder inputs */
-            if (scan_floats_patch(inputs_floats,
-                                  inputs_width, inputs_depth,
-                                  tx, ty, bx, by,
-                                  feature_autocoder) != 0)
+            if (scan_patch(inputs_floats,
+                           inputs_width, inputs_depth,
+                           tx, ty, bx, by,
+                           feature_autocoder) != 0)
                 return -4;
 
             /* feature autocoder learns and the total error is incremented */
@@ -394,10 +394,10 @@ int features_convolve_image_to_neurons(int samples_across,
                                       &tx, &ty, &bx, &by) != 0)
                 continue;
 
-            if (scan_img_patch(img,
-                               img_width, img_depth,
-                               tx, ty, bx, by,
-                               feature_autocoder) != 0)
+            if (scan_image_patch(img,
+                                 img_width, img_depth,
+                                 tx, ty, bx, by,
+                                 feature_autocoder) != 0)
                 return -4;
 
             int index_input_layer =
@@ -481,9 +481,9 @@ int features_convolve_image(int samples_across,
 
             /* scan the patch from the input image and get the
                feature responses */
-            if (scan_img_patch(img, img_width, img_depth,
-                               tx, ty, bx, by,
-                               feature_autocoder) != 0)
+            if (scan_image_patch(img, img_width, img_depth,
+                                 tx, ty, bx, by,
+                                 feature_autocoder) != 0)
                 return -4;
 
             /* set the first layer at this position to the feature responses */
@@ -560,9 +560,9 @@ int features_deconvolve(int samples_across,
             }
 
             /* create the patch from the autocoder hidden units */
-            if (create_img_patch(img, img_width, img_depth,
-                                 tx, ty, bx, by,
-                                 feature_autocoder) != 0)
+            if (create_image_patch(img, img_width, img_depth,
+                                   tx, ty, bx, by,
+                                   feature_autocoder) != 0)
                 return -4;
         }
     }
@@ -701,10 +701,10 @@ int features_convolve(int samples_across,
                 continue;
             }
 
-            if (scan_floats_patch(layer0,
-                                  floats_width, floats_depth,
-                                  tx, ty, bx, by,
-                                  feature_autocoder) != 0)
+            if (scan_patch(layer0,
+                           floats_width, floats_depth,
+                           tx, ty, bx, by,
+                           feature_autocoder) != 0)
                 return -4;
 
             autocoder_encode(feature_autocoder, &layer1[index_layer1],
@@ -730,16 +730,16 @@ int features_convolve(int samples_across,
  * @param use_dropouts Non-zero if dropouts are to be used
  * @returns zero on success
  */
-int features_conv_floats_to_neurons(int samples_across,
-                                    int samples_down,
-                                    int patch_radius,
-                                    int floats_width,
-                                    int floats_height,
-                                    int floats_depth,
-                                    float layer0[],
-                                    bp * net,
-                                    ac * feature_autocoder,
-                                    unsigned char use_dropouts)
+int features_convolve_neurons(int samples_across,
+                              int samples_down,
+                              int patch_radius,
+                              int floats_width,
+                              int floats_height,
+                              int floats_depth,
+                              float layer0[],
+                              bp * net,
+                              ac * feature_autocoder,
+                              unsigned char use_dropouts)
 {
     int no_of_learned_features = feature_autocoder->NoOfHiddens;
 
@@ -764,10 +764,10 @@ int features_conv_floats_to_neurons(int samples_across,
                                       &tx, &ty, &bx, &by) != 0)
                 continue;
 
-            if (scan_floats_patch(layer0,
-                                  floats_width, floats_depth,
-                                  tx, ty, bx, by,
-                                  feature_autocoder) != 0)
+            if (scan_patch(layer0,
+                           floats_width, floats_depth,
+                           tx, ty, bx, by,
+                           feature_autocoder) != 0)
                 return -4;
 
             int index_net_inputs =
