@@ -43,7 +43,7 @@ int enc_text_to_binary(char * text,
                        int offset,
                        int max_field_length_chars)
 {
-    int pos = offset, i, max_chars = strlen(text);
+    int pos = offset, max_chars = strlen(text);
 
     if (max_chars > (no_of_inputs-offset)/CHAR_BITS)
         max_chars = ((no_of_inputs-offset)/CHAR_BITS);
@@ -52,10 +52,10 @@ int enc_text_to_binary(char * text,
         max_chars = max_field_length_chars;
 
     /* for each character in the string */
-    for (i = 0; i < max_chars; i++) {
+    COUNTUP(c, max_chars) {
         /* set the bits for this character */
         COUNTUP(bit, CHAR_BITS) {
-            if (text[i] & (1<<bit))
+            if (text[c] & (1<<bit))
                 inputs[pos++]->value = 0.75f;
             else
                 inputs[pos++]->value = 0.25f;
@@ -63,7 +63,7 @@ int enc_text_to_binary(char * text,
     }
 
     /* set the remaining inputs within the field to neutral */
-    while (i < max_field_length_chars) {
+    FOR(i, max_chars, max_field_length_chars) {
         COUNTUP(bit, CHAR_BITS) {
             if (pos >= no_of_inputs) {
                 i = max_field_length_chars;
@@ -71,7 +71,6 @@ int enc_text_to_binary(char * text,
             }
             inputs[pos++]->value = 0.5f;
         }
-        i++;
     }
     return pos;
 }
