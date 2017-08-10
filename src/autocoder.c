@@ -387,17 +387,17 @@ int autocoder_load(FILE * fp, ac * autocoder, int initialise)
         return -5;
 
     if (FLOATREADARRAY(autocoder->weights,
-                       autocoder->NoOfInputs*autocoder->NoOfHiddens) == 0)
+                       no_of_inputs*no_of_hiddens) == 0)
         return -6;
 
     if (FLOATREADARRAY(autocoder->lastWeightChange,
-                       autocoder->NoOfInputs*autocoder->NoOfHiddens) == 0)
+                       no_of_inputs*no_of_hiddens) == 0)
         return -7;
 
-    if (FLOATREADARRAY(autocoder->bias, autocoder->NoOfHiddens) == 0)
+    if (FLOATREADARRAY(autocoder->bias, no_of_hiddens) == 0)
         return -8;
 
-    if (FLOATREADARRAY(autocoder->lastBiasChange, autocoder->NoOfHiddens) == 0)
+    if (FLOATREADARRAY(autocoder->lastBiasChange, no_of_hiddens) == 0)
         return -9;
 
     if (FLOATREAD(autocoder->learningRate) == 0)
