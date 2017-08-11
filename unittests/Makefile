@@ -11,4 +11,4 @@ debug:
 debugstack:
 	gcc -Wall -std=c99 -pedantic -fsanitize=address -g -o $(APP) *.c ../src/*.c -I../src -lm -fopenmp
 clean:
-	rm -f ${APP}
+	rm -f ${APP} *.plist

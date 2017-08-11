@@ -221,45 +221,12 @@ static void test_data_training_test()
     printf("Ok\n");
 }
 
-static void test_read_images()
-{
-    float error_threshold[] = { 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f };
-    unsigned int random_seed = 123;
-    deepconvnet convnet;
-    int image_width = 512;
-    int image_height = 512;
-    int no_of_convolutions = 2;
-    int max_features = 20;
-    int reduction_factor = 4;
-    int no_of_deep_layers = 2;
-    int no_of_outputs = 8;
-    int output_classes = 2;
-
-    printf("test_read_images...");
-
-    assert(deepconvnet_read_images((char*)".", &convnet,
-                                   image_width, image_height,
-                                   no_of_convolutions,
-                                   max_features,
-                                   reduction_factor,
-                                   no_of_deep_layers,
-                                   no_of_outputs,
-                                   output_classes,
-                                   error_threshold,
-                                   &random_seed) == 0);
-    assert(convnet.no_of_images == 1);
-    deepconvnet_free(&convnet);
-
-    printf("Ok\n");
-}
-
 int run_tests_data()
 {
     printf("\nRunning data tests\n");
 
     test_data_add();
     test_data_training_test();
-    test_read_images();
 
     printf("All data tests completed\n");
     return 1;

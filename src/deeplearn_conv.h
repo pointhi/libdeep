@@ -45,55 +45,25 @@
 #include "deeplearn_pooling.h"
 
 #define PREPROCESS_MAX_LAYERS 100
+#define POOLING_FACTOR        2
 
-/* Each convolution layer has an autocoder to learn features
-   from the previous layer and a pooling array to max pool the results.
-   Units accress and down give the receptive field dimensions. */
 typedef struct {
-    ac * autocoder;
-    int units_across, units_down;
-    float * convolution;
-    int pooling_factor;
-    float * pooling;
+    int width, height, depth;
+    float * layer;
+    int no_of_features, feature_width;
+    float * feature;
 } deeplearn_conv_layer;
 
 typedef struct {
-    unsigned int random_seed;
-
-    /* define the reduction factor over successive layers */
-    int reduction_factor;
-
-    /* the pooling factor at each layer */
-    int pooling_factor;
-
-    /* dimensions of the input layer */
-    int inputs_across, inputs_down;
-
-    /* depth of the input layer (eg 3 for rgb) */
-    int inputs_depth;
-
-    /* maximum number of features to learn at each layer */
-    int max_features;
-
     int no_of_layers;
-    unsigned char enable_learning;
 
     /* array storing layers */
     deeplearn_conv_layer layer[PREPROCESS_MAX_LAYERS];
 
-    /* keep track of training progress */
     int current_layer;
-
-    /* the maximum training error for each layer */
-    float error_threshold[PREPROCESS_MAX_LAYERS];
-
-    unsigned char training_complete;
 
     /* training itterations elapsed */
     unsigned int itterations;
-
-    /* current backprop error */
-    float BPerror;
 
     /* training history */
     unsigned int training_ctr;
@@ -105,47 +75,19 @@ typedef struct {
     int history_index, history_ctr, history_step;
 } deeplearn_conv;
 
-int conv_patch_radius(int layer_index,
-                      deeplearn_conv * conv);
-int conv_layer_width(int layer_index,
-                     deeplearn_conv * conv,
-                     int after_pooling);
-int conv_layer_height(int layer_index,
-                      deeplearn_conv * conv,
-                      int after_pooling);
-int convolution_layer_units(int layer_index,
-                            deeplearn_conv * conv);
 int conv_init(int no_of_layers,
-              int inputs_across,
-              int inputs_down,
-              int inputs_depth,
-              int max_features,
-              int reduction_factor,
-              int pooling_factor,
+              int image_width, int image_height, int image_depth,
+              int no_of_features, int feature_width,
+              int final_image_width, int final_image_height,
               deeplearn_conv * conv,
-              float error_threshold[],
               unsigned int * random_seed);
 
 void conv_free(deeplearn_conv * conv);
-int conv_img(unsigned char img[],
-             deeplearn_conv * conv,
-             unsigned char use_dropouts);
-int deconv_img(int start_layer,
-               deeplearn_conv * conv,
-               unsigned char img[]);
+
 int conv_plot_history(deeplearn_conv * conv,
                       char * filename, char * title,
                       int img_width, int img_height);
 int conv_save(FILE * fp, deeplearn_conv * conv);
 int conv_load(FILE * fp, deeplearn_conv * conv);
-int conv_output_width(deeplearn_conv * conv);
-int conv_output_height(deeplearn_conv * conv);
-float get_conv_output(deeplearn_conv * conv, int index);
-int conv_outputs(deeplearn_conv * conv);
-void conv_set_learning_rate(deeplearn_conv * conv, float rate);
-void conv_set_dropouts(deeplearn_conv * conv, float dropout_percent);
-int conv_plot_features(deeplearn_conv * conv, int layer_index,
-                       unsigned char img[],
-                       int img_width, int img_height);
-int conv_layer_features(deeplearn_conv * conv, int layer_index);
+
 #endif

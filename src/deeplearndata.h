@@ -37,7 +37,6 @@
 #include <dirent.h>
 #include "globals.h"
 #include "deeplearn.h"
-#include "deepconvnet.h"
 #include "deeplearn_images.h"
 
 int deeplearndata_add(deeplearndata ** datalist,

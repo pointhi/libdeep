@@ -39,7 +39,6 @@
 #include "tests_features.h"
 #include "tests_pooling.h"
 #include "tests_conv.h"
-#include "tests_deepconvnet.h"
 #include "tests_autocoder.h"
 
 int main(int argc, char* argv[])
@@ -56,7 +55,6 @@ int main(int argc, char* argv[])
     run_tests_pooling();
     run_tests_features();
     run_tests_conv();
-    run_tests_deepconvnet();
 
     printf("\nAll tests completed\n");
 
