@@ -30,6 +30,59 @@
 #include "deeplearn_features.h"
 
 /**
+ * @brief Draws the given feature set within the given image
+ * @param img The image to be displayed
+ * @param img_width Width of the image
+ * @param img_height Height of the image
+ * @param img_depth Depth of the image
+ * @param feature_width Width of each feature
+ * @param no_of_features The number of features in the set
+ * @param feature Array storing the features
+ * @returns zero on success
+ */
+int draw_image_features(unsigned char img[],
+                        int img_width, int img_height, int img_depth,
+                        int feature_width, int no_of_features,
+                        unsigned char feature[])
+{
+    int grid_dimension = (int)sqrt(no_of_features);
+
+    if (grid_dimension*grid_dimension != no_of_features) {
+        printf("Features cannot be displayed as a grid\n");
+        return 1;
+    }
+
+    int feature_index = 0;
+    COUNTUP(gx, grid_dimension) {
+        int tx = gx * img_width / grid_dimension;
+        int bx = (gx+1) * img_width / grid_dimension;
+        COUNTUP(gy, grid_dimension) {
+            int ty = gy * img_height / grid_dimension;
+            int by = (gy+1) * img_height / grid_dimension;
+
+            /* get the feature from the array */
+            unsigned char * curr_feature =
+                &feature[feature_index*feature_width*feature_width*img_depth];
+
+            FOR(yy, ty, by) {
+                int y = (yy - ty) * feature_width / (by - ty);
+                FOR(xx, tx, bx) {
+                    int x = (xx - tx) * feature_width / (bx - tx);
+                    /* pixel index within the image */
+                    int n0 = (((ty + yy)*img_width) + (tx + xx)) * img_depth;
+                    /* pixel index within the feature */
+                    int n1 = ((y*feature_width) + x) * img_depth;
+                    COUNTDOWN(d, img_depth)
+                        img[n0+d] = curr_feature[n1+d];
+                }
+            }
+            feature_index++;
+        }
+    }
+    return 0;
+}
+
+/**
  * @brief Learns a set of features from a given image.
  *        This can be repeated with different images to learn
  *        a general feature set
@@ -70,16 +123,15 @@ int learn_image_features(unsigned char img[],
         COUNTDOWN(f, no_of_features) {
             unsigned char * curr_feature =
                 &feature[f*feature_width*feature_width*img_depth];
-            int n0 = 0;
             int n1 = 0;
 
             /* calculate the matching score for this feature */
             feature_score[f] = 0;
             COUNTDOWN(yy, feature_width) {
                 COUNTDOWN(xx, feature_width) {
-                    n0 = (((ty + yy)*img_width) + (tx + xx)) * img_depth;
+                    int n0 = (((ty + yy)*img_width) + (tx + xx)) * img_depth;
                     COUNTDOWN(d, img_depth) {
-                        int diff = (int)img[n0++] - (int)feature[n1++];
+                        int diff = (int)img[n0++] - (int)curr_feature[n1++];
                         if (diff >= 0)
                             feature_score[f] += diff;
                         else
@@ -123,16 +175,16 @@ int learn_image_features(unsigned char img[],
                 COUNTDOWN(xx, feature_width) {
                     n0 = (((ty + yy)*img_width) + (tx + xx)) * img_depth;
                     COUNTDOWN(d, img_depth) {
-                        if (img[n0+d] > feature[n1+d])
+                        if (img[n0+d] > curr_feature[n1+d])
                             feature[n1+d]++;
-                        else if (img[n0+d] < feature[n1+d])
+                        else if (img[n0+d] < curr_feature[n1+d])
                             feature[n1+d]--;
 
                         /* repeat for the best match */
                         if (match == 0) {
-                            if (img[n0+d] > feature[n1+d])
+                            if (img[n0+d] > curr_feature[n1+d])
                                 feature[n1+d]++;
-                            else if (img[n0+d] < feature[n1+d])
+                            else if (img[n0+d] < curr_feature[n1+d])
                                 feature[n1+d]--;
                         }
 
