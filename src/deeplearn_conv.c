@@ -39,6 +39,8 @@
  * @param feature_width Width of features in the first layer
  * @param final_image_width Width of the final output layer
  * @param final_image_height Height of the final layer
+ * @param match_threshold Array containing the minimum matching threshold
+ *        for each convolution layer
  * @param conv Instance to be updated
  * @returns zero on success
  */
@@ -46,10 +48,12 @@ int conv_init(int no_of_layers,
               int image_width, int image_height, int image_depth,
               int no_of_features, int feature_width,
               int final_image_width, int final_image_height,
+              float match_threshold[],
               deeplearn_conv * conv)
 {
     conv->no_of_layers = no_of_layers;
     conv->current_layer = 0;
+    conv->learning_rate = 0.1f;
 
     conv->itterations = 0;
     conv->training_ctr = 0;
@@ -76,16 +80,16 @@ int conv_init(int no_of_layers,
             conv->layer[l].feature_width = 3;
 
         /* allocate memory for arrays */
-        conv->layer[l].layer =
-            (float*)malloc(conv->layer[l].width*conv->layer[l].height*
-                           conv->layer[l].depth*sizeof(float));
+        FLOATALLOC(conv->layer[l].layer,
+                   conv->layer[l].width*conv->layer[l].height*
+                   conv->layer[l].depth);
         if (!conv->layer[l].layer)
             return 1;
 
-        conv->layer[l].feature =
-            (float*)malloc(conv->layer[l].no_of_features*
-                           conv->layer[l].feature_width*conv->layer[l].feature_width*
-                           conv->layer[l].depth*sizeof(float));
+        FLOATALLOC(conv->layer[l].feature,
+                   conv->layer[l].no_of_features*
+                   conv->layer[l].feature_width*conv->layer[l].feature_width*
+                   conv->layer[l].depth);
         if (!conv->layer[l].feature)
             return 2;
     }
@@ -93,10 +97,14 @@ int conv_init(int no_of_layers,
     conv->outputs_width = final_image_width;
     conv->no_of_outputs =
         final_image_width*final_image_width*conv->layer[no_of_layers-1].depth;
-    conv->outputs =
-        (float*)malloc(conv->no_of_outputs*sizeof(float));
+    FLOATALLOC(conv->outputs, conv->no_of_outputs);
     if (!conv->outputs)
         return 3;
+
+    FLOATALLOC(conv->match_threshold, conv->no_of_layers);
+    if (!conv->match_threshold)
+        return 4;
+    memcpy((void*)conv->match_threshold, match_threshold,conv->no_of_layers*sizeof(float));
 
     return 0;
 }
@@ -113,6 +121,7 @@ void conv_free(deeplearn_conv * conv)
     }
 
     free(conv->outputs);
+    free(conv->match_threshold);
 }
 
 /**
@@ -325,25 +334,30 @@ void conv_feed_forward(unsigned char * img,
 }
 
 /**
- * @brief Learn features at the given layer
+ * @brief Learn features
  * @param conv Convolution instance
- * @param layer The layer to learn at
- * @param learning_rate The learing rate in the range 0.0 -> 1.0
  * @param samples The number of samples from the image or layer
  * @param random_seed Random number generator seed
  * @returns matching score/error, with lower values being better match
  */
-float conv_learn(deeplearn_conv * conv, int layer,
-                 float learning_rate,
+float conv_learn(unsigned char * img,
+                 deeplearn_conv * conv,
                  int samples,
                  unsigned int * random_seed)
 {
     float matching_score = 0;
-    float * feature_score =
-        (float*)malloc(conv->layer[layer].no_of_features*sizeof(float));
+    float * feature_score;
+    int layer = conv->current_layer;
+
+    if (layer >= conv->no_of_layers)
+        return 0;
+
+    FLOATALLOC(feature_score, conv->layer[layer].no_of_features);
 
     if (!feature_score)
         return -1;
+
+    conv_feed_forward(img, conv, layer);
 
     COUNTDOWN(s, samples) {
         matching_score +=
@@ -355,10 +369,15 @@ float conv_learn(deeplearn_conv * conv, int layer,
                            conv->layer[layer].no_of_features,
                            conv->layer[layer].feature,
                            feature_score,
-                           samples, learning_rate, random_seed);
+                           samples, conv->learning_rate, random_seed);
+        conv->itterations++;
     }
 
     free(feature_score);
+
+    /* proceed to the next layer if the match is good enough */
+    if (matching_score < conv->match_threshold[layer])
+        conv->current_layer++;
 
     return matching_score;
 }

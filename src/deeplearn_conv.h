@@ -60,11 +60,18 @@ typedef struct {
     /* array storing layers */
     deeplearn_conv_layer layer[PREPROCESS_MAX_LAYERS];
 
+    /* the outputs at the end of the process */
     int outputs_width;
     int no_of_outputs;
     float * outputs;
 
+    float learning_rate;
+
+    /* current layer for which features are being learned */
     int current_layer;
+
+    /* minimum match score for each layer */
+    float * match_threshold;
 
     /* training itterations elapsed */
     unsigned int itterations;
@@ -83,12 +90,13 @@ int conv_init(int no_of_layers,
               int image_width, int image_height, int image_depth,
               int no_of_features, int feature_width,
               int final_image_width, int final_image_height,
+              float match_threshold[],
               deeplearn_conv * conv);
 
 void conv_feed_forward(unsigned char * img, deeplearn_conv * conv, int layer);
 
-float conv_learn(deeplearn_conv * conv, int layer,
-                 float learning_rate,
+float conv_learn(unsigned char * img,
+                 deeplearn_conv * conv,
                  int samples,
                  unsigned int * random_seed);
 
