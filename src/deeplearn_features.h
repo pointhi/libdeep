@@ -137,4 +137,12 @@ int features_deconvolve_image(int samples_across,
                               float layer[],
                               ac * feature_autocoder);
 
+int learn_image_features(unsigned char img[],
+                         int img_width, int img_height, int img_depth,
+                         int feature_width, int no_of_features,
+                         unsigned char feature[],
+                         int feature_score[],
+                         int samples,
+                         unsigned int * random_seed);
+
 #endif

@@ -30,6 +30,127 @@
 #include "deeplearn_features.h"
 
 /**
+ * @brief Learns a set of features from a given image.
+ *        This can be repeated with different images to learn
+ *        a general feature set
+ * @param img The image to be learned from
+ * @param img_width Width of the image
+ * @param img_height Height of the image
+ * @param img_depth Depth of the image
+ * @param feature_width Width if each image patch
+ * @param no_of_features The number of features to be learned
+ * @param feature Array containing the features
+ * @param feature_score Array used to store feature scores
+ * @param samples The number of samples to take from the image
+ * @param random_seed Random number generator seed
+ * @returns Total matching score
+ */
+int learn_image_features(unsigned char img[],
+                         int img_width, int img_height, int img_depth,
+                         int feature_width, int no_of_features,
+                         unsigned char feature[],
+                         int feature_score[],
+                         int samples,
+                         unsigned int * random_seed)
+{
+    int feature_radius = feature_width/2;
+    int width = img_width-1-feature_width;
+    int height = img_height-1-feature_width;
+    const int closest_matches = 3;
+
+    /* sample the image a number of times */
+    COUNTDOWN(i, samples) {
+
+        /* top left corner of the image patch */
+        int tx = rand_num(random_seed) % width;
+        int ty = rand_num(random_seed) % height;
+
+        /* calculate matching scores for each feature for this image patch */
+        COUNTDOWN(f, no_of_features) {
+            unsigned char * curr_feature =
+                &feature[f*feature_width*feature_width*img_depth];
+            int n0 = 0;
+            int n1 = 0;
+
+            /* calculate the matching score for this feature */
+            feature_score[f] = 0;
+            COUNTDOWN(yy, feature_width) {
+                COUNTDOWN(xx, feature_width) {
+                    n0 = (((ty + yy)*img_width) + (tx + xx)) * img_depth;
+                    COUNTDOWN(d, img_depth) {
+                        int diff = (int)img[n0++] - (int)feature[n1++];
+                        if (diff >= 0)
+                            feature_score[f] += diff;
+                        else
+                            feature_score[f] -= diff;
+                    }
+                }
+            }
+        }
+
+        /* get the N closest feature indexes based upon match scores */
+        int index[closest_matches];
+        COUNTUP(match, closest_matches) {
+            /* what is the closest match? */
+            int min = 0;
+            int max = 0;
+            if (match > 0)
+                max = feature_score[index[match-1]];
+            COUNTDOWN(f, no_of_features) {
+                if ((max == 0) || (feature_score[f] > max)) {
+                    if ((min == 0) || (feature_score[f] < min)) {
+                        min = feature_score[f];
+                        index[match] = f;
+                    }
+                }
+            }
+        }
+
+        /* move the closest features towards the image patch */
+        COUNTUP(match, closest_matches) {
+            int curr_index = index[match];
+            /* occasionally choose a random feature index to prevent matches
+               from getting stuck on N indexes */
+            if (rand_num(random_seed) % 64 < 8)
+                curr_index = rand_num(random_seed) % no_of_features;
+            unsigned char * curr_feature =
+                &feature[curr_index*feature_width*feature_width*img_depth];
+            int n0 = 0;
+            int n1 = 0;
+
+            COUNTDOWN(yy, feature_width) {
+                COUNTDOWN(xx, feature_width) {
+                    n0 = (((ty + yy)*img_width) + (tx + xx)) * img_depth;
+                    COUNTDOWN(d, img_depth) {
+                        if (img[n0+d] > feature[n1+d])
+                            feature[n1+d]++;
+                        else if (img[n0+d] < feature[n1+d])
+                            feature[n1+d]--;
+
+                        /* repeat for the best match */
+                        if (match == 0) {
+                            if (img[n0+d] > feature[n1+d])
+                                feature[n1+d]++;
+                            else if (img[n0+d] < feature[n1+d])
+                                feature[n1+d]--;
+                        }
+
+                        n1++;
+                    }
+                }
+            }
+        }
+    }
+
+    /* calculate the total feature matching score */
+    int total_match_score = 0;
+    COUNTDOWN(f, no_of_features)
+        total_match_score += feature_score[f];
+
+    return total_match_score;
+}
+
+/**
  * @brief Scans an image patch and transfers the values to an autocoder
  * @param img image array
  * @param img_width Width of the image
