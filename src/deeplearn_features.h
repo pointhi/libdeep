@@ -152,7 +152,7 @@ float learn_features(float img[],
                      unsigned int * random_seed);
 
 void convolve_image(float img[],
-                    int img_width, int img_height,
+                    int img_width, int img_height, int img_depth,
                     int feature_width, int no_of_features,
                     float feature[],
                     float layer[], int layer_width);

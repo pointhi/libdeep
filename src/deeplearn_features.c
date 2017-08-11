@@ -223,6 +223,9 @@ float learn_features(float img[],
  * @param img Input image or previous layer
  * @param img_width Width of the image
  * @param img_height Height of the image
+ * @param img_depth Depth of the image. If this is the first layer then it is
+ *        the color depth, otherwise it is the number of features learned in
+ *        the previous layer
  * @param feature_width Width if each image patch
  * @param no_of_features The number of features in the set
  * @param feature Array containing the learned features
@@ -231,12 +234,11 @@ float learn_features(float img[],
  *        output layer should be layer_width*layer_width*no_of_features
  */
 void convolve_image(float img[],
-                    int img_width, int img_height,
+                    int img_width, int img_height, int img_depth,
                     int feature_width, int no_of_features,
                     float feature[],
                     float layer[], int layer_width)
 {
-    int img_depth = no_of_features;
     float feature_pixels = 1.0f / (float)(feature_width*feature_width*img_depth);
 
     COUNTDOWN(layer_y, layer_width) {
