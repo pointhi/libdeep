@@ -40,15 +40,13 @@
  * @param final_image_width Width of the final output layer
  * @param final_image_height Height of the final layer
  * @param conv Instance to be updated
- * @param random_seed Random number generator seed
  * @returns zero on success
  */
 int conv_init(int no_of_layers,
               int image_width, int image_height, int image_depth,
               int no_of_features, int feature_width,
               int final_image_width, int final_image_height,
-              deeplearn_conv * conv,
-              unsigned int * random_seed)
+              deeplearn_conv * conv)
 {
     conv->no_of_layers = no_of_layers;
     conv->current_layer = 0;
@@ -58,9 +56,13 @@ int conv_init(int no_of_layers,
 
     COUNTUP(l, no_of_layers) {
         conv->layer[l].width =
-            image_width - ((image_width-final_image_width)*l/(no_of_layers-1));
-        conv->layer[l].height =
-            image_height - ((image_height-final_image_height)*l/(no_of_layers-1));
+            image_width - ((image_width-final_image_width)*l/no_of_layers);
+
+        if (l == 0)
+            conv->layer[l].height =
+                image_height - ((image_height-final_image_height)*l/no_of_layers);
+        else
+            conv->layer[l].height = conv->layer[l].width;
 
         if (l == 0)
             conv->layer[l].depth = image_depth;
@@ -87,6 +89,15 @@ int conv_init(int no_of_layers,
         if (!conv->layer[l].feature)
             return 2;
     }
+
+    conv->outputs_width = final_image_width;
+    conv->no_of_outputs =
+        final_image_width*final_image_width*conv->layer[no_of_layers-1].depth;
+    conv->outputs =
+        (float*)malloc(conv->no_of_outputs*sizeof(float));
+    if (!conv->outputs)
+        return 3;
+
     return 0;
 }
 
@@ -96,8 +107,12 @@ int conv_init(int no_of_layers,
  */
 void conv_free(deeplearn_conv * conv)
 {
-    COUNTDOWN(i, conv->no_of_layers) {
+    COUNTDOWN(l, conv->no_of_layers) {
+        free(conv->layer[l].layer);
+        free(conv->layer[l].feature);
     }
+
+    free(conv->outputs);
 }
 
 /**
@@ -274,5 +289,37 @@ void convolve_image(float img[],
                     1.0f - (match * feature_pixels);
             }
         }
+    }
+}
+
+/**
+ * @brief Feed forward to the given layer
+ * @param img The input image
+ * @param conv Convolution instance
+ * @param layer The number of layers to convolve
+ */
+void conv_feed_forward(unsigned char * img,
+                       deeplearn_conv * conv, int layer)
+{
+    /* convert the input image to floats */
+    COUNTDOWN(i, conv->layer[0].width*conv->layer[0].height*conv->layer[0].depth)
+        conv->layer[0].layer[i] = (float)img[i]/255.0f;
+
+    COUNTUP(l, layer) {
+        float * next_layer = conv->outputs;
+        int next_layer_width = conv->outputs_width;
+
+        if (l < conv->no_of_layers-1) {
+            next_layer = conv->layer[l+1].layer;
+            next_layer_width = conv->layer[l+1].width;
+        }
+
+        convolve_image(conv->layer[l].layer,
+                       conv->layer[l].width, conv->layer[l].height,
+                       conv->layer[l].depth,
+                       conv->layer[l].feature_width,
+                       conv->layer[l].no_of_features,
+                       conv->layer[l].feature,
+                       next_layer, next_layer_width);
     }
 }
