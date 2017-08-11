@@ -323,3 +323,42 @@ void conv_feed_forward(unsigned char * img,
                        next_layer, next_layer_width);
     }
 }
+
+/**
+ * @brief Learn features at the given layer
+ * @param conv Convolution instance
+ * @param layer The layer to learn at
+ * @param learning_rate The learing rate in the range 0.0 -> 1.0
+ * @param samples The number of samples from the image or layer
+ * @param random_seed Random number generator seed
+ * @returns matching score/error, with lower values being better match
+ */
+float conv_learn(deeplearn_conv * conv, int layer,
+                 float learning_rate,
+                 int samples,
+                 unsigned int * random_seed)
+{
+    float matching_score = 0;
+    float * feature_score =
+        (float*)malloc(conv->layer[layer].no_of_features*sizeof(float));
+
+    if (!feature_score)
+        return -1;
+
+    COUNTDOWN(s, samples) {
+        matching_score +=
+            learn_features(conv->layer[layer].layer,
+                           conv->layer[layer].width,
+                           conv->layer[layer].height,
+                           conv->layer[layer].depth,
+                           conv->layer[layer].feature_width,
+                           conv->layer[layer].no_of_features,
+                           conv->layer[layer].feature,
+                           feature_score,
+                           samples, learning_rate, random_seed);
+    }
+
+    free(feature_score);
+
+    return matching_score;
+}

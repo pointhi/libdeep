@@ -87,6 +87,11 @@ int conv_init(int no_of_layers,
 
 void conv_feed_forward(unsigned char * img, deeplearn_conv * conv, int layer);
 
+float conv_learn(deeplearn_conv * conv, int layer,
+                 float learning_rate,
+                 int samples,
+                 unsigned int * random_seed);
+
 void conv_free(deeplearn_conv * conv);
 
 int conv_plot_history(deeplearn_conv * conv,
