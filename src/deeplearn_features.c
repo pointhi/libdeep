@@ -40,10 +40,10 @@
  * @param feature Array storing the features
  * @returns zero on success
  */
-int draw_image_features(unsigned char img[],
-                        int img_width, int img_height, int img_depth,
-                        int feature_width, int no_of_features,
-                        unsigned char feature[])
+int draw_features(unsigned char img[],
+                  int img_width, int img_height, int img_depth,
+                  int feature_width, int no_of_features,
+                  float feature[])
 {
     int grid_dimension = (int)sqrt(no_of_features);
 
@@ -64,7 +64,7 @@ int draw_image_features(unsigned char img[],
             int by = (gy+1) * img_height / grid_dimension;
 
             /* get the feature from the array */
-            unsigned char * curr_feature =
+            float * curr_feature =
                 &feature[feature_index*feature_width*feature_width*img_depth];
 
             FOR(yy, ty+1, by-1) {
@@ -76,7 +76,7 @@ int draw_image_features(unsigned char img[],
                     /* pixel index within the feature */
                     int n1 = ((y*feature_width) + x) * img_depth;
                     COUNTDOWN(d, img_depth)
-                        img[n0+d] = curr_feature[n1+d];
+                        img[n0+d] = (unsigned char)(curr_feature[n1+d]*255);
                 }
             }
             feature_index++;
@@ -86,33 +86,38 @@ int draw_image_features(unsigned char img[],
 }
 
 /**
- * @brief Learns a set of features from a given image.
- *        This can be repeated with different images to learn
- *        a general feature set
- * @param img The image to be learned from
+ * @brief Learns a set of features from a given input layer
+ *        If the initial layer is an image it should be converted to floats
+ *        in the range 0.0 -> 1.0
+ * @param img The image to be learned from with values in the range 0.0 -> 1.0
  * @param img_width Width of the image
  * @param img_height Height of the image
- * @param img_depth Depth of the image
+ * @param img_depth Depth of the image. If this is the first layer then it is
+ *        the color depth, otherwise it is the number of features learned in
+ *        the previous layer
  * @param feature_width Width if each image patch
  * @param no_of_features The number of features to be learned
- * @param feature Array containing the features
+ * @param feature Array containing the learned features
  * @param feature_score Array used to store feature scores
  * @param samples The number of samples to take from the image
+ * @param learning_rate Learning rate in the range 0.0 -> 1.0
  * @param random_seed Random number generator seed
  * @returns Total matching score
  */
-int learn_image_features(unsigned char img[],
-                         int img_width, int img_height, int img_depth,
-                         int feature_width, int no_of_features,
-                         unsigned char feature[],
-                         int feature_score[],
-                         int samples,
-                         unsigned int * random_seed)
+float learn_features(float img[],
+                     int img_width, int img_height, int img_depth,
+                     int feature_width, int no_of_features,
+                     float feature[],
+                     float feature_score[],
+                     int samples,
+                     float learning_rate,
+                     unsigned int * random_seed)
 {
     int feature_radius = feature_width/2;
     int width = img_width-1-feature_width;
     int height = img_height-1-feature_width;
-    unsigned int total_match_score = 0;
+    const float pixel_to_float = 1.0f / 256.0f;
+    float total_match_score = 0;
     const int closest_matches = 3;
 
     /* sample the image a number of times */
@@ -124,7 +129,7 @@ int learn_image_features(unsigned char img[],
 
         /* calculate matching scores for each feature for this image patch */
         COUNTDOWN(f, no_of_features) {
-            unsigned char * curr_feature =
+            float * curr_feature =
                 &feature[f*feature_width*feature_width*img_depth];
 
             /* calculate the matching score for this feature */
@@ -133,16 +138,12 @@ int learn_image_features(unsigned char img[],
                 COUNTDOWN(xx, feature_width) {
                     int n0 = (((ty + yy)*img_width) + (tx + xx)) * img_depth;
                     int n1 = ((yy * feature_width) + xx) * img_depth;
-                    COUNTDOWN(d, img_depth) {
-                        int diff = (int)img[n0+d] - (int)curr_feature[n1+d];
-                        if (diff >= 0)
-                            feature_score[f] += diff;
-                        else
-                            feature_score[f] -= diff;
-                    }
+                    COUNTDOWN(d, img_depth)
+                        feature_score[f] +=
+                        (img[n0+d] - curr_feature[n1+d])*
+                        (img[n0+d] - curr_feature[n1+d]);
                 }
             }
-            feature_score[f] /= feature_width*feature_width;
         }
 
         /* get the N closest feature indexes based upon match scores */
@@ -151,8 +152,8 @@ int learn_image_features(unsigned char img[],
             index[fi] = (int)(rand_num(random_seed) % no_of_features);
 
         COUNTUP(match, closest_matches) {
-            int min = 0;
-            int max = 0;
+            float min = 0;
+            float max = 0;
             if (match > 0)
                 max = feature_score[index[match-1]];
             COUNTDOWN(f, no_of_features) {
@@ -178,7 +179,7 @@ int learn_image_features(unsigned char img[],
                from getting stuck on N indexes */
             if (rand_num(random_seed) % 64 < 8)
                 curr_index = rand_num(random_seed) % no_of_features;
-            unsigned char * curr_feature =
+            float * curr_feature =
                 &feature[curr_index*feature_width*feature_width*img_depth];
 
             COUNTDOWN(yy, feature_width) {
@@ -187,37 +188,23 @@ int learn_image_features(unsigned char img[],
                     int n1 = ((yy * feature_width) + xx) * img_depth;
                     COUNTDOWN(d, img_depth) {
                         /* move towards the image patch */
-                        if (img[n0+d] > curr_feature[n1+d])
-                            curr_feature[n1+d]++;
-                        else if (img[n0+d] < curr_feature[n1+d])
-                            curr_feature[n1+d]--;
+                        curr_feature[n1+d] +=
+                            (img[n0+d] - curr_feature[n1+d])*learning_rate;
 
-                        if (match == 0) {
-                            /* move a little more for the top match */
-                            if (img[n0+d] > curr_feature[n1+d])
-                                curr_feature[n1+d]++;
-                            else if (img[n0+d] < curr_feature[n1+d])
-                                curr_feature[n1+d]--;
-                        }
+                        /* move a little more for the top match */
+                        if (match == 0)
+                            curr_feature[n1+d] +=
+                                (img[n0+d] - curr_feature[n1+d])*learning_rate;
 
-                        if (match < 2) {
-                            /* move a little more for the top two */
-                            if (img[n0+d] > curr_feature[n1+d])
-                                curr_feature[n1+d]++;
-                            else if (img[n0+d] < curr_feature[n1+d])
-                                curr_feature[n1+d]--;
-                        }
+                        /* move a little more for the top two */
+                        if (match < 2)
+                            curr_feature[n1+d] +=
+                                (img[n0+d] - curr_feature[n1+d])*learning_rate;
 
                         /* occasionally modify at random */
-                        if (rand_num(random_seed) % 32 < 8) {
-                            if (rand_num(random_seed) % 128 > 64) {
-                                if (curr_feature[n1+d] > 0) curr_feature[n1+d]--;
-                            }
-                            else {
-                                if (curr_feature[n1+d] < 255) curr_feature[n1+d]++;
-                            }
-                        }
-
+                        if (rand_num(random_seed) % 32 < 8)
+                            curr_feature[n1+d] +=
+                                (img[n0+d] - curr_feature[n1+d])*learning_rate;
                     }
                 }
             }
@@ -225,11 +212,65 @@ int learn_image_features(unsigned char img[],
 
         /* calculate the total feature matching score */
         COUNTDOWN(f, no_of_features)
-            total_match_score += (unsigned int)feature_score[f];
+            total_match_score += feature_score[f];
     }
 
-    return (int)(total_match_score/(unsigned int)samples);
+    return total_match_score/(float)samples;
 }
+
+/**
+ * @brief Convolves an input image or layer to an output layer
+ * @param img Input image or previous layer
+ * @param img_width Width of the image
+ * @param img_height Height of the image
+ * @param feature_width Width if each image patch
+ * @param no_of_features The number of features in the set
+ * @param feature Array containing the learned features
+ * @param layer The output layer
+ * @param layer_width Width of the output layer. The total size of the
+ *        output layer should be layer_width*layer_width*no_of_features
+ */
+void convolve_image(float img[],
+                    int img_width, int img_height,
+                    int feature_width, int no_of_features,
+                    float feature[],
+                    float layer[], int layer_width)
+{
+    int img_depth = no_of_features;
+    float feature_pixels = 1.0f / (float)(feature_width*feature_width*img_depth);
+
+    COUNTDOWN(layer_y, layer_width) {
+        int ty = layer_y * img_height / layer_width;
+        int by = (layer_y+1) * img_height / layer_width;
+        COUNTDOWN(layer_x, layer_width) {
+            int tx = layer_x * img_width / layer_width;
+            int bx = (layer_x+1) * img_width / layer_width;
+            COUNTDOWN(f, no_of_features) {
+                float * curr_feature =
+                    &feature[f*feature_width*feature_width*img_depth];
+
+                float match = 0.0f;
+                COUNTDOWN(yy, feature_width) {
+                    int tyy = ty + (yy * (by-ty) / feature_width);
+                    COUNTDOWN(xx, feature_width) {
+                        int txx = tx + (xx * (bx-tx) / feature_width);
+                        int n0 = ((tyy*img_width) + txx) * img_depth;
+                        int n1 = ((yy * feature_width) + xx) * img_depth;
+                        COUNTDOWN(d, img_depth) {
+                            match +=
+                                ((float)img[n0+d] - (float)curr_feature[n1+d])*
+                                ((float)img[n0+d] - (float)curr_feature[n1+d]);
+                        }
+                    }
+                }
+
+                layer[((layer_y*layer_width) + layer_x)*no_of_features + f] =
+                    1.0f - (match * feature_pixels);
+            }
+        }
+    }
+}
+
 
 /**
  * @brief Scans an image patch and transfers the values to an autocoder

@@ -37,29 +37,40 @@ static void learn_features_from_image()
     unsigned int img_height = 0;
     unsigned int random_seed = 123;
     unsigned int bitsperpixel = 0;
-    unsigned char * img, * feature, * img_features;
+    unsigned char * img, * img_features;
+    float * img_float, * feature;
     int no_of_features = 16*16;
     int feature_width = 10;
-    int * feature_score;
+    float * feature_score;
     int samples = 1000;
     int i;
     int features_img_width = 800;
     int features_img_height = 800;
+    const float learning_rate = 0.1f;
 
     /* load image from file */
     assert(deeplearn_read_png_file((char*)"../../unittests/Lenna.png",
                                    &img_width, &img_height,
                                    &bitsperpixel, &img)==0);
 
-    feature = (unsigned char*)malloc(no_of_features*feature_width*feature_width*(bitsperpixel/8)*sizeof(unsigned char));
-    if (!feature) {
-        printf("Failed to allocate feature memory\n");
+    img_float = (float*)malloc(img_width*img_height*(bitsperpixel/8)*sizeof(float));
+    if (!img_float) {
+        printf("Failed to allocate image feature memory\n");
         free(img);
         return;
     }
-    feature_score = (int*)malloc(no_of_features*sizeof(int));
+
+    feature = (float*)malloc(no_of_features*feature_width*feature_width*(bitsperpixel/8)*sizeof(float));
+    if (!feature) {
+        printf("Failed to allocate learned feature memory\n");
+        free(img_float);
+        free(img);
+        return;
+    }
+    feature_score = (float*)malloc(no_of_features*sizeof(float));
     if (!feature_score) {
         printf("Failed to allocate memory for feature scores\n");
+        free(img_float);
         free(img);
         free(feature);
         return;
@@ -67,6 +78,7 @@ static void learn_features_from_image()
     img_features = (unsigned char*)malloc(features_img_width*features_img_height*((int)bitsperpixel/8)*sizeof(unsigned char));
     if (!img_features) {
         printf("Failed to allocate memory for features image\n");
+        free(img_float);
         free(img);
         free(feature);
         free(feature_score);
@@ -77,22 +89,26 @@ static void learn_features_from_image()
     for (i = 0; i < no_of_features*feature_width*feature_width*(bitsperpixel/8); i++)
         feature[i] = rand_num(&random_seed) % 256;
 
-    for (i = 0; i < 100; i++) {
-        int match_score =
-            learn_image_features(img,
-                                 (int)img_width, (int)img_height, (int)bitsperpixel/8,
-                                 feature_width, no_of_features,
-                                 feature, feature_score,
-                                 samples, &random_seed);
-        printf("%d\n", match_score);
+    /* convert the loaded image to floats */
+    for (i = 0; i < img_width*img_height*(bitsperpixel/8); i++)
+        img_float[i] = (float)img[i]/255.0f;
+
+    for (i = 0; i < 30; i++) {
+        float match_score =
+            learn_features(img_float,
+                           (int)img_width, (int)img_height, (int)bitsperpixel/8,
+                           feature_width, no_of_features,
+                           feature, feature_score,
+                           samples, learning_rate, &random_seed);
+        printf("%.4f\n", match_score);
     }
 
     printf("Learning completed\n");
 
-    draw_image_features(img_features,
-                        features_img_width, features_img_height,
-                        (int)(bitsperpixel/8),
-                        feature_width, no_of_features, feature);
+    draw_features(img_features,
+                  features_img_width, features_img_height,
+                  (int)(bitsperpixel/8),
+                  feature_width, no_of_features, feature);
 
     printf("test\n");
 
@@ -101,6 +117,7 @@ static void learn_features_from_image()
                              (unsigned int)features_img_height,
                              bitsperpixel, img_features);
 
+    free(img_float);
     free(img);
     free(feature_score);
     free(feature);
