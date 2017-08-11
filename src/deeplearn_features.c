@@ -56,6 +56,7 @@ int learn_image_features(unsigned char img[],
     int feature_radius = feature_width/2;
     int width = img_width-1-feature_width;
     int height = img_height-1-feature_width;
+    int total_match_score = 0;
     const int closest_matches = 3;
 
     /* sample the image a number of times */
@@ -140,12 +141,11 @@ int learn_image_features(unsigned char img[],
                 }
             }
         }
-    }
 
-    /* calculate the total feature matching score */
-    int total_match_score = 0;
-    COUNTDOWN(f, no_of_features)
-        total_match_score += feature_score[f];
+        /* calculate the total feature matching score */
+        COUNTDOWN(f, no_of_features)
+            total_match_score += feature_score[f];
+    }
 
     return total_match_score;
 }
