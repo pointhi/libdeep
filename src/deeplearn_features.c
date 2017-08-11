@@ -52,6 +52,9 @@ int draw_image_features(unsigned char img[],
         return 1;
     }
 
+    /* clear the image */
+    memset((void*)img, '\0', img_width*img_height*img_depth*sizeof(unsigned char));
+
     int feature_index = 0;
     COUNTUP(gx, grid_dimension) {
         int tx = gx * img_width / grid_dimension;
@@ -64,12 +67,12 @@ int draw_image_features(unsigned char img[],
             unsigned char * curr_feature =
                 &feature[feature_index*feature_width*feature_width*img_depth];
 
-            FOR(yy, ty, by) {
+            FOR(yy, ty+1, by-1) {
                 int y = (yy - ty) * feature_width / (by - ty);
-                FOR(xx, tx, bx) {
+                FOR(xx, tx+1, bx-1) {
                     int x = (xx - tx) * feature_width / (bx - tx);
                     /* pixel index within the image */
-                    int n0 = (((ty + yy)*img_width) + (tx + xx)) * img_depth;
+                    int n0 = ((yy*img_width) + xx) * img_depth;
                     /* pixel index within the feature */
                     int n1 = ((y*feature_width) + x) * img_depth;
                     COUNTDOWN(d, img_depth)
@@ -109,7 +112,7 @@ int learn_image_features(unsigned char img[],
     int feature_radius = feature_width/2;
     int width = img_width-1-feature_width;
     int height = img_height-1-feature_width;
-    int total_match_score = 0;
+    unsigned int total_match_score = 0;
     const int closest_matches = 3;
 
     /* sample the image a number of times */
@@ -123,15 +126,15 @@ int learn_image_features(unsigned char img[],
         COUNTDOWN(f, no_of_features) {
             unsigned char * curr_feature =
                 &feature[f*feature_width*feature_width*img_depth];
-            int n1 = 0;
 
             /* calculate the matching score for this feature */
             feature_score[f] = 0;
             COUNTDOWN(yy, feature_width) {
                 COUNTDOWN(xx, feature_width) {
                     int n0 = (((ty + yy)*img_width) + (tx + xx)) * img_depth;
+                    int n1 = ((yy * feature_width) + xx) * img_depth;
                     COUNTDOWN(d, img_depth) {
-                        int diff = (int)img[n0++] - (int)curr_feature[n1++];
+                        int diff = (int)img[n0+d] - (int)curr_feature[n1+d];
                         if (diff >= 0)
                             feature_score[f] += diff;
                         else
@@ -139,12 +142,15 @@ int learn_image_features(unsigned char img[],
                     }
                 }
             }
+            feature_score[f] /= feature_width*feature_width;
         }
 
         /* get the N closest feature indexes based upon match scores */
         int index[closest_matches];
+        COUNTDOWN(fi, closest_matches)
+            index[fi] = (int)(rand_num(random_seed) % no_of_features);
+
         COUNTUP(match, closest_matches) {
-            /* what is the closest match? */
             int min = 0;
             int max = 0;
             if (match > 0)
@@ -159,6 +165,12 @@ int learn_image_features(unsigned char img[],
             }
         }
 
+        /* occasionally choose a feature index at random */
+        if (rand_num(random_seed) % 32 < 8) {
+            index[rand_num(random_seed) % closest_matches] =
+                (int)(rand_num(random_seed) % no_of_features);
+        }
+
         /* move the closest features towards the image patch */
         COUNTUP(match, closest_matches) {
             int curr_index = index[match];
@@ -168,27 +180,44 @@ int learn_image_features(unsigned char img[],
                 curr_index = rand_num(random_seed) % no_of_features;
             unsigned char * curr_feature =
                 &feature[curr_index*feature_width*feature_width*img_depth];
-            int n0 = 0;
-            int n1 = 0;
 
             COUNTDOWN(yy, feature_width) {
                 COUNTDOWN(xx, feature_width) {
-                    n0 = (((ty + yy)*img_width) + (tx + xx)) * img_depth;
+                    int n0 = (((ty + yy)*img_width) + (tx + xx)) * img_depth;
+                    int n1 = ((yy * feature_width) + xx) * img_depth;
                     COUNTDOWN(d, img_depth) {
+                        /* move towards the image patch */
                         if (img[n0+d] > curr_feature[n1+d])
-                            feature[n1+d]++;
+                            curr_feature[n1+d]++;
                         else if (img[n0+d] < curr_feature[n1+d])
-                            feature[n1+d]--;
+                            curr_feature[n1+d]--;
 
-                        /* repeat for the best match */
                         if (match == 0) {
+                            /* move a little more for the top match */
                             if (img[n0+d] > curr_feature[n1+d])
-                                feature[n1+d]++;
+                                curr_feature[n1+d]++;
                             else if (img[n0+d] < curr_feature[n1+d])
-                                feature[n1+d]--;
+                                curr_feature[n1+d]--;
                         }
 
-                        n1++;
+                        if (match < 2) {
+                            /* move a little more for the top two */
+                            if (img[n0+d] > curr_feature[n1+d])
+                                curr_feature[n1+d]++;
+                            else if (img[n0+d] < curr_feature[n1+d])
+                                curr_feature[n1+d]--;
+                        }
+
+                        /* occasionally modify at random */
+                        if (rand_num(random_seed) % 32 < 8) {
+                            if (rand_num(random_seed) % 128 > 64) {
+                                if (curr_feature[n1+d] > 0) curr_feature[n1+d]--;
+                            }
+                            else {
+                                if (curr_feature[n1+d] < 255) curr_feature[n1+d]++;
+                            }
+                        }
+
                     }
                 }
             }
@@ -196,10 +225,10 @@ int learn_image_features(unsigned char img[],
 
         /* calculate the total feature matching score */
         COUNTDOWN(f, no_of_features)
-            total_match_score += feature_score[f];
+            total_match_score += (unsigned int)feature_score[f];
     }
 
-    return total_match_score;
+    return (int)(total_match_score/(unsigned int)samples);
 }
 
 /**
