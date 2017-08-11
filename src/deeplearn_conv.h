@@ -90,4 +90,10 @@ int conv_plot_history(deeplearn_conv * conv,
 int conv_save(FILE * fp, deeplearn_conv * conv);
 int conv_load(FILE * fp, deeplearn_conv * conv);
 
+void convolve_image(float img[],
+                    int img_width, int img_height, int img_depth,
+                    int feature_width, int no_of_features,
+                    float feature[],
+                    float layer[], int layer_width);
+
 #endif
