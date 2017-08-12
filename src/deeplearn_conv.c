@@ -507,3 +507,38 @@ float conv_learn(unsigned char * img,
 
     return matching_score;
 }
+
+/**
+ * @brief Draws features for a given convolution layer
+ * @param img Image to draw to
+ * @param img_width Width of the image
+ * @param img_height Height of the image
+ * @param img_depth Depth of the image
+ * @param layer Index of the layer whose features will be shown
+ * @param conv Convolution instance
+ * @returns zero on success
+ */
+int conv_draw_features(unsigned char img[],
+                       int img_width, int img_height, int img_depth,
+                       int layer,
+                       deeplearn_conv * conv)
+{
+    int feature_width;
+    int no_of_features;
+    float * feature;
+
+    if ((layer < 0) || (layer >= conv->no_of_layers))
+        return -1;
+
+    feature_width = conv->layer[layer].feature_width;
+    no_of_features = conv->layer[layer].no_of_features;
+    feature = conv->layer[layer].feature;
+
+    if (layer == 0)
+        return draw_features(img, img_width, img_height, img_depth,
+                             feature_width, no_of_features, feature);
+
+    /* TODO: subsequent layers */
+
+    return 0;
+}
