@@ -32,6 +32,23 @@ static void test_conv_init()
 {
     printf("test_conv_init...");
 
+    int no_of_layers = 3;
+    int image_width = 256;
+    int image_height = 256;
+    int image_depth = 3;
+    int no_of_features = 10*10;
+    int feature_width = 8;
+    int final_image_width = 64;
+    int final_image_height = 64;
+    float match_threshold[] = { 0.0f, 0.0f, 0.0f };
+    deeplearn_conv conv;
+
+    assert(conv_init(no_of_layers,
+                     image_width, image_height, image_depth,
+                     no_of_features, feature_width,
+                     final_image_width, final_image_height,
+                     &match_threshold[0], &conv) == 0);
+    conv_free(&conv);
 
     printf("Ok\n");
 }
