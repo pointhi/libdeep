@@ -75,7 +75,8 @@ static void learn_features_from_image()
         free(feature);
         return;
     }
-    img_features = (unsigned char*)malloc(features_img_width*features_img_height*((int)bitsperpixel/8)*sizeof(unsigned char));
+    img_features =
+        (unsigned char*)malloc(features_img_width*features_img_height*((int)bitsperpixel/8)*sizeof(unsigned char));
     if (!img_features) {
         printf("Failed to allocate memory for features image\n");
         free(img_float);

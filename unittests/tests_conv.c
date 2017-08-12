@@ -30,8 +30,6 @@
 
 static void test_conv_init()
 {
-    printf("test_conv_init...");
-
     int no_of_layers = 3;
     int image_width = 256;
     int image_height = 256;
@@ -43,11 +41,64 @@ static void test_conv_init()
     float match_threshold[] = { 0.0f, 0.0f, 0.0f };
     deeplearn_conv conv;
 
+    printf("test_conv_init...");
+
     assert(conv_init(no_of_layers,
                      image_width, image_height, image_depth,
                      no_of_features, feature_width,
                      final_image_width, final_image_height,
                      &match_threshold[0], &conv) == 0);
+    conv_free(&conv);
+
+    printf("Ok\n");
+}
+
+static void test_conv_learn()
+{
+    int no_of_layers = 3;
+    unsigned char * img = NULL;
+    unsigned int image_width = 0;
+    unsigned int image_height = 0;
+    int image_depth = 3;
+    int no_of_features = 16*16;
+    int feature_width = 10;
+    int final_image_width = 64;
+    int final_image_height = 64;
+    float match_threshold[] = { 0.0f, 0.0f, 0.0f };
+    deeplearn_conv conv;
+    unsigned int bitsperpixel = 0;
+    unsigned int random_seed = 123;
+
+    printf("test_conv_learn...");
+
+    assert(deeplearn_read_png_file((char*)"Lenna.png",
+                                   &image_width, &image_height,
+                                   &bitsperpixel, &img)==0);
+    assert(img != NULL);
+    assert(image_width == 512);
+    assert(image_height == 512);
+    assert(bitsperpixel == 24);
+
+    image_depth = (int)bitsperpixel/8;
+    assert(conv_init(no_of_layers,
+                     (int)image_width, (int)image_height, image_depth,
+                     no_of_features, feature_width,
+                     final_image_width, final_image_height,
+                     &match_threshold[0], &conv) == 0);
+
+    float prev_matching_score = 0;
+    int error_decreases = 0;
+    COUNTUP(i, 5) {
+        float matching_score =
+            conv_learn(img, &conv, 1000, &random_seed);
+        assert(matching_score > 0);
+        if (matching_score < prev_matching_score)
+            error_decreases++;
+        prev_matching_score = matching_score;
+    }
+    assert(error_decreases >= 4);
+
+    free(img);
     conv_free(&conv);
 
     printf("Ok\n");
@@ -59,6 +110,7 @@ int run_tests_conv()
     printf("\nRunning convolution tests\n");
 
     test_conv_init();
+    test_conv_learn();
 
     printf("All convolution tests completed\n");
     return 1;

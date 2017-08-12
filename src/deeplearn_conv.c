@@ -51,6 +51,9 @@ int conv_init(int no_of_layers,
               float match_threshold[],
               deeplearn_conv * conv)
 {
+    /* used to initially randomize the learned feature arrays */
+    unsigned int rand_seed = 234;
+
     conv->no_of_layers = no_of_layers;
     conv->current_layer = 0;
     conv->learning_rate = 0.1f;
@@ -98,6 +101,9 @@ int conv_init(int no_of_layers,
                    conv->layer[l].depth);
         if (!conv->layer[l].layer)
             return 1;
+        FLOATCLEAR(conv->layer[l].layer,
+                   conv->layer[l].width*conv->layer[l].height*
+                   conv->layer[l].depth);
 
         /* allocate memory for learned feature set */
         FLOATALLOC(conv->layer[l].feature,
@@ -106,6 +112,10 @@ int conv_init(int no_of_layers,
                    conv->layer[l].depth);
         if (!conv->layer[l].feature)
             return 2;
+        COUNTDOWN(r, conv->layer[l].no_of_features*
+                  conv->layer[l].feature_width*conv->layer[l].feature_width*
+                  conv->layer[l].depth)
+            conv->layer[l].feature[r] = (rand_num(&rand_seed) % 10000)/10000.0f;
     }
 
     conv->outputs_width = final_image_width;
@@ -485,17 +495,21 @@ float conv_learn(unsigned char * img,
 
     conv_feed_forward(img, conv, layer);
 
-    COUNTDOWN(s, samples) {
-        matching_score +=
-            learn_features(conv->layer[layer].layer,
-                           conv->layer[layer].width,
-                           conv->layer[layer].height,
-                           conv->layer[layer].depth,
-                           conv->layer[layer].feature_width,
-                           conv->layer[layer].no_of_features,
-                           conv->layer[layer].feature,
-                           feature_score,
-                           samples, conv->learning_rate, random_seed);
+    matching_score +=
+        learn_features(&conv->layer[layer].layer[0],
+                       conv->layer[layer].width,
+                       conv->layer[layer].height,
+                       conv->layer[layer].depth,
+                       conv->layer[layer].feature_width,
+                       conv->layer[layer].no_of_features,
+                       &conv->layer[layer].feature[0],
+                       feature_score,
+                       samples, conv->learning_rate, random_seed);
+    /* check for NaN */
+    if (matching_score != matching_score) {
+        printf("matching_score = %f\n", matching_score);
+        free(feature_score);
+        return -2;
     }
 
     conv_update_history(conv, matching_score);
