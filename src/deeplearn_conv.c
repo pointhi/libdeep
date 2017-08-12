@@ -56,7 +56,6 @@ int conv_init(int no_of_layers,
     conv->learning_rate = 0.1f;
 
     conv->itterations = 0;
-    conv->training_ctr = 0;
     conv->history_ctr = 0;
     conv->history_index = 0;
     conv->history_step = 1;
@@ -233,16 +232,49 @@ int conv_plot_history(deeplearn_conv * conv,
  */
 int conv_save(FILE * fp, deeplearn_conv * conv)
 {
-    /*
-    if (FLOATWRITE(conv->reduction_factor) == 0)
+    if (FLOATWRITE(conv->no_of_layers) == 0)
         return -1;
 
-
-    COUNTUP(i, conv->no_of_layers) {
-        if (INTWRITE(conv->layer[i].pooling_factor) == 0)
-            return -18;
+    COUNTUP(l, conv->no_of_layers) {
+        if (INTWRITE(conv->layer[l].width) == 0)
+            return -2;
+        if (INTWRITE(conv->layer[l].height) == 0)
+            return -3;
+        if (INTWRITE(conv->layer[l].depth) == 0)
+            return -4;
+        if (INTWRITE(conv->layer[l].no_of_features) == 0)
+            return -5;
+        if (INTWRITE(conv->layer[l].feature_width) == 0)
+            return -6;
     }
-    */
+
+    if (INTWRITE(conv->outputs_width) == 0)
+        return -7;
+    if (INTWRITE(conv->no_of_outputs) == 0)
+        return -8;
+    if (INTWRITE(conv->learning_rate) == 0)
+        return -9;
+    if (INTWRITE(conv->current_layer) == 0)
+        return -10;
+    if (FLOATWRITEARRAY(conv->match_threshold,
+                        conv->no_of_layers) == 0)
+        return -11;
+    if (UINTWRITE(conv->itterations) == 0)
+        return -12;
+
+    /* save the history */
+    if (INTWRITE(conv->history_index) == 0)
+        return -13;
+
+    if (INTWRITE(conv->history_ctr) == 0)
+        return -14;
+
+    if (INTWRITE(conv->history_step) == 0)
+        return -15;
+
+    if (FLOATWRITEARRAY(conv->history,
+                        conv->history_index) == 0)
+        return -16;
 
     return 0;
 }
@@ -255,15 +287,56 @@ int conv_save(FILE * fp, deeplearn_conv * conv)
  */
 int conv_load(FILE * fp, deeplearn_conv * conv)
 {
-    /*
-    if (INTREAD(conv->reduction_factor) == 0)
+    if (FLOATREAD(conv->no_of_layers) == 0)
         return -1;
 
-    COUNTUP(i, conv->no_of_layers) {
-        if (INTREAD(conv->layer[i].pooling_factor) == 0)
-            return -20;
+    COUNTUP(l, conv->no_of_layers) {
+        if (INTREAD(conv->layer[l].width) == 0)
+            return -2;
+        if (INTREAD(conv->layer[l].height) == 0)
+            return -3;
+        if (INTREAD(conv->layer[l].depth) == 0)
+            return -4;
+        if (INTREAD(conv->layer[l].no_of_features) == 0)
+            return -5;
+        if (INTREAD(conv->layer[l].feature_width) == 0)
+            return -6;
     }
-    */
+
+    if (INTREAD(conv->outputs_width) == 0)
+        return -7;
+    if (INTREAD(conv->no_of_outputs) == 0)
+        return -8;
+
+    float match_threshold[PREPROCESS_MAX_LAYERS];
+    conv_init(conv->no_of_layers,
+              conv->layer[0].width, conv->layer[0].height, conv->layer[0].depth,
+              conv->layer[0].no_of_features, conv->layer[0].feature_width,
+              conv->outputs_width, conv->outputs_width,
+              &match_threshold[0], conv);
+
+    if (INTREAD(conv->learning_rate) == 0)
+        return -9;
+    if (INTREAD(conv->current_layer) == 0)
+        return -10;
+    if (FLOATREADARRAY(conv->match_threshold,
+                        conv->no_of_layers) == 0)
+        return -11;
+    if (UINTREAD(conv->itterations) == 0)
+        return -12;
+
+    /* load the history */
+    if (INTREAD(conv->history_index) == 0)
+        return -13;
+
+    if (INTREAD(conv->history_ctr) == 0)
+        return -14;
+
+    if (INTREAD(conv->history_step) == 0)
+        return -15;
+
+    if (FLOATREADARRAY(conv->history, conv->history_index) == 0)
+        return -16;
 
     return 0;
 }

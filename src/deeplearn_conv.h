@@ -77,7 +77,6 @@ typedef struct {
     unsigned int itterations;
 
     /* training history */
-    unsigned int training_ctr;
     unsigned int history_plot_interval;
     char history_plot_filename[256];
     char history_plot_title[256];
