@@ -86,7 +86,7 @@ static void test_conv_learn()
                      final_image_width, final_image_height,
                      &match_threshold[0], &conv) == 0);
 
-    float prev_matching_score = 0;
+    float prev_matching_score = 9999999;
     int error_decreases = 0;
     COUNTUP(i, 5) {
         float matching_score =
