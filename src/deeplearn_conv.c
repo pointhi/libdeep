@@ -57,6 +57,13 @@ int conv_init(int no_of_layers,
 
     conv->itterations = 0;
     conv->training_ctr = 0;
+    conv->history_ctr = 0;
+    conv->history_index = 0;
+    conv->history_step = 1;
+
+    conv->history_plot_interval = 10;
+    sprintf(conv->history_plot_filename,"%s","feature_learning.png");
+    sprintf(conv->history_plot_title,"%s","Feature Learning Training History");
 
     COUNTUP(l, no_of_layers) {
         conv->layer[l].width =
@@ -349,6 +356,36 @@ void conv_feed_forward(unsigned char * img,
 }
 
 /**
+ * @brief Update the history of scores during feature learning
+ * @param conv Convolution instance
+ * @param matching score Current score when matching features
+ */
+static void conv_update_history(deeplearn_conv * conv,
+                                float matching_score)
+{
+    conv->itterations++;
+
+    if (conv->history_step == 0) return;
+
+    conv->history_ctr++;
+    if (conv->history_ctr >= conv->history_step) {
+
+        conv->history[conv->history_index] =
+            matching_score;
+        conv->history_index++;
+        conv->history_ctr = 0;
+
+        if (conv->history_index >= DEEPLEARN_HISTORY_SIZE) {
+            COUNTUP(i, conv->history_index)
+                conv->history[i/2] = conv->history[i];
+
+            conv->history_index /= 2;
+            conv->history_step *= 2;
+        }
+    }
+}
+
+/**
  * @brief Learn features
  * @param conv Convolution instance
  * @param samples The number of samples from the image or layer
@@ -385,8 +422,9 @@ float conv_learn(unsigned char * img,
                            conv->layer[layer].feature,
                            feature_score,
                            samples, conv->learning_rate, random_seed);
-        conv->itterations++;
     }
+
+    conv_update_history(conv, matching_score);
 
     free(feature_score);
 
