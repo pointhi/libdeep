@@ -62,30 +62,38 @@ int conv_init(int no_of_layers,
         conv->layer[l].width =
             image_width - ((image_width-final_image_width)*l/no_of_layers);
 
+        /* After the initial layer, width and height are the same */
         if (l == 0)
             conv->layer[l].height =
                 image_height - ((image_height-final_image_height)*l/no_of_layers);
         else
             conv->layer[l].height = conv->layer[l].width;
 
+        /* first layer is the image depth, after that depth is the number
+           of features on the previous layer */
         if (l == 0)
             conv->layer[l].depth = image_depth;
         else
             conv->layer[l].depth = conv->layer[l-1].no_of_features;
 
         conv->layer[l].no_of_features = no_of_features;
+
+        /* make feature width proportional to width of the layer */
         conv->layer[l].feature_width =
             feature_width*conv->layer[l].width/image_width;
+
+        /* feature width should not be too small */
         if (conv->layer[l].feature_width < 3)
             conv->layer[l].feature_width = 3;
 
-        /* allocate memory for arrays */
+        /* allocate memory for the layer */
         FLOATALLOC(conv->layer[l].layer,
                    conv->layer[l].width*conv->layer[l].height*
                    conv->layer[l].depth);
         if (!conv->layer[l].layer)
             return 1;
 
+        /* allocate memory for learned feature set */
         FLOATALLOC(conv->layer[l].feature,
                    conv->layer[l].no_of_features*
                    conv->layer[l].feature_width*conv->layer[l].feature_width*
@@ -95,15 +103,22 @@ int conv_init(int no_of_layers,
     }
 
     conv->outputs_width = final_image_width;
+
+    /* for convenience this is the size of the outputs array */
     conv->no_of_outputs =
         final_image_width*final_image_width*conv->layer[no_of_layers-1].depth;
+
+    /* allocate array of output values */
     FLOATALLOC(conv->outputs, conv->no_of_outputs);
     if (!conv->outputs)
         return 3;
 
+    /* allocate array containing training thresholds */
     FLOATALLOC(conv->match_threshold, conv->no_of_layers);
     if (!conv->match_threshold)
         return 4;
+
+    /* copy threshold values into the array */
     memcpy((void*)conv->match_threshold, match_threshold,conv->no_of_layers*sizeof(float));
 
     return 0;
