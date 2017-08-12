@@ -343,7 +343,7 @@ int conv_load(FILE * fp, deeplearn_conv * conv)
 
 /**
  * @brief Convolves an input image or layer to an output layer
- * @param img Input image or previous layer
+ * @param img Input image or previous layer with values in the range 0.0 -> 1.0
  * @param img_width Width of the image
  * @param img_height Height of the image
  * @param img_depth Depth of the image. If this is the first layer then it is
@@ -351,7 +351,8 @@ int conv_load(FILE * fp, deeplearn_conv * conv)
  *        the previous layer
  * @param feature_width Width if each image patch
  * @param no_of_features The number of features in the set
- * @param feature Array containing the learned features
+ * @param feature Array containing the learned features, having values in
+ *        the range 0.0 -> 1.0
  * @param layer The output layer
  * @param layer_width Width of the output layer. The total size of the
  *        output layer should be layer_width*layer_width*no_of_features
@@ -362,7 +363,8 @@ void convolve_image(float img[],
                     float feature[],
                     float layer[], int layer_width)
 {
-    float feature_pixels = 1.0f / (float)(feature_width*feature_width*img_depth);
+    float feature_pixels =
+        1.0f / (float)(feature_width*feature_width*img_depth);
 
     COUNTDOWN(layer_y, layer_width) {
         int ty = layer_y * img_height / layer_width;
@@ -381,16 +383,15 @@ void convolve_image(float img[],
                         int txx = tx + (xx * (bx-tx) / feature_width);
                         int n0 = ((tyy*img_width) + txx) * img_depth;
                         int n1 = ((yy * feature_width) + xx) * img_depth;
-                        COUNTDOWN(d, img_depth) {
+                        COUNTDOWN(d, img_depth)
                             match +=
-                                ((float)img[n0+d] - (float)curr_feature[n1+d])*
-                                ((float)img[n0+d] - (float)curr_feature[n1+d]);
-                        }
+                                (img[n0+d] - curr_feature[n1+d])*
+                                (img[n0+d] - curr_feature[n1+d]);
                     }
                 }
 
                 layer[((layer_y*layer_width) + layer_x)*no_of_features + f] =
-                    1.0f - (match * feature_pixels);
+                    1.0f - (float)sqrt(match * feature_pixels);
             }
         }
     }
