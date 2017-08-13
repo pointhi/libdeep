@@ -71,6 +71,7 @@ static void test_conv_learn()
     int downsampled_width=128;
     int downsampled_height=128;
     unsigned char downsampled[128*128];
+    char filename[256];
 
     printf("test_conv_learn...");
 
@@ -169,6 +170,11 @@ static void test_conv_learn()
     outputs_sum /= conv.no_of_outputs;
     assert(outputs_sum > 0.01f);
     assert(outputs_sum <= 1.0f);
+
+    /* save a graph */
+    sprintf(filename,"%stemp_graph.png",DEEPLEARN_TEMP_DIRECTORY);
+    conv_plot_history(&conv, filename, "Feature Learning",
+                      1024, 480);
 
     free(img);
     conv_free(&conv);
