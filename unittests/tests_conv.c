@@ -148,6 +148,28 @@ static void test_conv_learn()
     }
     assert(error_decreases >= 4);
 
+    /* check that the convolution values in the second layer are reasonable */
+    float layer_sum = 0;
+    COUNTDOWN(i, conv.layer[1].width*conv.layer[1].height*conv.layer[1].depth) {
+        assert(conv.layer[1].layer[i] >= 0.0f);
+        assert(conv.layer[1].layer[i] <= 1.0f);
+        layer_sum += conv.layer[1].layer[i];
+    }
+    layer_sum /= conv.layer[1].width*conv.layer[1].height*conv.layer[1].depth;
+    assert(layer_sum > 0.0f);
+    assert(layer_sum <= 1.0f);
+
+    /* check that the convolution values in the third layer are reasonable */
+    layer_sum = 0;
+    COUNTDOWN(i, conv.layer[2].width*conv.layer[2].height*conv.layer[2].depth) {
+        assert(conv.layer[2].layer[i] >= 0.0f);
+        assert(conv.layer[2].layer[i] <= 1.0f);
+        layer_sum += conv.layer[2].layer[i];
+    }
+    layer_sum /= conv.layer[2].width*conv.layer[2].height*conv.layer[2].depth;
+    assert(layer_sum > 0.0f);
+    assert(layer_sum <= 1.0f);
+
     /* clear outputs */
     FLOATCLEAR(&conv.outputs[0], conv.no_of_outputs);
 
