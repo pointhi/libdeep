@@ -144,7 +144,8 @@ int conv_init(int no_of_layers,
 }
 
 /**
- * @brief Resizes an image
+ * @brief Resizes an image, if trying to convolve high resolution images
+ *        is too hard
  * @param img Image array
  * @param image_width Width of the image
  * @param image_height Height of the image
@@ -258,7 +259,7 @@ int conv_plot_history(deeplearn_conv * conv,
     fprintf(fp,"%s","set lmargin 9\n");
     fprintf(fp,"%s","set rmargin 2\n");
     fprintf(fp,"%s","set xlabel \"Time Step\"\n");
-    fprintf(fp,"%s","set ylabel \"Training Error Percent\"\n");
+    fprintf(fp,"%s","set ylabel \"Feature Learning Error\"\n");
 
     fprintf(fp,"%s","set grid\n");
     fprintf(fp,"%s","set key right top\n");
