@@ -141,6 +141,50 @@ int conv_init(int no_of_layers,
 }
 
 /**
+ * @brief Resizes an image
+ * @param img Image array
+ * @param image_width Width of the image
+ * @param image_height Height of the image
+ * @param image_depth Depth of the image
+ * @param result Resized image array
+ * @param result_width Output image width
+ * @param result_height Output image height
+ * @param result_depth Output image depth
+ * @returns zero on success
+ */
+int image_resize(unsigned char img[],
+                 int image_width, int image_height, int image_depth,
+                 unsigned char result[],
+                 int result_width, int result_height, int result_depth)
+{
+    if ((image_depth != result_depth) && (result_depth != 1))
+        return 1;
+
+    COUNTDOWN(y, result_height) {
+        int y_orig = y * image_height / result_height;
+        COUNTDOWN(x, result_width) {
+            int x_orig = x * image_width / result_width;
+            int n = (y*result_width + x) * result_depth;
+            int n_orig = (y_orig*image_width + x_orig) * image_depth;
+            if (result_depth == 1) {
+                result[n] = 0;
+                int sum = 0;
+                COUNTDOWN(d, image_depth)
+                    sum += (int)img[n_orig + d];
+                result[n] = (unsigned char)(sum / image_depth);
+            }
+            else {
+                if (result_depth == image_depth) {
+                    COUNTDOWN(d, image_depth)
+                        result[n+d] = img[n_orig + d];
+                }
+            }
+        }
+    }
+    return 0;
+}
+
+/**
  * @brief Frees memory for a preprocessing pipeline
  * @param conv Preprocessing object
  */
@@ -376,12 +420,15 @@ void convolve_image(float img[],
     float feature_pixels =
         1.0f / (float)(feature_width*feature_width*img_depth);
 
+    /* for each unit in the output layer */
     COUNTDOWN(layer_y, layer_width) {
         int ty = layer_y * img_height / layer_width;
         int by = (layer_y+1) * img_height / layer_width;
         COUNTDOWN(layer_x, layer_width) {
             int tx = layer_x * img_width / layer_width;
             int bx = (layer_x+1) * img_width / layer_width;
+
+            /* for every learned feature */
             COUNTDOWN(f, no_of_features) {
                 float * curr_feature =
                     &feature[f*feature_width*feature_width*img_depth];

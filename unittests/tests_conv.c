@@ -60,14 +60,17 @@ static void test_conv_learn()
     unsigned int image_width = 0;
     unsigned int image_height = 0;
     int image_depth = 3;
-    int no_of_features = 16*16;
-    int feature_width = 10;
+    int no_of_features = 4*4;
+    int feature_width = 8;
     int final_image_width = 64;
     int final_image_height = 64;
     float match_threshold[] = { 0.0f, 0.0f, 0.0f };
     deeplearn_conv conv;
     unsigned int bitsperpixel = 0;
     unsigned int random_seed = 123;
+    int downsampled_width=128;
+    int downsampled_height=128;
+    unsigned char downsampled[128*128];
 
     printf("test_conv_learn...");
 
@@ -79,22 +82,49 @@ static void test_conv_learn()
     assert(image_height == 512);
     assert(bitsperpixel == 24);
 
-    image_depth = (int)bitsperpixel/8;
+    assert(image_resize(img, (int)image_width, (int)image_height,
+                        (int)(bitsperpixel/8),
+                        &downsampled[0],
+                        downsampled_width, downsampled_height, 1)==0);
+    image_depth = 1;
+    image_width = (unsigned int)downsampled_width;
+    image_height = (unsigned int)downsampled_height;
+
     assert(conv_init(no_of_layers,
                      (int)image_width, (int)image_height, image_depth,
                      no_of_features, feature_width,
                      final_image_width, final_image_height,
                      &match_threshold[0], &conv) == 0);
 
+    float matching_score = 0;
     float prev_matching_score = 9999999;
     int error_decreases = 0;
     COUNTUP(i, 5) {
-        float matching_score =
-            conv_learn(img, &conv, 1000, &random_seed);
+        matching_score =
+            conv_learn(img, &conv, 100, &random_seed);
         assert(matching_score > 0);
         if (matching_score < prev_matching_score)
             error_decreases++;
         prev_matching_score = matching_score;
+    }
+    assert(error_decreases >= 4);
+
+    /* force to the next layer */
+    conv.match_threshold[0] = prev_matching_score+1000;
+
+    /* check that error continues to decrease on the second layer */
+    error_decreases = 0;
+    prev_matching_score = 9999999;
+    COUNTUP(i, 5) {
+        matching_score =
+            conv_learn(img, &conv, 100, &random_seed);
+        assert(matching_score > 0);
+        assert(conv.current_layer == 1);
+        if (matching_score < prev_matching_score)
+            error_decreases++;
+        prev_matching_score = matching_score;
+        printf(".");
+        fflush(stdout);
     }
     assert(error_decreases >= 4);
 
