@@ -204,9 +204,20 @@ float learn_features(float img[],
                                 (img[n0+d] - curr_feature[n1+d])*learning_rate;
 
                         /* occasionally modify at random */
-                        if (rand_num(random_seed) % 32 < 8)
-                            curr_feature[n1+d] +=
-                                (img[n0+d] - curr_feature[n1+d])*learning_rate;
+                        if (rand_num(random_seed) % 32 < 8) {
+                            if (rand_num(random_seed) % 64 < 32)
+                                curr_feature[n1+d] +=
+                                    (img[n0+d] - curr_feature[n1+d])*learning_rate;
+                            else
+                                curr_feature[n1+d] -=
+                                    (img[n0+d] - curr_feature[n1+d])*learning_rate;
+
+                            if (curr_feature[n1+d] < 0.0f)
+                                curr_feature[n1+d] = 0.0f;
+                            if (curr_feature[n1+d] > 1.0f)
+                                curr_feature[n1+d] = 1.0f;
+                        }
+
                     }
                 }
             }
