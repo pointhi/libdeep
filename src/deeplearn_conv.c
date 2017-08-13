@@ -464,6 +464,72 @@ void convolve_image(float img[],
 }
 
 /**
+ * @brief Convolves a mono input image or layer to an output layer
+ * @param img Input image or previous layer with values in the range 0.0 -> 1.0
+ * @param img_width Width of the image
+ * @param img_height Height of the image
+ *        the color depth, otherwise it is the number of features learned in
+ *        the previous layer
+ * @param feature_width Width if each image patch
+ * @param no_of_features The number of features in the set
+ * @param feature Array containing the learned features, having values in
+ *        the range 0.0 -> 1.0
+ * @param layer The output layer
+ * @param layer_width Width of the output layer. The total size of the
+ *        output layer should be layer_width*layer_width*no_of_features
+ */
+void convolve_image_mono(float img[],
+                         int img_width, int img_height,
+                         int feature_width, int no_of_features,
+                         float feature[],
+                         float layer[], int layer_width)
+{
+    int half_feature_width = feature_width/2;
+    float feature_pixels =
+        1.0f / (float)(feature_width*feature_width);
+
+    /* for each unit in the output layer */
+    COUNTDOWN(layer_y, layer_width) {
+        int y_img = layer_y * img_height / layer_width;
+        int ty = y_img - half_feature_width;
+        int by = ty + feature_width;
+        if (ty < 0) ty = 0;
+        if (by >= img_height) by = img_height-1;
+        COUNTDOWN(layer_x, layer_width) {
+            int x_img = layer_x * img_width / layer_width;
+            int tx = x_img - half_feature_width;
+            int bx = tx + feature_width;
+            if (tx < 0) tx = 0;
+            if (bx >= img_width) bx = img_width-1;
+
+            /* for every learned feature */
+            COUNTDOWN(f, no_of_features) {
+                float * curr_feature =
+                    &feature[f*feature_width*feature_width];
+
+                float match = 0.0f;
+                FOR(yy, ty, by) {
+                    /* position in the input image */
+                    int n0 = (yy*img_width) + tx;
+                    /* position within the feature */
+                    int n1 = (yy-ty) * feature_width;
+                    FOR(xx, tx, bx) {
+                        match +=
+                            (img[n0] - curr_feature[n1])*
+                            (img[n0] - curr_feature[n1]);
+                        n0++;
+                        n1++;
+                    }
+                }
+
+                layer[((layer_y*layer_width) + layer_x)*no_of_features + f] =
+                    1.0f - (float)sqrt(match * feature_pixels);
+            }
+        }
+    }
+}
+
+/**
  * @brief Feed forward to the given layer
  * @param img The input image
  * @param conv Convolution instance
@@ -485,13 +551,21 @@ void conv_feed_forward(unsigned char * img,
             next_layer_width = conv->layer[l+1].width;
         }
 
-        convolve_image(conv->layer[l].layer,
-                       conv->layer[l].width, conv->layer[l].height,
-                       conv->layer[l].depth,
-                       conv->layer[l].feature_width,
-                       conv->layer[l].no_of_features,
-                       conv->layer[l].feature,
-                       next_layer, next_layer_width);
+        if (conv->layer[l].depth == 1)
+            convolve_image_mono(conv->layer[l].layer,
+                                conv->layer[l].width, conv->layer[l].height,
+                                conv->layer[l].feature_width,
+                                conv->layer[l].no_of_features,
+                                conv->layer[l].feature,
+                                next_layer, next_layer_width);
+        else
+            convolve_image(conv->layer[l].layer,
+                           conv->layer[l].width, conv->layer[l].height,
+                           conv->layer[l].depth,
+                           conv->layer[l].feature_width,
+                           conv->layer[l].no_of_features,
+                           conv->layer[l].feature,
+                           next_layer, next_layer_width);
     }
 }
 

@@ -134,7 +134,6 @@ static void test_conv_learn()
     printf("Ok\n");
 }
 
-
 int run_tests_conv()
 {
     printf("\nRunning convolution tests\n");
