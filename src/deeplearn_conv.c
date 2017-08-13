@@ -417,16 +417,23 @@ void convolve_image(float img[],
                     float feature[],
                     float layer[], int layer_width)
 {
+    int half_feature_width = feature_width/2;
     float feature_pixels =
         1.0f / (float)(feature_width*feature_width*img_depth);
 
     /* for each unit in the output layer */
     COUNTDOWN(layer_y, layer_width) {
-        int ty = layer_y * img_height / layer_width;
-        int by = (layer_y+1) * img_height / layer_width;
+        int y_img = layer_y * img_height / layer_width;
+        int ty = y_img - half_feature_width;
+        int by = ty + feature_width;
+        if (ty < 0) ty = 0;
+        if (by >= img_height) by = img_height-1;
         COUNTDOWN(layer_x, layer_width) {
-            int tx = layer_x * img_width / layer_width;
-            int bx = (layer_x+1) * img_width / layer_width;
+            int x_img = layer_x * img_width / layer_width;
+            int tx = x_img - half_feature_width;
+            int bx = tx + feature_width;
+            if (tx < 0) tx = 0;
+            if (bx >= img_width) bx = img_width-1;
 
             /* for every learned feature */
             COUNTDOWN(f, no_of_features) {
@@ -434,16 +441,18 @@ void convolve_image(float img[],
                     &feature[f*feature_width*feature_width*img_depth];
 
                 float match = 0.0f;
-                COUNTDOWN(yy, feature_width) {
-                    int tyy = ty + (yy * (by-ty) / feature_width);
-                    COUNTDOWN(xx, feature_width) {
-                        int txx = tx + (xx * (bx-tx) / feature_width);
-                        int n0 = ((tyy*img_width) + txx) * img_depth;
-                        int n1 = ((yy * feature_width) + xx) * img_depth;
+                FOR(yy, ty, by) {
+                    /* position in the input image */
+                    int n0 = ((yy*img_width) + tx) * img_depth;
+                    /* position within the feature */
+                    int n1 = ((yy-ty) * feature_width) * img_depth;
+                    FOR(xx, tx, bx) {
                         COUNTDOWN(d, img_depth)
                             match +=
                                 (img[n0+d] - curr_feature[n1+d])*
                                 (img[n0+d] - curr_feature[n1+d]);
+                        n0 += img_depth;
+                        n1 += img_depth;
                     }
                 }
 
