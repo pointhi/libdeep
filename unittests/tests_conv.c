@@ -128,6 +128,48 @@ static void test_conv_learn()
     }
     assert(error_decreases >= 4);
 
+    /* force to the next layer */
+    conv.match_threshold[1] = prev_matching_score+1000;
+
+    /* check that error continues to decrease on the second layer */
+    error_decreases = 0;
+    prev_matching_score = 9999999;
+    COUNTUP(i, 5) {
+        matching_score =
+            conv_learn(img, &conv, 100, &random_seed);
+        assert(matching_score > 0);
+        assert(conv.current_layer == 2);
+        if (matching_score < prev_matching_score)
+            error_decreases++;
+        prev_matching_score = matching_score;
+        printf(".");
+        fflush(stdout);
+    }
+    assert(error_decreases >= 4);
+
+    /* clear outputs */
+    FLOATCLEAR(&conv.outputs[0], conv.no_of_outputs);
+
+    /* check that the outputs are all zero */
+    float outputs_sum = 0;
+    COUNTDOWN(i, conv.no_of_outputs) {
+        assert(conv.outputs[i] == 0.0f);
+    }
+
+    /* feed forward through all layers */
+    conv_feed_forward(&downsampled[0], &conv, no_of_layers);
+
+    /* check that there are some non-zero outputs */
+    outputs_sum = 0;
+    COUNTDOWN(i, conv.no_of_outputs) {
+        assert(conv.outputs[i] >= 0.0f);
+        assert(conv.outputs[i] <= 1.0f);
+        outputs_sum += conv.outputs[i];
+    }
+    outputs_sum /= conv.no_of_outputs;
+    assert(outputs_sum > 0.01f);
+    assert(outputs_sum <= 1.0f);
+
     free(img);
     conv_free(&conv);
 

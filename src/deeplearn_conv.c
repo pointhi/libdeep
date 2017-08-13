@@ -129,6 +129,9 @@ int conv_init(int no_of_layers,
     if (!conv->outputs)
         return 3;
 
+    /* clear the outputs */
+    FLOATCLEAR(conv->outputs, conv->no_of_outputs);
+
     /* allocate array containing training thresholds */
     FLOATALLOC(conv->match_threshold, conv->no_of_layers);
     if (!conv->match_threshold)
