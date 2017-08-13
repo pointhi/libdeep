@@ -138,10 +138,14 @@ float learn_features(float img[],
                     int n1 = ((yy * feature_width) + xx) * img_depth;
                     COUNTDOWN(d, img_depth)
                         feature_score[f] +=
-                        (img[n0+d] - curr_feature[n1+d])*
-                        (img[n0+d] - curr_feature[n1+d]);
+                            (img[n0+d] - curr_feature[n1+d])*
+                            (img[n0+d] - curr_feature[n1+d]);
                 }
             }
+
+            total_match_score +=
+                (float)sqrt(feature_score[f]/
+                            (float)(feature_width*feature_width*img_depth));
         }
 
         /* get the N closest feature indexes based upon match scores */
@@ -207,10 +211,6 @@ float learn_features(float img[],
                 }
             }
         }
-
-        /* calculate the total feature matching score */
-        COUNTDOWN(f, no_of_features)
-            total_match_score += feature_score[f];
     }
 
     return total_match_score/(float)samples;
