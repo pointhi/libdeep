@@ -1,5 +1,5 @@
 /*
- Copyright (C) 2015  Bob Mottram <bob@robotics.uk.to>
+ Copyright (C) 2015-2017  Bob Mottram <bob@freedombone.net>
 
  Redistribution and use in source and binary forms, with or without
  modification, are permitted provided that the following conditions
@@ -34,8 +34,8 @@ static void test_encode_text()
 
     char * text1 = "one";
     char * text2 = "two";
-	char * text1_binary = "111101100111011010100110--------";
-	char * text2_binary = "001011101110111011110110--------";
+    char * text1_binary = "111101100111011010100110--------";
+    char * text2_binary = "001011101110111011110110--------";
     bp_neuron ** inputs;
     int no_of_inputs = CHAR_BITS*8;
     int i, offset = 0, new_offset;
@@ -61,58 +61,58 @@ static void test_encode_text()
                                     max_field_length_chars);
     assert(new_offset == 8*CHAR_BITS);
 
-	/* check that the two encodings were the same */
+    /* check that the two encodings were the same */
     for (i = 0; i < 3*(int)CHAR_BITS; i++) {
-		assert(inputs[i]->value == inputs[i+(4*(int)CHAR_BITS)]->value);
-	}
+        assert(inputs[i]->value == inputs[i+(4*(int)CHAR_BITS)]->value);
+    }
 
-	/* check the expected binary */
+    /* check the expected binary */
     for (i = 0; i < 4*(int)CHAR_BITS; i++) {
-		if (inputs[i]->value < 0.4f) {
-			assert(text1_binary[i] == '0');
-		}
-		if (inputs[i]->value > 0.6f) {
-			assert(text1_binary[i] == '1');
-		}
-		if ((inputs[i]->value > 0.4f) &&
-			(inputs[i]->value < 0.6f)) {
-			assert(text1_binary[i] == '-');
-		}
-	}
+        if (inputs[i]->value < 0.4f) {
+            assert(text1_binary[i] == '0');
+        }
+        if (inputs[i]->value > 0.6f) {
+            assert(text1_binary[i] == '1');
+        }
+        if ((inputs[i]->value > 0.4f) &&
+            (inputs[i]->value < 0.6f)) {
+            assert(text1_binary[i] == '-');
+        }
+    }
 
-	offset = 0;
+    offset = 0;
     new_offset = enc_text_to_binary(text2,
                                     inputs, no_of_inputs,
                                     offset,
                                     max_field_length_chars);
     assert(new_offset == 4*CHAR_BITS);
 
-	/* check the expected binary */
+    /* check the expected binary */
     for (i = 0; i < 3*(int)CHAR_BITS; i++) {
-		if (inputs[i]->value < 0.4f) {
-			assert(text2_binary[i] == '0');
-		}
-		if (inputs[i]->value > 0.6f) {
-			assert(text2_binary[i] == '1');
-		}
-		if ((inputs[i]->value > 0.4f) &&
-			(inputs[i]->value < 0.6f)) {
-			assert(text2_binary[i] == '-');
-		}
-	}
+        if (inputs[i]->value < 0.4f) {
+            assert(text2_binary[i] == '0');
+        }
+        if (inputs[i]->value > 0.6f) {
+            assert(text2_binary[i] == '1');
+        }
+        if ((inputs[i]->value > 0.4f) &&
+            (inputs[i]->value < 0.6f)) {
+            assert(text2_binary[i] == '-');
+        }
+    }
 
-	/*
-	printf("\n");
+    /*
+    printf("\n");
     for (i = 0; i < 3*(int)CHAR_BITS; i++) {
-		if (inputs[i]->value < 0.5f) {
-			printf("0");
-		}
-		else {
-			printf("1");
-		}
-	}
-	printf("\n");
-	*/
+        if (inputs[i]->value < 0.5f) {
+            printf("0");
+        }
+        else {
+            printf("1");
+        }
+    }
+    printf("\n");
+    */
 
     /* free memory */
     for (i = 0; i < no_of_inputs; i++) {
