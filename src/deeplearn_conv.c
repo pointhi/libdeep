@@ -699,3 +699,25 @@ int conv_draw_features(unsigned char img[],
 
     return 0;
 }
+
+/**
+* @brief Set the inputs of the backprop network from the outputs
+*        of a convolutional network
+* @param net Backprop neural net object
+* @param conv Convolutional network instance
+* @returns zero on success
+*/
+int bp_inputs_from_convnet(bp * net, deeplearn_conv * conv)
+{
+    /* check that the number of inputs is the same as the
+       number of convolution network outputs */
+    if(net->NoOfInputs != conv->no_of_outputs)
+        return 1;
+
+    /* set the inputs */
+    /* set the input value within the range 0.25 to 0.75 */
+    COUNTDOWN(i, conv->no_of_outputs)
+        bp_set_input(net, i, 0.25f + (conv->outputs[i]*0.5f/255.0f));
+
+    return 0;
+}

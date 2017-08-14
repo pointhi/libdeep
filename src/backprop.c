@@ -449,11 +449,12 @@ void bp_set_input_text(bp * net, char * text)
 * @param image_height Height of the image in pixels
 * @param tx Top left x coordinate of the patch within the image
 * @param ty Top left y coordinate of the patch within the image
+* @returns zero on success
 */
-void bp_inputs_from_image_patch(bp * net,
-                                unsigned char img[],
-                                int image_width, int image_height,
-                                int tx, int ty)
+int bp_inputs_from_image_patch(bp * net,
+                               unsigned char img[],
+                               int image_width, int image_height,
+                               int tx, int ty)
 {
     int i = 0, idx;
 
@@ -462,7 +463,8 @@ void bp_inputs_from_image_patch(bp * net,
     int patch_size = (int)sqrt(net->NoOfInputs);
 
     /* make sure that the patch fits within the number of inputs */
-    assert(patch_size*patch_size <= net->NoOfInputs);
+    if (patch_size*patch_size > net->NoOfInputs)
+        return 1;
 
     /* set the inputs from the patch */
     FOR(py, ty, ty+patch_size) {
@@ -478,6 +480,8 @@ void bp_inputs_from_image_patch(bp * net,
             i++;
         }
     }
+
+    return 0;
 }
 
 /**
@@ -487,19 +491,23 @@ void bp_inputs_from_image_patch(bp * net,
 * @param img Array storing the image
 * @param image_width Width of the image in pixels
 * @param image_height Height of the image in pixels
+* @returns zero on success
 */
-void bp_inputs_from_image(bp * net,
-                          unsigned char img[],
-                          int image_width, int image_height)
+int bp_inputs_from_image(bp * net,
+                         unsigned char img[],
+                         int image_width, int image_height)
 {
     /* check that the number of inputs is the same as the
        number of pixels */
-    assert(net->NoOfInputs == image_width*image_height);
+    if (net->NoOfInputs != image_width*image_height)
+        return 1;
 
     /* set the inputs */
     /* set the input value within the range 0.25 to 0.75 */
     COUNTDOWN(i, image_width*image_height)
         bp_set_input(net, i, 0.25f + (img[i]*0.5f/255.0f));
+
+    return 0;
 }
 
 /**

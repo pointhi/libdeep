@@ -141,10 +141,10 @@ int deeplearn_compare(deeplearn * learner1,
 int deeplearn_plot_history(deeplearn * learner,
                            char * filename, char * title,
                            int image_width, int image_height);
-void deeplearn_inputs_from_image_patch(deeplearn * learner,
-                                       unsigned char * img,
-                                       int image_width, int image_height,
-                                       int tx, int ty);
+int deeplearn_inputs_from_image_patch(deeplearn * learner,
+                                      unsigned char * img,
+                                      int image_width, int image_height,
+                                      int tx, int ty);
 void deeplearn_inputs_from_image(deeplearn * learner,
                                  unsigned char * img,
                                  int image_width, int image_height);
@@ -158,5 +158,6 @@ void deeplearn_update_continuous(deeplearn * learner);
 int deeplearn_training_last_layer(deeplearn * learner);
 void copy_autocoder_to_hidden_layer(deeplearn * learner, int hidden_layer);
 void deeplearn_pretrain(bp * net, ac * autocoder, int current_layer);
+int deeplearn_inputs_from_convnet(deeplearn * learner, deeplearn_conv * conv);
 
 #endif

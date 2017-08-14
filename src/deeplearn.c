@@ -1047,14 +1047,14 @@ int deeplearn_plot_history(deeplearn * learner,
  * @param tx Top left x coordinate of the patch
  * @param ty Top left y coordinate of the patch
  */
-void deeplearn_inputs_from_image_patch(deeplearn * learner,
-                                       unsigned char * img,
-                                       int image_width, int image_height,
-                                       int tx, int ty)
+int deeplearn_inputs_from_image_patch(deeplearn * learner,
+                                      unsigned char * img,
+                                      int image_width, int image_height,
+                                      int tx, int ty)
 {
-    bp_inputs_from_image_patch(learner->net,
-                               img, image_width, image_height,
-                               tx, ty);
+    return bp_inputs_from_image_patch(learner->net,
+                                      img, image_width, image_height,
+                                      tx, ty);
 }
 
 /**
@@ -1069,6 +1069,17 @@ void deeplearn_inputs_from_image(deeplearn * learner,
                                  int image_width, int image_height)
 {
     bp_inputs_from_image(learner->net, img, image_width, image_height);
+}
+
+/**
+ * @brief Updates the input units from an image
+ * @param learner Deep learner object
+ * @param conv Convolutional network instance
+ * @returns zero on success
+ */
+int deeplearn_inputs_from_convnet(deeplearn * learner, deeplearn_conv * conv)
+{
+    return bp_inputs_from_convnet(learner->net, conv);
 }
 
 /**

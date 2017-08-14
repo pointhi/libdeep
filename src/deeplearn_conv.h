@@ -40,7 +40,6 @@
 #include "encoding.h"
 #include "backprop.h"
 #include "autocoder.h"
-#include "deeplearn.h"
 #include "deeplearn_features.h"
 #include "deeplearn_pooling.h"
 
@@ -126,5 +125,6 @@ void convolve_image_mono(float img[],
                          int feature_width, int no_of_features,
                          float feature[],
                          float layer[], int layer_width);
+int bp_inputs_from_convnet(bp * net, deeplearn_conv * conv);
 
 #endif
