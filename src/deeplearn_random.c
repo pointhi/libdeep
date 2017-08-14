@@ -59,5 +59,6 @@ int rand_num(unsigned int * seed)
 float rand_initial_weight(unsigned int * seed, int no_of_inputs)
 {
     float magnitude = 1.0f / no_of_inputs;
-    return (magnitude*(rand_num(seed)%100000/100000.0f)*(rand_num(seed)%100000/100000.0f)) - (magnitude*0.5f);
+    return (magnitude*(rand_num(seed)%100000/100000.0f)*
+            (rand_num(seed)%100000/100000.0f)) - (magnitude*0.5f);
 }

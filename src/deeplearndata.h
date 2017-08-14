@@ -62,12 +62,16 @@ int deeplearndata_index_meta(
         int* indexed_samples);
 deeplearndata * deeplearndata_get(deeplearn * learner, int index);
 deeplearndata * deeplearndata_get_training(deeplearn * learner, int index);
-deeplearndata * deeplearndata_get_training_labeled(deeplearn * learner, int index);
+deeplearndata * deeplearndata_get_training_labeled(deeplearn * learner,
+                                                   int index);
 deeplearndata * deeplearndata_get_test(deeplearn * learner, int index);
-int deeplearndata_add_training_sample(deeplearn * learner, deeplearndata * sample);
-int deeplearndata_add_labeled_training_sample(deeplearn * learner, deeplearndata * sample);
+int deeplearndata_add_training_sample(deeplearn * learner,
+                                      deeplearndata * sample);
+int deeplearndata_add_labeled_training_sample(deeplearn * learner,
+                                              deeplearndata * sample);
 int deeplearndata_add_test_sample(deeplearn * learner, deeplearndata * sample);
-int deeplearndata_create_datasets(deeplearn * learner, int test_data_percentage);
+int deeplearndata_create_datasets(deeplearn * learner,
+                                  int test_data_percentage);
 int deeplearndata_training(deeplearn * learner);
 float deeplearndata_get_performance(deeplearn * learner);
 int deeplearndata_get_field_length(deeplearndata * data, int field_index);

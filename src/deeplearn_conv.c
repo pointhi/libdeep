@@ -65,16 +65,19 @@ int conv_init(int no_of_layers,
 
     conv->history_plot_interval = 10;
     sprintf(conv->history_plot_filename,"%s","feature_learning.png");
-    sprintf(conv->history_plot_title,"%s","Feature Learning Training History");
+    sprintf(conv->history_plot_title,"%s",
+            "Feature Learning Training History");
 
     COUNTUP(l, no_of_layers) {
         conv->layer[l].width =
-            image_width - ((image_width-final_image_width)*l/no_of_layers);
+            image_width -
+            ((image_width-final_image_width)*l/no_of_layers);
 
         /* After the initial layer, width and height are the same */
         if (l == 0)
             conv->layer[l].height =
-                image_height - ((image_height-final_image_height)*l/no_of_layers);
+                image_height -
+                ((image_height-final_image_height)*l/no_of_layers);
         else
             conv->layer[l].height = conv->layer[l].width;
 
@@ -115,7 +118,8 @@ int conv_init(int no_of_layers,
         COUNTDOWN(r, conv->layer[l].no_of_features*
                   conv->layer[l].feature_width*conv->layer[l].feature_width*
                   conv->layer[l].depth)
-            conv->layer[l].feature[r] = (rand_num(&rand_seed) % 10000)/10000.0f;
+            conv->layer[l].feature[r] =
+                (rand_num(&rand_seed) % 10000)/10000.0f;
     }
 
     conv->outputs_width = final_image_width;
@@ -138,7 +142,8 @@ int conv_init(int no_of_layers,
         return 4;
 
     /* copy threshold values into the array */
-    memcpy((void*)conv->match_threshold, match_threshold,conv->no_of_layers*sizeof(float));
+    memcpy((void*)conv->match_threshold, match_threshold,
+           conv->no_of_layers*sizeof(float));
 
     return 0;
 }
@@ -368,8 +373,10 @@ int conv_load(FILE * fp, deeplearn_conv * conv)
 
     float match_threshold[PREPROCESS_MAX_LAYERS];
     conv_init(conv->no_of_layers,
-              conv->layer[0].width, conv->layer[0].height, conv->layer[0].depth,
-              conv->layer[0].no_of_features, conv->layer[0].feature_width,
+              conv->layer[0].width, conv->layer[0].height,
+              conv->layer[0].depth,
+              conv->layer[0].no_of_features,
+              conv->layer[0].feature_width,
               conv->outputs_width, conv->outputs_width,
               &match_threshold[0], conv);
 
@@ -543,7 +550,8 @@ void conv_feed_forward(unsigned char * img,
                        deeplearn_conv * conv, int layer)
 {
     /* convert the input image to floats */
-    COUNTDOWN(i, conv->layer[0].width*conv->layer[0].height*conv->layer[0].depth)
+    COUNTDOWN(i,
+              conv->layer[0].width*conv->layer[0].height*conv->layer[0].depth)
         conv->layer[0].layer[i] = (float)img[i]/255.0f;
 
     COUNTUP(l, layer) {

@@ -124,7 +124,8 @@ void autocoder_free(ac * autocoder)
  * @param encoded Array to store the encoded values
  * @param use_dropouts If non-zero then allow dropouts in the returned results
  */
-void autocoder_encode(ac * autocoder, float * encoded, unsigned char use_dropouts)
+void autocoder_encode(ac * autocoder, float * encoded,
+                      unsigned char use_dropouts)
 {
     COUNTDOWN(h, autocoder->NoOfHiddens) {
         if (use_dropouts != 0) {
@@ -148,7 +149,8 @@ void autocoder_encode(ac * autocoder, float * encoded, unsigned char use_dropout
         /* add some random noise */
         if (autocoder->noise > 0)
             adder = ((1.0f - autocoder->noise) * adder) +
-                (autocoder->noise * ((rand_num(&autocoder->random_seed)%10000)/10000.0f));
+                (autocoder->noise *
+                 ((rand_num(&autocoder->random_seed)%10000)/10000.0f));
 
         /* activation function */
         encoded[h] = AF(adder);
@@ -181,7 +183,8 @@ void autocoder_decode(ac * autocoder, float * decoded)
         /* add some random noise */
         if (autocoder->noise > 0)
             adder = ((1.0f - autocoder->noise) * adder) +
-                (autocoder->noise * ((rand_num(&autocoder->random_seed)%10000)/10000.0f));
+                (autocoder->noise *
+                 ((rand_num(&autocoder->random_seed)%10000)/10000.0f));
 
         /* activation function */
         decoded[i] = AF(adder);
@@ -430,7 +433,8 @@ void autocoder_set_input(ac * autocoder, int index, float value)
  */
 void autocoder_set_inputs(ac * autocoder, float inputs[])
 {
-    memcpy((void*)autocoder->inputs, inputs, autocoder->NoOfInputs*sizeof(float));
+    memcpy((void*)autocoder->inputs, inputs,
+           autocoder->NoOfInputs*sizeof(float));
 }
 
 /**
@@ -608,7 +612,8 @@ int autocoder_plot_weight_matrix(ac * net,
         return -1;
 
     /* clear the image with a white background */
-    memset((void*)img, '\255', image_width*image_height*3*sizeof(unsigned char));
+    memset((void*)img, '\255',
+           image_width*image_height*3*sizeof(unsigned char));
 
     /* get the weight range */
     COUNTDOWN(h, net->NoOfHiddens) {
@@ -635,9 +640,13 @@ int autocoder_plot_weight_matrix(ac * net,
                 int n = (y*image_width + x)*3;
                 w = net->weights[h*net->NoOfInputs + i];
                 img[n] = (unsigned char)((w - min_w)*255/(max_w - min_w));
-                img[n+1] = (unsigned char)((net->bias[h]-min_bias)*255/(max_bias - min_bias));
+                img[n+1] =
+                    (unsigned char)((net->bias[h]-min_bias)*255/
+                                    (max_bias - min_bias));
                 if (max_hidden > min_hidden)
-                    img[n+2] = (unsigned char)((net->hiddens[h]-min_hidden)*255/(max_hidden - min_hidden));
+                    img[n+2] =
+                        (unsigned char)((net->hiddens[h]-min_hidden)*255/
+                                        (max_hidden - min_hidden));
                 else
                     img[n+2] = (unsigned char)255;
             }
@@ -646,7 +655,8 @@ int autocoder_plot_weight_matrix(ac * net,
 
     /* write the image to file */
     deeplearn_write_png_file(filename,
-                             (unsigned int)image_width, (unsigned int)image_height,
+                             (unsigned int)image_width,
+                             (unsigned int)image_height,
                              24, img);
 
     /* free the image memory */

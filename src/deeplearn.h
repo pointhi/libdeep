@@ -122,8 +122,10 @@ void deeplearn_update(deeplearn * learner);
 void deeplearn_free(deeplearn * learner);
 void deeplearn_set_input_text(deeplearn * learner, char * text);
 void deeplearn_set_input(deeplearn * learner, int index, float value);
-int deeplearn_set_input_field(deeplearn * learner, int fieldindex, float value);
-int deeplearn_set_input_field_text(deeplearn * learner, int fieldindex, char * text);
+int deeplearn_set_input_field(deeplearn * learner, int fieldindex,
+                              float value);
+int deeplearn_set_input_field_text(deeplearn * learner, int fieldindex,
+                                   char * text);
 void deeplearn_set_inputs(deeplearn * learner, deeplearndata * sample);
 void deeplearn_set_output(deeplearn * learner, int index, float value);
 void deeplearn_set_outputs(deeplearn * learner, deeplearndata * sample);
@@ -150,7 +152,8 @@ void deeplearn_set_learning_rate(deeplearn * learner, float rate);
 void deeplearn_set_dropouts(deeplearn * learner, float dropout_percent);
 int deeplearn_export(deeplearn * learner, char * filename);
 float deeplearn_get_error_threshold(deeplearn * learner, int index);
-void deeplearn_set_error_threshold(deeplearn * learner, int index, float value);
+void deeplearn_set_error_threshold(deeplearn * learner, int index,
+                                   float value);
 void deeplearn_update_continuous(deeplearn * learner);
 int deeplearn_training_last_layer(deeplearn * learner);
 void copy_autocoder_to_hidden_layer(deeplearn * learner, int hidden_layer);

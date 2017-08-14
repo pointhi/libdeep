@@ -59,8 +59,10 @@ struct bp_n {
 typedef struct bp_n bp_neuron;
 
 #define NEURONALLOC(n) n = (bp_neuron*)malloc(sizeof(bp_neuron));
-#define NEURON_ARRAY_ALLOC(n, size) n = (bp_neuron**)malloc((size)*sizeof(bp_neuron*));
-#define NEURON_LAYERS_ALLOC(n, layers) n = (bp_neuron***)malloc((layers)*sizeof(bp_neuron**));
+#define NEURON_ARRAY_ALLOC(n, size) \
+    n = (bp_neuron**)malloc((size)*sizeof(bp_neuron*));
+#define NEURON_LAYERS_ALLOC(n, layers) \
+    n = (bp_neuron***)malloc((layers)*sizeof(bp_neuron**));
 
 int bp_neuron_init(bp_neuron * n,
                    int no_of_inputs,

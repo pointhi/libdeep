@@ -130,7 +130,8 @@ int deeplearndata_add(deeplearndata ** datalist,
 * @param samples The size of the data list
 * @param indexed_list Pointer to the indexed data list
 * @param indexed_samples Pointer to the size of the indexed data list
-* @returns 0 if data indexed successfully, 1 if samples does not match list size
+* @returns 0 if data indexed successfully,
+*          1 if samples does not match list size
 */
 int deeplearndata_index_data(
         deeplearndata * list,
@@ -155,7 +156,8 @@ int deeplearndata_index_data(
 * @param samples The size of the metadata list
 * @param indexed_list Pointer to the indexed metadata list
 * @param indexed_samples Pointer to the size of the indexed metadata list
-* @returns 0 if data indexed successfully, 1 if samples does not match list size
+* @returns 0 if data indexed successfully,
+*          1 if samples does not match list size
 */
 int deeplearndata_index_meta(
         deeplearndata_meta * list,
@@ -163,7 +165,8 @@ int deeplearndata_index_meta(
         deeplearndata_meta *** indexed_list,
         int* indexed_samples)
 {
-    *indexed_list = (deeplearndata_meta**)malloc(samples*sizeof(deeplearndata_meta*));
+    *indexed_list =
+        (deeplearndata_meta**)malloc(samples*sizeof(deeplearndata_meta*));
     deeplearndata_meta* data_head = list;
     *indexed_samples = 0;
     for(int i = 0; i < samples && data_head != 0; ++i) {
@@ -196,9 +199,11 @@ deeplearndata * deeplearndata_get_training(deeplearn * learner, int index)
 * @param learner Deep learner object
 * @returns deeplearndata object
 */
-deeplearndata * deeplearndata_get_training_labeled(deeplearn * learner, int index)
+deeplearndata * deeplearndata_get_training_labeled(deeplearn * learner,
+                                                   int index)
 {
-    if ((index < 0) || (index >= learner->indexed_training_data_labeled_samples))
+    if ((index < 0) ||
+        (index >= learner->indexed_training_data_labeled_samples))
         return 0;
 
     deeplearndata_meta * meta = learner->indexed_training_data_labeled[index];
@@ -274,11 +279,13 @@ static void deeplearndata_free_datasets(deeplearn * learner)
     learner->indexed_training_data_samples = 0;
 
     /* free labeled training samples */
-    deeplearndata_meta * training_sample_labeled = learner->training_data_labeled;
+    deeplearndata_meta * training_sample_labeled =
+        learner->training_data_labeled;
     deeplearndata_meta * prev_training_sample_labeled;
     while (training_sample_labeled != 0) {
         prev_training_sample_labeled = training_sample_labeled;
-        training_sample_labeled = (deeplearndata_meta *)training_sample_labeled->next;
+        training_sample_labeled =
+            (deeplearndata_meta *)training_sample_labeled->next;
         free(prev_training_sample_labeled);
     }
     learner->training_data_labeled = 0;
@@ -308,7 +315,8 @@ static void deeplearndata_free_datasets(deeplearn * learner)
 * @param sample The data sample to be added
 * @returns zero on success
 */
-int deeplearndata_add_training_sample(deeplearn * learner, deeplearndata * sample)
+int deeplearndata_add_training_sample(deeplearn * learner,
+                                      deeplearndata * sample)
 {
     deeplearndata_meta * data;
 
@@ -337,7 +345,8 @@ int deeplearndata_add_training_sample(deeplearn * learner, deeplearndata * sampl
 * @param sample The data sample to be added
 * @returns zero on success
 */
-int deeplearndata_add_labeled_training_sample(deeplearn * learner, deeplearndata * sample)
+int deeplearndata_add_labeled_training_sample(deeplearn * learner,
+                                              deeplearndata * sample)
 {
     deeplearndata_meta * data;
 
@@ -353,8 +362,10 @@ int deeplearndata_add_labeled_training_sample(deeplearn * learner, deeplearndata
     data->next = 0;
 
     if (learner->training_data_labeled) {
-        learner->training_data_labeled->prev = (struct deeplearndata_meta *)data;
-        data->next = (struct deeplearndata_meta *)learner->training_data_labeled;
+        learner->training_data_labeled->prev =
+            (struct deeplearndata_meta *)data;
+        data->next =
+            (struct deeplearndata_meta *)learner->training_data_labeled;
     }
 
     learner->training_data_labeled = data;
@@ -399,9 +410,11 @@ int deeplearndata_add_test_sample(deeplearn * learner, deeplearndata * sample)
 * @param test_data_percentage The percentage of samples to be used for testing
 * @returns zero on success
 */
-int deeplearndata_create_datasets(deeplearn * learner, int test_data_percentage)
+int deeplearndata_create_datasets(deeplearn * learner,
+                                  int test_data_percentage)
 {
-    int training_samples = learner->data_samples * (100-test_data_percentage) / 100;
+    int training_samples =
+        learner->data_samples * (100-test_data_percentage) / 100;
     int index, retval;
     deeplearndata * sample;
 
@@ -437,8 +450,14 @@ int deeplearndata_create_datasets(deeplearn * learner, int test_data_percentage)
     }
 
     /* create the indexed array for fast access */
-    deeplearndata_index_meta(learner->training_data, learner->training_data_samples, &learner->indexed_training_data, &learner->indexed_training_data_samples);
-    deeplearndata_index_meta(learner->training_data_labeled, learner->training_data_labeled_samples, &learner->indexed_training_data_labeled, &learner->indexed_training_data_labeled_samples);
+    deeplearndata_index_meta(learner->training_data,
+                             learner->training_data_samples,
+                             &learner->indexed_training_data,
+                             &learner->indexed_training_data_samples);
+    deeplearndata_index_meta(learner->training_data_labeled,
+                             learner->training_data_labeled_samples,
+                             &learner->indexed_training_data_labeled,
+                             &learner->indexed_training_data_labeled_samples);
 
     /* create test samples */
     sample = learner->data;
@@ -461,7 +480,9 @@ int deeplearndata_create_datasets(deeplearn * learner, int test_data_percentage)
     }
 
     /* create the indexed array for fast access */
-    deeplearndata_index_meta(learner->test_data, learner->test_data_samples, &learner->indexed_test_data, &learner->indexed_test_data_samples);
+    deeplearndata_index_meta(learner->test_data, learner->test_data_samples,
+                             &learner->indexed_test_data,
+                             &learner->indexed_test_data_samples);
 
     return 0;
 }
@@ -586,14 +607,17 @@ int deeplearndata_read_csv(char * filename,
                                     }
                                 }
                             }
-                            if ((j == no_of_outputs) && (input_index < DEEPLEARN_MAX_CSV_INPUTS-1)) {
+                            if ((j == no_of_outputs) &&
+                                (input_index < DEEPLEARN_MAX_CSV_INPUTS-1)) {
                                 inputs_text[input_index] = 0;
                                 if (is_text != 0) {
                                     /* allocate some memory for the string */
                                     inputs_text[input_index] =
-                                        (char*)malloc((strlen(valuestr)+1)*sizeof(char));
+                                        (char*)malloc((strlen(valuestr)+1)*
+                                                      sizeof(char));
                                     /* copy it */
-                                    strcpy(inputs_text[input_index],(char*)valuestr);
+                                    strcpy(inputs_text[input_index],
+                                           (char*)valuestr);
                                 }
                                 inputs[input_index++] = value;
                             }
@@ -721,7 +745,9 @@ int deeplearndata_training(deeplearn * learner)
     if ((learner->net->HiddenLayers > 1) &&
         (learner->current_hidden_layer < learner->net->HiddenLayers)) {
         /* index number of a random training sample */
-        int index = rand_num(&learner->net->random_seed)%learner->training_data_samples;
+        int index =
+            rand_num(&learner->net->random_seed)%
+            learner->training_data_samples;
         /* get the sample */
         deeplearndata * sample = deeplearndata_get_training(learner, index);
         deeplearn_set_inputs(learner, sample);
@@ -731,9 +757,11 @@ int deeplearndata_training(deeplearn * learner)
 
     if (learner->training_complete == 0) {
         /* index number of a random training sample */
-        int index = rand_num(&learner->net->random_seed)%learner->training_data_labeled_samples;
+        int index = rand_num(&learner->net->random_seed)%
+            learner->training_data_labeled_samples;
         /* get the sample */
-        deeplearndata * sample = deeplearndata_get_training_labeled(learner, index);
+        deeplearndata * sample =
+            deeplearndata_get_training_labeled(learner, index);
         deeplearn_set_inputs(learner, sample);
         deeplearn_set_outputs(learner, sample);
         deeplearn_update(learner);
@@ -765,7 +793,8 @@ float deeplearndata_get_performance(deeplearn * learner)
 
         COUNTUP(i, learner->net->NoOfOutputs) {
             if (sample->outputs[i] != 0) {
-                error_percent = (sample->outputs[i] - outputs[i]) / sample->outputs[i];
+                error_percent =
+                    (sample->outputs[i] - outputs[i]) / sample->outputs[i];
                 total_error += error_percent*error_percent;
                 hits++;
             }

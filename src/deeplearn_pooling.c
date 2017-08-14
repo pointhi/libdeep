@@ -116,9 +116,12 @@ int unpooling_update(int depth,
     COUNTDOWN(y_original, original_layer_down) {
         int y_pooled = y_original * pooled_layer_down / original_layer_down;
         COUNTDOWN(x_original, original_layer_across) {
-            int x_pooled = x_original * pooled_layer_across / original_layer_across;
-            int n_pooled = (y_pooled*pooled_layer_across + x_pooled)*depth;
-            int n_original = (y_original*original_layer_across + x_original)*depth;
+            int x_pooled =
+                x_original * pooled_layer_across / original_layer_across;
+            int n_pooled =
+                (y_pooled*pooled_layer_across + x_pooled)*depth;
+            int n_original =
+                (y_original*original_layer_across + x_original)*depth;
             COUNTDOWN(d, depth)
                 original_layer[n_original+d] = pooled_layer[n_pooled+d];
         }

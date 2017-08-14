@@ -425,7 +425,8 @@ void bp_normalise_inputs(bp * net)
     float range = max - min;
     if (range > 0.00001f) {
         COUNTDOWN(i, net->NoOfInputs)
-            net->inputs[i]->value = 0.25f + ((net->inputs[i]->value-min)*0.5f/range);
+            net->inputs[i]->value =
+                0.25f + ((net->inputs[i]->value-min)*0.5f/range);
     }
 }
 
@@ -525,12 +526,14 @@ int bp_plot_weights(bp * net,
     unsigned char * img;
 
     /* allocate memory for the image */
-    img = (unsigned char*)malloc(image_width*image_height*3*sizeof(unsigned char));
+    img = (unsigned char*)malloc(image_width*image_height*3*
+                                 sizeof(unsigned char));
     if (!img)
         return -1;
 
     /* clear the image with a white background */
-    memset((void*)img, '\255', image_width*image_height*3*sizeof(unsigned char));
+    memset((void*)img, '\255',
+           image_width*image_height*3*sizeof(unsigned char));
 
     /* dimension of the neurons matrix for each layer */
     neurons_x = (int)sqrt(net->NoOfHiddens);
@@ -598,8 +601,10 @@ int bp_plot_weights(bp * net,
         COUNTUP(y, max_unit) {
             if (neurons[y]->bias < min_bias) min_bias = neurons[y]->bias;
             if (neurons[y]->bias > max_bias) max_bias = neurons[y]->bias;
-            if (neurons[y]->value < min_activation) min_activation = neurons[y]->value;
-            if (neurons[y]->value > max_activation) max_activation = neurons[y]->value;
+            if (neurons[y]->value < min_activation)
+                min_activation = neurons[y]->value;
+            if (neurons[y]->value > max_activation)
+                max_activation = neurons[y]->value;
         }
 
         /* update ranges */
@@ -633,7 +638,8 @@ int bp_plot_weights(bp * net,
                             img[n+1] =
                                 (int)((curr_neuron->bias - min_bias)*255/db);
                             img[n+2] =
-                                (int)((curr_neuron->value - min_activation)*255/da);
+                                (int)((curr_neuron->value - min_activation)*
+                                      255/da);
                         }
                         else {
                             img[n] =
@@ -678,7 +684,8 @@ int bp_plot_weights(bp * net,
 
     /* write the image to file */
     deeplearn_write_png_file(filename,
-                             (unsigned int)image_width, (unsigned int)image_height,
+                             (unsigned int)image_width,
+                             (unsigned int)image_height,
                              24, img);
 
     /* free the image memory */
@@ -992,11 +999,11 @@ void bp_get_classification_from_filename(char * filename,
 }
 
 /**
-* @brief Takes a set of classification text descriptions (labels) for each instance
-*        within a training or test set and produces an array of classification
-*        numbers corresponding to the text descriptions.
-*        It's easier for the system to deal with classification numbers
-*        rather than text descriptions.
+* @brief Takes a set of classification text descriptions (labels) for
+*        each instance within a training or test set and produces an
+*        array of classification numbers corresponding to the text
+*        descriptions. It's easier for the system to deal with
+*        classification numbers rather than text descriptions.
 * @param no_of_instances The number of instances in the training or test set
 * @param instance_classification Text Description for each instance
 * @param numbers Array of numbers corresponding to each instance

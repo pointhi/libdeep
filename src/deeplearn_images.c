@@ -78,7 +78,8 @@ int deeplearn_read_png_file(char * filename,
 
     error = lodepng_decode24_file(buffer, &w, &h, filename);
     if (error) {
-        printf("read_png_file: error %u: %s\n", error, lodepng_error_text(error));
+        printf("read_png_file: error %u: %s\n", error,
+               lodepng_error_text(error));
         return -1;
     }
 
@@ -125,7 +126,8 @@ int deeplearn_write_png_file(char * filename,
     }
 
     if (error) {
-        printf("write_png_file: error %u: %s\n", error, lodepng_error_text(error));
+        printf("write_png_file: error %u: %s\n", error,
+               lodepng_error_text(error));
         return -1;
     }
     return 0;
@@ -239,7 +241,7 @@ void deeplearn_downsample_colour(unsigned char img[],
  *        classification descriptions from the filenames and
  *        classification numbers
  * @param images_directory The directory to search for images
- * @param images Array which will be used to store the images (1 byte per pixel)
+ * @param images Array which will be used to store the images (1 byte/pixel)
  * @param classifications Description of each image, taken from the filename
  * @param classification_number Class number of each image
  * @param width Standardised width of the images in pixels
@@ -306,8 +308,10 @@ int deeplearn_load_training_images(char * images_directory,
                         downsampled =
                             (unsigned char*)malloc(width*height*
                                                    sizeof(unsigned char));
-                        deeplearn_downsample_colour_to_mono(img, (int)im_width, (int)im_height,
-                                                            downsampled, width, height);
+                        deeplearn_downsample_colour_to_mono(img, (int)im_width,
+                                                            (int)im_height,
+                                                            downsampled,
+                                                            width, height);
 
                         (*images)[no_of_images] = downsampled;
 

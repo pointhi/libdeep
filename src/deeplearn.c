@@ -432,11 +432,13 @@ void deeplearn_free(deeplearn * learner)
     }
 
     /* free labeled training samples */
-    deeplearndata_meta * training_sample_labeled = learner->training_data_labeled;
+    deeplearndata_meta * training_sample_labeled =
+        learner->training_data_labeled;
     deeplearndata_meta * prev_training_sample_labeled;
     while (training_sample_labeled != 0) {
         prev_training_sample_labeled = training_sample_labeled;
-        training_sample_labeled = (deeplearndata_meta *)training_sample_labeled->next;
+        training_sample_labeled =
+            (deeplearndata_meta *)training_sample_labeled->next;
         free(prev_training_sample_labeled);
     }
 
@@ -569,7 +571,8 @@ int deeplearn_set_input_field(deeplearn * learner, int fieldindex, float value)
  * @param text Text value for the field
  * @returns zero on success
  */
-int deeplearn_set_input_field_text(deeplearn * learner, int fieldindex, char * text)
+int deeplearn_set_input_field_text(deeplearn * learner, int fieldindex,
+                                   char * text)
 {
     int pos=0;
 
@@ -623,9 +626,11 @@ void deeplearn_set_outputs(deeplearn * learner, deeplearndata * sample)
 {
     COUNTDOWN(i, learner->net->NoOfOutputs) {
         float value = sample->outputs[i];
-        float range = learner->output_range_max[i] - learner->output_range_min[i];
+        float range =
+            learner->output_range_max[i] - learner->output_range_min[i];
         if (range > 0) {
-            float normalised = (((value - learner->output_range_min[i])/range)*0.5) + 0.25;
+            float normalised =
+                (((value - learner->output_range_min[i])/range)*0.5) + 0.25;
             deeplearn_set_output(learner, i, normalised);
         }
     }
@@ -640,7 +645,8 @@ void deeplearn_get_outputs(deeplearn * learner, float * outputs)
 {
     COUNTDOWN(i, learner->net->NoOfOutputs) {
         float value = deeplearn_get_output(learner, i);
-        float range = learner->output_range_max[i] - learner->output_range_min[i];
+        float range =
+            learner->output_range_max[i] - learner->output_range_min[i];
         if (range > 0)
             outputs[i] =
                 (((value - 0.25f)/0.5f)*range) + learner->output_range_min[i];
@@ -736,16 +742,20 @@ int deeplearn_save(FILE * fp, deeplearn * learner)
     }
 
     /* save ranges */
-    if (FLOATWRITEARRAY(learner->input_range_min, learner->net->NoOfInputs) == 0)
+    if (FLOATWRITEARRAY(learner->input_range_min,
+                        learner->net->NoOfInputs) == 0)
         return -10;
 
-    if (FLOATWRITEARRAY(learner->input_range_max, learner->net->NoOfInputs) == 0)
+    if (FLOATWRITEARRAY(learner->input_range_max,
+                        learner->net->NoOfInputs) == 0)
         return -11;
 
-    if (FLOATWRITEARRAY(learner->output_range_min, learner->net->NoOfOutputs) == 0)
+    if (FLOATWRITEARRAY(learner->output_range_min,
+                        learner->net->NoOfOutputs) == 0)
         return -12;
 
-    if (FLOATWRITEARRAY(learner->output_range_max, learner->net->NoOfOutputs) == 0)
+    if (FLOATWRITEARRAY(learner->output_range_max,
+                        learner->net->NoOfOutputs) == 0)
         return -13;
 
     /* save the history */
@@ -802,8 +812,10 @@ int deeplearn_load(FILE * fp, deeplearn * learner,
 
     learner->field_length = 0;
     if (learner->no_of_input_fields > 0) {
-        learner->field_length = (int*)malloc(learner->no_of_input_fields*sizeof(int));
-        if (INTREADARRAY(learner->field_length, learner->no_of_input_fields) == 0)
+        learner->field_length =
+            (int*)malloc(learner->no_of_input_fields*sizeof(int));
+        if (INTREADARRAY(learner->field_length,
+                         learner->no_of_input_fields) == 0)
             return -6;
     }
 
@@ -845,16 +857,20 @@ int deeplearn_load(FILE * fp, deeplearn * learner,
     if (!learner->output_range_max)
         return -18;
 
-    if (FLOATREADARRAY(learner->input_range_min, learner->net->NoOfInputs) == 0)
+    if (FLOATREADARRAY(learner->input_range_min,
+                       learner->net->NoOfInputs) == 0)
         return -19;
 
-    if (FLOATREADARRAY(learner->input_range_max, learner->net->NoOfInputs) == 0)
+    if (FLOATREADARRAY(learner->input_range_max,
+                       learner->net->NoOfInputs) == 0)
         return -20;
 
-    if (FLOATREADARRAY(learner->output_range_min, learner->net->NoOfOutputs) == 0)
+    if (FLOATREADARRAY(learner->output_range_min,
+                       learner->net->NoOfOutputs) == 0)
         return -21;
 
-    if (FLOATREADARRAY(learner->output_range_max, learner->net->NoOfOutputs) == 0)
+    if (FLOATREADARRAY(learner->output_range_max,
+                       learner->net->NoOfOutputs) == 0)
         return -22;
 
     /* load the history */
@@ -1088,7 +1104,8 @@ void deeplearn_set_dropouts(deeplearn * learner, float dropout_percent)
  * @param filename The C source file to be produced
  * @returns zero on success
  */
-static int deeplearn_export_c_base(deeplearn * learner, int export_type, char * filename)
+static int deeplearn_export_c_base(deeplearn * learner, int export_type,
+                                   char * filename)
 {
     FILE * fp;
     int no_of_weights;
@@ -1110,9 +1127,12 @@ static int deeplearn_export_c_base(deeplearn * learner, int export_type, char * 
 #if ACTIVATION_FUNCTION == AF_SIGMOID
     fprintf(fp,"%s\n\n", "#define AF(adder) (1.0f / (1.0f + exp(-(adder))))");
 #elif ACTIVATION_FUNCTION == AF_TANH
-    fprintf(fp,"%s\n\n", "#define AF(adder) ((((2.0f / (1.0f + exp(-(2*adder)))) - 1.0f)*0.5f)+0.5f)");
+    fprintf(fp,"%s\n\n", "#define AF(adder) " \
+            "((((2.0f / (1.0f + exp(-(2*adder)))) - 1.0f)*0.5f)+0.5f)");
 #elif ACTIVATION_FUNCTION == AF_LINEAR
-    fprintf(fp,"%s\n\n", "#define AF(adder) ((adder) < 1.0f ? ((adder) > -1.0f ? (((adder)*0.5f)+0.5f) : 0.0f) : 1.0f)");
+    fprintf(fp,"%s\n\n", "#define AF(adder) " \
+            "((adder) < 1.0f ? ((adder) > -1.0f ? " \
+            "(((adder)*0.5f)+0.5f) : 0.0f) : 1.0f)");
 #endif
 
     if (learner->no_of_input_fields > 0)
@@ -1214,11 +1234,13 @@ static int deeplearn_export_c_base(deeplearn * learner, int export_type, char * 
     fprintf(fp, "%s",
             "float output_layer_weights[] = {\n  ");
     COUNTUP(i, learner->net->NoOfOutputs) {
-        COUNTUP(j, bp_hiddens_in_layer(learner->net, learner->net->HiddenLayers-1)) {
+        COUNTUP(j, bp_hiddens_in_layer(learner->net,
+                                       learner->net->HiddenLayers-1)) {
             fprintf(fp, "%.10f",
                     learner->net->outputs[i]->weights[j]);
             if (!((i == learner->net->NoOfOutputs-1) &&
-                  (j == bp_hiddens_in_layer(learner->net, learner->net->HiddenLayers-1)-1)))
+                  (j == bp_hiddens_in_layer(learner->net,
+                                            learner->net->HiddenLayers-1)-1)))
                 fprintf(fp, ",");
         }
     }
@@ -1243,13 +1265,18 @@ static int deeplearn_export_c_base(deeplearn * learner, int export_type, char * 
     if (learner->no_of_input_fields > 0) {
         fprintf(fp, "%s", "/* Encode some text into the input units */\n");
         fprintf(fp, "%s", "void encode_text(char * text,\n");
-        fprintf(fp, "%s", "                 float * inputs, int no_of_inputs,\n");
-        fprintf(fp, "%s", "                 int offset, int max_field_length_chars)\n");
+        fprintf(fp, "%s",
+                "                 float * inputs, int no_of_inputs,\n");
+        fprintf(fp, "%s",
+                "                 int offset, int max_field_length_chars)\n");
 
-        fprintf(fp, "%s", "{\n  int pos = offset, i, bit, max_chars = strlen(text);\n\n");
+        fprintf(fp, "%s",
+                "{\n  int pos = offset, i, bit, max_chars = strlen(text);\n\n");
 
-        fprintf(fp, "  if (max_chars > (no_of_inputs-offset)/%d) {\n", (int)CHAR_BITS);
-        fprintf(fp, "    max_chars = ((no_of_inputs-offset)/%d);\n", (int)CHAR_BITS);
+        fprintf(fp, "  if (max_chars > (no_of_inputs-offset)/%d) {\n",
+                (int)CHAR_BITS);
+        fprintf(fp, "    max_chars = ((no_of_inputs-offset)/%d);\n",
+                (int)CHAR_BITS);
         fprintf(fp, "%s", "  }\n");
         fprintf(fp, "%s", "  if (max_chars > max_field_length_chars) {\n");
         fprintf(fp, "%s", "    max_chars = max_field_length_chars;\n");
@@ -1258,7 +1285,8 @@ static int deeplearn_export_c_base(deeplearn * learner, int export_type, char * 
         fprintf(fp, "%s", "  /* for each character in the string */\n");
         fprintf(fp, "%s", "  for (i = 0; i < max_chars; i++) {\n");
         fprintf(fp, "%s", "    /* set the bits for this character */\n");
-        fprintf(fp, "    for (bit = 0; bit < %d; bit++, pos++) {\n", (int)CHAR_BITS);
+        fprintf(fp, "    for (bit = 0; bit < %d; bit++, pos++) {\n",
+                (int)CHAR_BITS);
         fprintf(fp, "%s", "      if (text[i] & (1<<bit)) {\n");
         fprintf(fp, "%s", "        inputs[pos] = 0.75f;\n");
         fprintf(fp, "%s", "      }\n");
@@ -1267,9 +1295,11 @@ static int deeplearn_export_c_base(deeplearn * learner, int export_type, char * 
         fprintf(fp, "%s", "      }\n");
         fprintf(fp, "%s", "    }\n");
         fprintf(fp, "%s", "  }\n");
-        fprintf(fp, "%s", "  /* set the remaining inputs within the field to neutral */\n");
+        fprintf(fp, "%s",
+                "  /* set the remaining inputs within the field to neutral */\n");
         fprintf(fp, "%s", "  while (i < max_field_length_chars) {\n");
-        fprintf(fp,       "    for (bit = 0; bit < %d; bit++) {\n", (int)CHAR_BITS);
+        fprintf(fp,       "    for (bit = 0; bit < %d; bit++) {\n",
+                (int)CHAR_BITS);
         fprintf(fp, "%s", "      if (pos >= no_of_inputs) {\n");
         fprintf(fp, "%s", "        i = max_field_length_chars;\n");
         fprintf(fp, "%s", "        break;\n");
@@ -1302,10 +1332,13 @@ static int deeplearn_export_c_base(deeplearn * learner, int export_type, char * 
 
     if (export_type == EXPORT_C99) {
         if (learner->no_of_input_fields == 0)
-            fprintf(fp, "  if (argc < %d) return -1;\n\n", learner->net->NoOfInputs);
+            fprintf(fp, "  if (argc < %d) return -1;\n\n",
+                    learner->net->NoOfInputs);
         else
-            fprintf(fp, "  if (argc < %d) return -1;\n\n", learner->no_of_input_fields);
-        fprintf(fp, "%s", "  /* Obtain input values from command arguments */\n");
+            fprintf(fp, "  if (argc < %d) return -1;\n\n",
+                    learner->no_of_input_fields);
+        fprintf(fp, "%s",
+                "  /* Obtain input values from command arguments */\n");
         fprintf(fp, "%s", "  for (i = 1; i < argc; i++) {\n");
         fprintf(fp, "%s", "    if (i > no_of_inputs) return -2;\n");
         fprintf(fp, "%s", "    inputs[i-1] = atof(argv[i]);\n");
@@ -1319,31 +1352,48 @@ static int deeplearn_export_c_base(deeplearn * learner, int export_type, char * 
     }
 
     if (learner->no_of_input_fields == 0) {
-        fprintf(fp, "%s", "  /* Normalise inputs into a 0.25 - 0.75 range */\n");
+        fprintf(fp, "%s",
+                "  /* Normalise inputs into a 0.25 - 0.75 range */\n");
         fprintf(fp, "%s", "  for (i = 0; i < no_of_inputs; i++) {\n");
-        fprintf(fp, "%s", "    network_inputs[i] = 0.25f + ((inputs[i] - input_range_min[i])*0.5f/(input_range_max[i] - input_range_min[i]));\n");
-        fprintf(fp, "%s", "    if (network_inputs[i] < 0.25f) network_inputs[i] = 0.25f;\n");
-        fprintf(fp, "%s", "    if (network_inputs[i] > 0.75f) network_inputs[i] = 0.75f;\n");
+        fprintf(fp, "%s", "    network_inputs[i] = 0.25f + ((inputs[i] - " \
+                "input_range_min[i])*0.5f/(input_range_max[i] - " \
+                "input_range_min[i]));\n");
+        fprintf(fp, "%s",
+                "    if (network_inputs[i] < 0.25f) " \
+                "network_inputs[i] = 0.25f;\n");
+        fprintf(fp, "%s",
+                "    if (network_inputs[i] > 0.75f) " \
+                "network_inputs[i] = 0.75f;\n");
         fprintf(fp, "%s", "  }\n\n");
     }
     else {
         fprintf(fp, "%s", "  pos = 0;\n");
         fprintf(fp, "%s", "  for (i = 0; i < no_of_input_fields; i++) {\n");
         fprintf(fp, "%s", "    if (field_length[i] == 0) {\n");
-        fprintf(fp, "%s", "      /* Normalise numeric inputs into a 0.25 - 0.75 range */\n");
-        fprintf(fp, "%s", "      network_inputs[pos] = 0.25f + ((inputs[i] - input_range_min[i])*0.5f/(input_range_max[i] - input_range_min[i]));\n");
-        fprintf(fp, "%s", "      if (network_inputs[pos] < 0.25f) network_inputs[pos] = 0.25f;\n");
-        fprintf(fp, "%s", "      if (network_inputs[pos] > 0.75f) network_inputs[pos] = 0.75f;\n");
+        fprintf(fp, "%s",
+                "      /* Normalise numeric inputs into a " \
+                "0.25 - 0.75 range */\n");
+        fprintf(fp, "%s", "      network_inputs[pos] = 0.25f + " \
+                "((inputs[i] - input_range_min[i])*0.5f/" \
+                "(input_range_max[i] - input_range_min[i]));\n");
+        fprintf(fp, "%s",
+                "      if (network_inputs[pos] < 0.25f) " \
+                "network_inputs[pos] = 0.25f;\n");
+        fprintf(fp, "%s", "      if (network_inputs[pos] > 0.75f) " \
+                "network_inputs[pos] = 0.75f;\n");
         fprintf(fp, "%s", "      pos++;\n");
         fprintf(fp, "%s", "    }\n");
         fprintf(fp, "%s", "    else {\n");
         fprintf(fp, "%s", "      /* text value */\n");
         if (export_type == EXPORT_C99)
-            fprintf(fp, "%s", "      encode_text(argv[i+1], network_inputs, no_of_inputs,\n");
+            fprintf(fp, "%s", "      encode_text(argv[i+1], " \
+                    "network_inputs, no_of_inputs,\n");
         else
-            fprintf(fp, "%s", "      encode_text(\"\", network_inputs, no_of_inputs,\n");
+            fprintf(fp, "%s", "      encode_text(\"\", " \
+                    "network_inputs, no_of_inputs,\n");
 
-        fprintf(fp,       "                  pos, field_length[i]/%d);\n", (int)CHAR_BITS);
+        fprintf(fp,       "                  pos, field_length[i]/%d);\n",
+                (int)CHAR_BITS);
         fprintf(fp, "%s", "      pos += field_length[i];\n");
         fprintf(fp, "%s", "    }\n");
         fprintf(fp, "%s", "  }\n\n");
@@ -1353,7 +1403,8 @@ static int deeplearn_export_c_base(deeplearn * learner, int export_type, char * 
     fprintf(fp, "%s", "  for (i = 0; i < no_of_hiddens; i++) {\n");
     fprintf(fp, "%s", "    sum = hidden_layer_0_bias[i];\n");
     fprintf(fp, "%s", "    for (j = 0; j < no_of_inputs; j++) {\n");
-    fprintf(fp, "%s", "      sum += hidden_layer_0_weights[i*no_of_inputs+j]*network_inputs[j];\n");
+    fprintf(fp, "%s", "      sum += hidden_layer_0_weights[i*no_of_inputs+j]*" \
+            "network_inputs[j];\n");
     fprintf(fp, "%s", "    }\n");
     fprintf(fp, "%s", "    hiddens[i] = AF(sum);\n");
     fprintf(fp, "%s", "  }\n");
@@ -1362,29 +1413,39 @@ static int deeplearn_export_c_base(deeplearn * learner, int export_type, char * 
     fprintf(fp, "%s", "  }\n\n");
     for (int i = 1; i < learner->net->HiddenLayers; i++) {
         fprintf(fp, "  /* Hidden layer %d */\n", i);
-        fprintf(fp, "  for (i = 0; i < %d; i++) {\n", bp_hiddens_in_layer(learner->net,i));
+        fprintf(fp, "  for (i = 0; i < %d; i++) {\n",
+                bp_hiddens_in_layer(learner->net,i));
         fprintf(fp, "    sum = hidden_layer_%d_bias[i];\n",i);
-        fprintf(fp, "    for (j = 0; j < %d; j++) {\n",bp_hiddens_in_layer(learner->net,i-1));
-        fprintf(fp, "      sum += hidden_layer_%d_weights[i*%d+j]*prev_hiddens[j];\n",i,bp_hiddens_in_layer(learner->net,i-1));
+        fprintf(fp, "    for (j = 0; j < %d; j++) {\n",
+                bp_hiddens_in_layer(learner->net,i-1));
+        fprintf(fp, "      sum += " \
+                "hidden_layer_%d_weights[i*%d+j]*prev_hiddens[j];\n",
+                i,bp_hiddens_in_layer(learner->net,i-1));
         fprintf(fp, "%s", "    }\n");
         fprintf(fp, "%s", "    hiddens[i] = AF(sum);\n");
         fprintf(fp, "%s", "  }\n");
-        fprintf(fp, "  for (i = 0; i < %d; i++) {\n",bp_hiddens_in_layer(learner->net,i));
+        fprintf(fp, "  for (i = 0; i < %d; i++) {\n",
+                bp_hiddens_in_layer(learner->net,i));
         fprintf(fp, "%s", "    prev_hiddens[i] = hiddens[i];\n");
         fprintf(fp, "%s", "  }\n\n");
     }
     fprintf(fp, "%s", "  /* Output layer */\n");
     fprintf(fp, "%s", "  for (i = 0; i < no_of_outputs; i++) {\n");
     fprintf(fp, "%s", "    sum = output_layer_bias[i];\n");
-    fprintf(fp, "    for (j = 0; j < %d; j++) {\n",bp_hiddens_in_layer(learner->net,learner->net->HiddenLayers-1));
-    fprintf(fp, "      sum += output_layer_weights[i*%d+j]*prev_hiddens[j];\n",bp_hiddens_in_layer(learner->net,learner->net->HiddenLayers-1));
+    fprintf(fp, "    for (j = 0; j < %d; j++) {\n",
+            bp_hiddens_in_layer(learner->net,learner->net->HiddenLayers-1));
+    fprintf(fp, "      sum += output_layer_weights[i*%d+j]*prev_hiddens[j];\n",
+            bp_hiddens_in_layer(learner->net,learner->net->HiddenLayers-1));
     fprintf(fp, "%s", "    }\n");
     fprintf(fp, "%s", "    outputs[i] = AF(sum);\n");
     fprintf(fp, "%s", "  }\n\n");
 
     fprintf(fp, "%s", "  for (i = 0; i < no_of_outputs; i++) {\n");
-    fprintf(fp, "%s", "    /* Convert outputs from 0.25 - 0.75 back to their original range */\n");
-    fprintf(fp, "%s", "    outputs[i] = output_range_min[i] + ((outputs[i]-0.25f)*(output_range_max[i] - output_range_min[i])/0.5f);\n");
+    fprintf(fp, "%s", "    /* Convert outputs from 0.25 - 0.75 " \
+            "back to their original range */\n");
+    fprintf(fp, "%s", "    outputs[i] = output_range_min[i] + " \
+            "((outputs[i]-0.25f)*(output_range_max[i] - " \
+            "output_range_min[i])/0.5f);\n");
 
     if (export_type == EXPORT_C99) {
         fprintf(fp, "%s", "    /* Send the outputs to stdout */\n");
@@ -1550,11 +1611,13 @@ static int deeplearn_export_python(deeplearn * learner, char * filename)
     fprintf(fp,
             "  output_layer_weights = [");
     COUNTUP(i, learner->net->NoOfOutputs) {
-        COUNTUP(j, bp_hiddens_in_layer(learner->net, learner->net->HiddenLayers-1)) {
+        COUNTUP(j, bp_hiddens_in_layer(learner->net,
+                                       learner->net->HiddenLayers-1)) {
             fprintf(fp, "%.10f",
                     learner->net->outputs[i]->weights[j]);
             if (!((i == learner->net->NoOfOutputs-1) &&
-                  (j == bp_hiddens_in_layer(learner->net, learner->net->HiddenLayers-1)-1)))
+                  (j == bp_hiddens_in_layer(learner->net,
+                                            learner->net->HiddenLayers-1)-1)))
                 fprintf(fp, ",");
         }
     }
@@ -1578,7 +1641,8 @@ static int deeplearn_export_python(deeplearn * learner, char * filename)
     fprintf(fp, "%s", "      return 1.0 / (1.0 + math.exp(-adder))\n\n");
 #elif ACTIVATION_FUNCTION == AF_TANH
     fprintf(fp, "%s", "  def af(this, adder):\n");
-    fprintf(fp, "%s", "      return ((((2.0 / (1.0 + math.exp(-(2*adder)))) - 1.0)*0.5)+0.5)\n\n");
+    fprintf(fp, "%s", "      return ((((2.0 / (1.0 + math.exp(-(2*adder)))) " \
+            "- 1.0)*0.5)+0.5)\n\n");
 #elif ACTIVATION_FUNCTION == AF_LINEAR
     fprintf(fp, "%s", "  def af(this, adder):\n");
     fprintf(fp, "%s", "      if adder < 1.0:\n");
@@ -1598,8 +1662,10 @@ static int deeplearn_export_python(deeplearn * learner, char * filename)
         fprintf(fp, "%s", "    pos = offset\n");
         fprintf(fp, "%s", "    max_chars = len(text)\n\n");
 
-        fprintf(fp, "    if max_chars > (no_of_inputs-offset)/%d:\n", (int)CHAR_BITS);
-        fprintf(fp, "      max_chars = ((no_of_inputs-offset)/%d)\n\n", (int)CHAR_BITS);
+        fprintf(fp, "    if max_chars > (no_of_inputs-offset)/%d:\n",
+                (int)CHAR_BITS);
+        fprintf(fp, "      max_chars = ((no_of_inputs-offset)/%d)\n\n",
+                (int)CHAR_BITS);
 
         fprintf(fp, "%s", "    if max_chars > max_field_length_chars:\n");
         fprintf(fp, "%s", "      max_chars = max_field_length_chars\n\n");
@@ -1614,7 +1680,9 @@ static int deeplearn_export_python(deeplearn * learner, char * filename)
         fprintf(fp, "%s", "          inputs.append(0.25)\n");
         fprintf(fp, "%s", "        pos = pos + 1\n\n");
 
-        fprintf(fp, "%s", "    # set the remaining inputs within the field to neutral\n");
+        fprintf(fp, "%s",
+                "    # set the remaining inputs within the field " \
+                "to neutral\n");
         fprintf(fp, "%s", "    i = max_chars\n");
         fprintf(fp, "%s", "    while i < max_field_length_chars:\n");
         fprintf(fp,       "      for bit in range (%d):\n", (int)CHAR_BITS);
@@ -1646,7 +1714,10 @@ static int deeplearn_export_python(deeplearn * learner, char * filename)
     if (learner->no_of_input_fields == 0) {
         fprintf(fp, "%s", "    # Normalise inputs into a 0.25 - 0.75 range\n");
         fprintf(fp, "%s", "    for i in range (this.no_of_inputs):\n");
-        fprintf(fp, "%s", "      network_inputs.append(0.25 + ((float(inputs[i]) - this.input_range_min[i])*0.5/(this.input_range_max[i] - this.input_range_min[i])))\n");
+        fprintf(fp, "%s",
+                "      network_inputs.append(0.25 + ((float(inputs[i]) - " \
+                "this.input_range_min[i])*0.5/" \
+                "(this.input_range_max[i] - this.input_range_min[i])))\n");
         fprintf(fp, "%s", "      if network_inputs[i] < 0.25:\n");
         fprintf(fp, "%s", "        network_inputs[i] = 0.25\n");
         fprintf(fp, "%s", "      if network_inputs[i] > 0.75:\n");
@@ -1655,8 +1726,12 @@ static int deeplearn_export_python(deeplearn * learner, char * filename)
     else {
         fprintf(fp, "%s", "    for i in range(this.no_of_input_fields):\n");
         fprintf(fp, "%s", "      if this.field_length[i] == 0:\n");
-        fprintf(fp, "%s", "        # Normalise numeric inputs into a 0.25 - 0.75 range\n");
-        fprintf(fp, "%s", "        network_inputs.append(0.25 + ((float(inputs[i]) - this.input_range_min[i])*0.5/(this.input_range_max[i] - this.input_range_min[i])))\n");
+        fprintf(fp, "%s",
+                "        # Normalise numeric inputs into a " \
+                "0.25 - 0.75 range\n");
+        fprintf(fp, "%s", "        network_inputs.append(0.25 + " \
+                "((float(inputs[i]) - this.input_range_min[i])*0.5/" \
+                "(this.input_range_max[i] - this.input_range_min[i])))\n");
         fprintf(fp, "%s", "        if network_inputs[pos] < 0.25:\n");
         fprintf(fp, "%s", "          network_inputs[pos] = 0.25\n");
         fprintf(fp, "%s", "        if network_inputs[pos] > 0.75:\n");
@@ -1664,7 +1739,8 @@ static int deeplearn_export_python(deeplearn * learner, char * filename)
         fprintf(fp, "%s", "        pos = pos + 1\n");
         fprintf(fp, "%s", "      else:\n");
         fprintf(fp, "%s", "        # text value\n");
-        fprintf(fp, "%s", "        this.encode_text(inputs[i], network_inputs, this.no_of_inputs,");
+        fprintf(fp, "%s", "        this.encode_text(inputs[i], " \
+                "network_inputs, this.no_of_inputs,");
         fprintf(fp,       "pos, this.field_length[i]/%d)\n", (int)CHAR_BITS);
         fprintf(fp, "%s", "        pos = pos + this.field_length[i]\n\n");
     }
@@ -1673,29 +1749,43 @@ static int deeplearn_export_python(deeplearn * learner, char * filename)
     fprintf(fp, "%s", "    for i in range(this.no_of_hiddens):\n");
     fprintf(fp, "%s", "      adder = this.hidden_layer_0_bias[i]\n");
     fprintf(fp, "%s", "      for j in range(this.no_of_inputs):\n");
-    fprintf(fp, "%s", "        adder = adder + this.hidden_layer_0_weights[i*this.no_of_inputs+j]*network_inputs[j]\n");
+    fprintf(fp, "%s", "        adder = adder + " \
+            "this.hidden_layer_0_weights[i*this.no_of_inputs+j]*" \
+            "network_inputs[j]\n");
     fprintf(fp, "%s", "      hiddens.append(this.af(adder))\n");
     fprintf(fp, "%s", "    for i in range(this.no_of_hiddens):\n");
     fprintf(fp, "%s", "      prev_hiddens.append(hiddens[i])\n\n");
     for (int i = 1; i < learner->net->HiddenLayers; i++) {
         fprintf(fp, "    # Hidden layer %d\n", i);
-        fprintf(fp, "    for i in range(%d):\n", bp_hiddens_in_layer(learner->net,i));
+        fprintf(fp, "    for i in range(%d):\n",
+                bp_hiddens_in_layer(learner->net,i));
         fprintf(fp, "      adder = this.hidden_layer_%d_bias[i]\n",i);
-        fprintf(fp, "      for j in range(%d):\n",bp_hiddens_in_layer(learner->net,i-1));
-        fprintf(fp, "        adder = adder + this.hidden_layer_%d_weights[i*%d+j]*prev_hiddens[j]\n",i,bp_hiddens_in_layer(learner->net,i-1));
+        fprintf(fp, "      for j in range(%d):\n",
+                bp_hiddens_in_layer(learner->net,i-1));
+        fprintf(fp, "        adder = adder + " \
+                "this.hidden_layer_%d_weights[i*%d+j]*prev_hiddens[j]\n",
+                i,bp_hiddens_in_layer(learner->net,i-1));
         fprintf(fp, "%s", "      hiddens[i] = this.af(adder)\n");
-        fprintf(fp, "    for i in range(%d):\n",bp_hiddens_in_layer(learner->net,i));
+        fprintf(fp, "    for i in range(%d):\n",
+                bp_hiddens_in_layer(learner->net,i));
         fprintf(fp, "%s", "      prev_hiddens[i] = hiddens[i]\n\n");
     }
     fprintf(fp, "%s", "    # Output layer\n");
     fprintf(fp, "%s", "    for i in range(this.no_of_outputs):\n");
     fprintf(fp, "%s", "      adder = this.output_layer_bias[i]\n");
-    fprintf(fp, "      for j in range(%d):\n",bp_hiddens_in_layer(learner->net,learner->net->HiddenLayers-1));
-    fprintf(fp, "        adder = adder + this.output_layer_weights[i*%d+j]*prev_hiddens[j]\n",bp_hiddens_in_layer(learner->net,learner->net->HiddenLayers-1));
+    fprintf(fp, "      for j in range(%d):\n",
+            bp_hiddens_in_layer(learner->net,learner->net->HiddenLayers-1));
+    fprintf(fp, "        adder = adder + " \
+            "this.output_layer_weights[i*%d+j]*prev_hiddens[j]\n",
+            bp_hiddens_in_layer(learner->net,learner->net->HiddenLayers-1));
     fprintf(fp, "%s", "      outputs.append(this.af(adder))\n\n");
-    fprintf(fp, "%s", "    # Convert outputs from 0.25 - 0.75 back to their original range\n");
+    fprintf(fp, "%s",
+            "    # Convert outputs from 0.25 - 0.75 " \
+            "back to their original range\n");
     fprintf(fp, "%s", "    for i in range(this.no_of_outputs):\n");
-    fprintf(fp, "%s", "      outputs[i] = this.output_range_min[i] + ((outputs[i]-0.25)*(this.output_range_max[i] - this.output_range_min[i])/0.5)\n\n");
+    fprintf(fp, "%s", "      outputs[i] = this.output_range_min[i] + " \
+            "((outputs[i]-0.25)*(this.output_range_max[i] - " \
+            "this.output_range_min[i])/0.5)\n\n");
 
     fprintf(fp, "%s", "    # Return the output unit values as a list\n");
     fprintf(fp, "%s", "    return outputs\n\n\n");

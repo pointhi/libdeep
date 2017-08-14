@@ -53,7 +53,8 @@ int draw_features(unsigned char img[],
     }
 
     /* clear the image */
-    memset((void*)img, '\0', img_width*img_height*img_depth*sizeof(unsigned char));
+    memset((void*)img, '\0',
+           img_width*img_height*img_depth*sizeof(unsigned char));
 
     int feature_index = 0;
     COUNTUP(gx, grid_dimension) {
@@ -207,10 +208,12 @@ float learn_features(float img[],
                         if (rand_num(random_seed) % 32 < 8) {
                             if (rand_num(random_seed) % 64 < 32)
                                 curr_feature[n1+d] +=
-                                    (img[n0+d] - curr_feature[n1+d])*learning_rate;
+                                    (img[n0+d] -
+                                     curr_feature[n1+d])*learning_rate;
                             else
                                 curr_feature[n1+d] -=
-                                    (img[n0+d] - curr_feature[n1+d])*learning_rate;
+                                    (img[n0+d] -
+                                     curr_feature[n1+d])*learning_rate;
 
                             if (curr_feature[n1+d] < 0.0f)
                                 curr_feature[n1+d] = 0.0f;

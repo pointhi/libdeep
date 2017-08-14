@@ -55,7 +55,8 @@
 #elif ACTIVATION_FUNCTION == AF_TANH
 #define AF(adder) ((((2.0f / (1.0f + exp(-(2*adder)))) - 1.0f)*0.5f)+0.5f)
 #elif ACTIVATION_FUNCTION == AF_LINEAR
-#define AF(adder) ((adder) < 1.0f ? ((adder) > -1.0f ? (((adder)*0.5f)+0.5f) : 0.0f) : 1.0f)
+#define AF(adder) ((adder) < 1.0f ? ((adder) > -1.0f ? \
+                                     (((adder)*0.5f)+0.5f) : 0.0f) : 1.0f)
 #endif
 
 #define PIXEL_TO_FLOAT(p)       (0.25f + ((p)/(2*255.0f)))
