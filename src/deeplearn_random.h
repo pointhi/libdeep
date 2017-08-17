@@ -38,7 +38,7 @@
 #include <math.h>
 #include <assert.h>
 
-int rand_num(unsigned int * seed);
+unsigned int rand_num(unsigned int * seed);
 float rand_initial_weight(unsigned int * seed, int no_of_inputs);
 
 #endif

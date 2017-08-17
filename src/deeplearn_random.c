@@ -36,7 +36,7 @@
  * @param seed Random number generator seed
  * @return Pseudo-random number
  */
-int rand_num(unsigned int * seed)
+unsigned int rand_num(unsigned int * seed)
 {
     unsigned int v = PRNG_LEHMER(*seed);
 
@@ -52,7 +52,7 @@ int rand_num(unsigned int * seed)
     /* new seed value */
     *seed = v;
 
-    return abs((int)v);
+    return v;
 }
 
 /**

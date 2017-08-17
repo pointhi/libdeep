@@ -31,28 +31,28 @@
 static void test_rand_num()
 {
     unsigned int random_seed=0;
-    int i,j,t,v,min=0,max=0;
-    int test1[50];
-    int test2[50];
-    int test3[50];
-    int * result;
+    unsigned int v,min=0,max=0;
+    unsigned int test1[50];
+    unsigned int test2[50];
+    unsigned int test3[50];
+    unsigned int * result;
     int same=0,repeats=0;
 
     printf("test_rand_num...");
 
     /* run three sequences with different seeds */
-    for (t = 0; t < 3; t++) {
+    for (int t = 0; t < 3; t++) {
         switch(t) {
-        case 0: { random_seed = 123; result = (int*)test1; break; }
-        case 1: { random_seed = 555; result = (int*)test2; break; }
-        case 2: { random_seed = 8323; result = (int*)test3; break; }
+        case 0: { random_seed = 123; result = (unsigned int*)test1; break; }
+        case 1: { random_seed = 555; result = (unsigned int*)test2; break; }
+        case 2: { random_seed = 8323; result = (unsigned int*)test3; break; }
         }
-        for (i = 0; i < 50; i++) {
+        for (int i = 0; i < 50; i++) {
             result[i] = rand_num(&random_seed);
         }
     }
 
-    for (i = 0; i < 50; i++) {
+    for (int i = 0; i < 50; i++) {
         /* check that the sequences are different */
         if ((test1[i]==test2[i]) ||
             (test1[i]==test3[i]) ||
@@ -61,7 +61,7 @@ static void test_rand_num()
         }
 
         /* check the number of repeats within each sequence */
-        for (j = 0; j < 50; j++) {
+        for (int j = 0; j < 50; j++) {
             if (i!=j) {
                 if ((test1[i]==test1[j]) ||
                     (test2[i]==test2[j]) ||
@@ -75,7 +75,7 @@ static void test_rand_num()
     assert(repeats < 2);
 
     /* check that the range is not too restricted */
-    for (i = 0; i < 10000; i ++) {
+    for (int i = 0; i < 10000; i++) {
         v = rand_num(&random_seed);
         if ((i==0) ||
             ((i>0) && (v<min))) {

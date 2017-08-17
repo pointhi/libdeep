@@ -60,7 +60,7 @@ int main(int argc, char* argv[])
     printf("Number of training examples: %d\n",learner.training_data_samples);
     printf("Number of labeled training examples: %d\n",learner.training_data_labeled_samples);
     printf("Number of test examples: %d\n",learner.test_data_samples);
-    printf("Number of Inputs: %d\n",learner.net->NoOfInputs);
+    printf("Number of Inputs: %d\n",learner.net->no_of_inputs);
 
     /* set learning rate */
     deeplearn_set_learning_rate(&learner, 0.2f);
