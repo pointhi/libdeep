@@ -63,6 +63,8 @@ man libdeep
 Showing the call graph
 ======================
 
+<img src="https://github.com/bashrc/libdeep/blob/master/img/callgraph.jpg?raw=true" width=640/>
+
 If you want to visualize the call graph for a particular source file for debugging or development purposes:
 
 ``` bash
