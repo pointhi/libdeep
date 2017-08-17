@@ -10,20 +10,15 @@ Installation
 On Debian based systems:
 
 ```bash
-sudo apt-get install build-essential gnuplot doxygen
+sudo apt-get install build-essential gnuplot doxygen xdot
 ```
+
+If you want to be able to visualize call graphs for development or debugging purposes then you will need to install the [egypt](http://www.gson.org/egypt) script.
 
 On Arch based systems:
 
 ``` bash
-sudo pacman -S gcc gnuplot doxygen
-```
-
-On Fedora based systems:
-
-```bash
-sudo yum groupinstall "Development Tools"
-sudo yum install gnuplot doxygen
+sudo pacman -S gcc gnuplot doxygen egypt xdot
 ```
 
 To build from source:
@@ -60,6 +55,17 @@ To generate source code documentation make sure that you have doxygen installed 
 ```bash
 man libdeep
 ```
+
+Showing the call graph
+======================
+
+If you want to visualize the call graph for a particular source file for debugging or development purposes:
+
+``` bash
+SOURCEFILE=deeplearn.c make graph
+```
+
+And you can change the *SOURCEFILE* value to whatever file you're interested in.
 
 Examples
 ========

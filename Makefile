@@ -8,6 +8,7 @@ PREFIX?=/usr/local
 LIBDIR=lib
 ARCH_BUILD_DIR=${HOME}/abs/${APP}
 CURR_DIR=$(shell pwd)
+SOURCEFILE?=backprop.c
 
 ifeq ($(shell if [ -d /usr/lib64 ]; then echo "found"; fi;), "found")
 LIBDIR = lib64
@@ -19,6 +20,10 @@ debug:
 	gcc -shared -Wl,-soname,${SONAME} -std=c99 -pedantic -fPIC -g -o ${LIBNAME} src/*.c -Isrc -lm -fopenmp
 debugstack:
 	gcc -shared -Wl,-soname,${SONAME} -std=c99 -pedantic -fsanitize=address -fPIC -g -o ${LIBNAME} src/*.c -Isrc -lm -fopenmp
+graph:
+	gcc -shared -Wl,-soname,${SONAME} -std=c99 -pedantic -fPIC -g -o ${LIBNAME} src/*.c -Isrc -lm -fopenmp -fdump-rtl-expand
+	egypt ${SOURCEFILE}.*.expand | xdot -
+	rm *.expand
 source:
 	tar -cvf ../${APP}_${VERSION}.orig.tar ../${APP}-${VERSION} --exclude-vcs
 	gzip -f9n ../${APP}_${VERSION}.orig.tar
@@ -67,5 +72,5 @@ instlib:
 	mkdir -m 755 -p ${DESTDIR}${PREFIX}/share/man/man1
 	install -m 644 man/${APP}.1.gz ${DESTDIR}${PREFIX}/share/man/man1
 clean:
-	rm -f ${LIBNAME} \#* \.#* gnuplot* *.png src/*.plist
+	rm -f ${LIBNAME} \#* \.#* gnuplot* *.png src/*.plist *.expand
 	rm -f unittests/*.plist unittests/tests

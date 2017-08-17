@@ -59,6 +59,15 @@ static void facerec_training()
     unsigned int ctr, random_seed = 34217;
     float performance;
 
+    unsigned char *** images;
+    char *** classifications;
+    int ** classification_number;
+    assert(deeplearn_load_training_images("../facerec/images",
+                                          images,
+                                          classifications,
+                                          classification_number,
+                                          image_width, image_height) > 0);
+
     if (deepconvnet_read_images("../facerec/images",
                                 &convnet,
                                 image_width, image_height,
