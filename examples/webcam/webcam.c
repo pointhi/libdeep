@@ -330,50 +330,50 @@ static int read_frame(void)
 static void learn(void)
 {
     int x, y, i, n;
-	int h = HEIGHT/SUBSAMPLING_FACTOR;
-	int w = WIDTH/SUBSAMPLING_FACTOR;
-	unsigned int * temp;
-	int diff = 0;
+    int h = HEIGHT/SUBSAMPLING_FACTOR;
+    int w = WIDTH/SUBSAMPLING_FACTOR;
+    unsigned int * temp;
+    int diff = 0;
 
-	/* swap buffers */
-	temp = prev_img;
-	prev_img = img;
-	img = temp;
+    /* swap buffers */
+    temp = prev_img;
+    prev_img = img;
+    img = temp;
 
-	i = 0;
-	for (y = 0; y < h; y++) {
-		for (x = 0; x < w; x++, i++) {
-			n = (y*SUBSAMPLING_FACTOR)*WIDTH + (x*SUBSAMPLING_FACTOR);
-			img[i] =
-				buffer_sdl[n] + buffer_sdl[n+1] + buffer_sdl[n+2];
+    i = 0;
+    for (y = 0; y < h; y++) {
+        for (x = 0; x < w; x++, i++) {
+            n = (y*SUBSAMPLING_FACTOR)*WIDTH + (x*SUBSAMPLING_FACTOR);
+            img[i] =
+                buffer_sdl[n] + buffer_sdl[n+1] + buffer_sdl[n+2];
 
-			if (i < no_of_inputs) {
-				deeplearn_set_input(&learner, i, 0.25f + ((float)img[i]/(3*255*2)));
-			}
+            if (i < no_of_inputs) {
+                deeplearn_set_input(&learner, i, 0.25f + ((float)img[i]/(3*255*2)));
+            }
 
-			/* sum the total pixel change */
-			diff += abs((int)img[i] - (int)prev_img[i]);
-		}
-	}
+            /* sum the total pixel change */
+            diff += abs((int)img[i] - (int)prev_img[i]);
+        }
+    }
 
-	/* average pixel change */
-	diff /= no_of_inputs;
+    /* average pixel change */
+    diff /= no_of_inputs;
 
-	/* only learn if there has been some change in the image */
-	if (diff > 5) {
-		deeplearn_update_continuous(&learner);
-	}
+    /* only learn if there has been some change in the image */
+    if (diff > 5) {
+        deeplearn_update_continuous(&learner);
+    }
 
-	printf("learn %f %d\n", learner.BPerror, diff);
+    printf("learn %f %d\n", learner.backprop_error, diff);
 
     itteration++;
-	if (itteration > learner.history_plot_interval) {
-		itteration = 0;
-		deeplearn_plot_history(&learner,
-							   learner.history_plot_filename,
-							   learner.history_plot_title,
-							   1024, 480);
-	}
+    if (itteration > learner.history_plot_interval) {
+        itteration = 0;
+        deeplearn_plot_history(&learner,
+                               learner.history_plot_filename,
+                               learner.history_plot_title,
+                               1024, 480);
+    }
 }
 
 static void mainloop(void)
@@ -421,7 +421,7 @@ static void mainloop(void)
 
             /* EAGAIN - continue select loop. */
         }
-		learn();
+        learn();
     }
 }
 
@@ -931,14 +931,14 @@ int main(int argc, char **argv)
 
     SDL_SetEventFilter(sdl_filter);
 
-	img = (unsigned int*)malloc(WIDTH*HEIGHT);
-	prev_img = (unsigned int*)malloc(WIDTH*HEIGHT);
-	printf("%dx%d  %dx%d\n",
-		   (int)WIDTH,(int)HEIGHT,
-		   (int)(WIDTH/SUBSAMPLING_FACTOR),(int)(HEIGHT/SUBSAMPLING_FACTOR));
-	no_of_inputs = (WIDTH/SUBSAMPLING_FACTOR)*(HEIGHT/SUBSAMPLING_FACTOR);
-	no_of_hiddens = no_of_inputs/5;
-	no_of_outputs = no_of_hiddens/4;
+    img = (unsigned int*)malloc(WIDTH*HEIGHT);
+    prev_img = (unsigned int*)malloc(WIDTH*HEIGHT);
+    printf("%dx%d  %dx%d\n",
+           (int)WIDTH,(int)HEIGHT,
+           (int)(WIDTH/SUBSAMPLING_FACTOR),(int)(HEIGHT/SUBSAMPLING_FACTOR));
+    no_of_inputs = (WIDTH/SUBSAMPLING_FACTOR)*(HEIGHT/SUBSAMPLING_FACTOR);
+    no_of_hiddens = no_of_inputs/5;
+    no_of_outputs = no_of_hiddens/4;
     deeplearn_init(&learner,
                    no_of_inputs,
                    no_of_hiddens,
@@ -960,8 +960,8 @@ int main(int argc, char **argv)
 
     SDL_FreeSurface(data_sf);
     free(buffer_sdl);
-	free(img);
-	free(prev_img);
+    free(img);
+    free(prev_img);
 
     exit(EXIT_SUCCESS);
 

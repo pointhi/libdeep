@@ -96,7 +96,7 @@ static void facerec_training()
         itt++;
         if ((itt % logging_interval == 0) && (itt>0)) {
             printf("%d: %.5f\n",
-                   learner.current_hidden_layer, learner.BPerror);
+                   learner.current_hidden_layer, learner.backprop_error);
 
             /* save a graph */
             sprintf(filename,"%s","training_error.png");
@@ -144,7 +144,7 @@ static void facerec_training()
 
         itt++;
         if ((itt % logging_interval == 0) && (itt>0)) {
-            printf("Final: %.5f\n",learner.BPerror);
+            printf("Final: %.5f\n",learner.backprop_error);
 
             /* save a graph */
             sprintf(filename,"%s","training_error.png");

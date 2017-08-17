@@ -41,22 +41,22 @@
 
 /* macro returns the number of hidden units at a given layer index */
 #define HIDDENS_IN_LAYER(net, layer)                                    \
-    ((layer) == 0 ? (net)->NoOfHiddens :                                \
-     ((layer) >= (net)->HiddenLayers ? ((net)->HiddenLayers-1) :        \
-      ((net)->NoOfHiddens -                                             \
-       (((net)->NoOfHiddens - (net)->NoOfOutputs)*(layer)/(net)->HiddenLayers))))
+    ((layer) == 0 ? (net)->no_of_hiddens :                                \
+     ((layer) >= (net)->hidden_layers ? ((net)->hidden_layers-1) :        \
+      ((net)->no_of_hiddens -                                             \
+       (((net)->no_of_hiddens - (net)->no_of_outputs)*(layer)/(net)->hidden_layers))))
 
 struct backprop {
-    int NoOfInputs,NoOfHiddens,NoOfOutputs;
-    int HiddenLayers;
-    float DropoutPercent;
+    int no_of_inputs,no_of_hiddens,no_of_outputs;
+    int hidden_layers;
+    float dropout_percent;
     bp_neuron ** inputs;
     bp_neuron *** hiddens;
     bp_neuron ** outputs;
-    float BPerrorTotal;
-    float BPerror, BPerrorAverage;
-    float BPerrorPercent;
-    float learningRate;
+    float backprop_error_total;
+    float backprop_error, backprop_error_average;
+    float backprop_error_percent;
+    float learning_rate;
     float noise;
     unsigned int random_seed;
     unsigned int itterations;

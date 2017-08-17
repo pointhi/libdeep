@@ -43,9 +43,9 @@ struct autocode {
 
     /* layer dimensions.
        Number of outputs is the same as number of inputs */
-    int NoOfInputs,NoOfHiddens;
+    int no_of_inputs,no_of_hiddens;
 
-    float DropoutPercent;
+    float dropout_percent;
 
     /* layers */
     float * inputs;
@@ -57,20 +57,20 @@ struct autocode {
     float * weights;
 
     /* array used during learning */
-    float * lastWeightChange;
+    float * last_weight_change;
 
     /* biases of hidden units */
     float * bias;
-    float * lastBiasChange;
+    float * last_bias_change;
 
     /* backprop error */
     float * bperr;
-    float BPerror;
-    float BPerrorPercent;
-    float BPerrorAverage;
+    float backprop_error;
+    float backprop_error_percent;
+    float backprop_error_average;
 
     /* learning rate in the range 0.0 -> 1.0 */
-    float learningRate;
+    float learning_rate;
 
     /* added noise in the range 0.0 -> 1.0 */
     float noise;

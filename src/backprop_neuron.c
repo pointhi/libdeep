@@ -41,9 +41,9 @@ static void bp_neuron_init_weights(bp_neuron * n,
     n->max_weight = -9999;
 
     /* do the weights */
-    COUNTDOWN(i, n->NoOfInputs) {
-        n->weights[i] = rand_initial_weight(random_seed, n->NoOfInputs);
-        n->lastWeightChange[i] = 0;
+    COUNTDOWN(i, n->no_of_inputs) {
+        n->weights[i] = rand_initial_weight(random_seed, n->no_of_inputs);
+        n->last_weight_change[i] = 0;
 
         if (n->weights[i] < n->min_weight)
             n->min_weight = n->weights[i];
@@ -54,7 +54,7 @@ static void bp_neuron_init_weights(bp_neuron * n,
 
     /* dont forget the bias value */
     n->bias = rand_initial_weight(random_seed, 2);
-    n->lastBiasChange = 0;
+    n->last_bias_change = 0;
 }
 
 /**
@@ -67,14 +67,14 @@ void bp_neuron_copy(bp_neuron * source,
 {
     /* check that the source and destination have the same
        number of inputs */
-    if (source->NoOfInputs !=
-        dest->NoOfInputs) {
+    if (source->no_of_inputs !=
+        dest->no_of_inputs) {
         printf("Warning: neurons have different numbers of inputs\n");
         return;
     }
 
     /* copy the connection weights */
-    memcpy(dest->weights,source->weights,source->NoOfInputs*sizeof(float));
+    memcpy(dest->weights,source->weights,source->no_of_inputs*sizeof(float));
 
     /* copy the bias */
     dest->bias = source->bias;
@@ -84,7 +84,7 @@ void bp_neuron_copy(bp_neuron * source,
     dest->max_weight = source->max_weight;
 
     /* clear the previous weight changes */
-    FLOATCLEAR(dest->lastWeightChange, dest->NoOfInputs);
+    FLOATCLEAR(dest->last_weight_change, dest->no_of_inputs);
 }
 
 /**
@@ -100,22 +100,22 @@ int bp_neuron_init(bp_neuron * n,
     /* should have more than zero inpyts */
     assert(no_of_inputs > 0);
 
-    n->NoOfInputs = no_of_inputs;
+    n->no_of_inputs = no_of_inputs;
 
     /* create some weights */
     FLOATALLOC(n->weights, no_of_inputs);
     if (!n->weights)
         return -1;
 
-    FLOATALLOC(n->lastWeightChange, no_of_inputs);
-    if (!n->lastWeightChange)
+    FLOATALLOC(n->last_weight_change, no_of_inputs);
+    if (!n->last_weight_change)
         return -2;
 
     bp_neuron_init_weights(n, random_seed);
-    n->desiredValue = -1;
+    n->desired_value = -1;
     n->value = 0;
     n->value_reprojected = 0;
-    n->BPerror = 0;
+    n->backprop_error = 0;
     n->excluded = 0;
 
     /* pointers to input neurons */
@@ -137,12 +137,12 @@ int bp_neuron_init(bp_neuron * n,
 */
 int bp_neuron_compare(bp_neuron * n1, bp_neuron * n2)
 {
-    if ((n1->NoOfInputs != n2->NoOfInputs) || (n1->bias != n2->bias))
+    if ((n1->no_of_inputs != n2->no_of_inputs) || (n1->bias != n2->bias))
         return 0;
 
-    COUNTDOWN(i, n1->NoOfInputs) {
+    COUNTDOWN(i, n1->no_of_inputs) {
         if ((n1->weights[i] != n2->weights[i]) ||
-            (n1->lastWeightChange[i] != n2->lastWeightChange[i])) {
+            (n1->last_weight_change[i] != n2->last_weight_change[i])) {
             return 0;
         }
     }
@@ -157,10 +157,10 @@ void bp_neuron_free(bp_neuron * n)
 {
     /* free the weights */
     free(n->weights);
-    free(n->lastWeightChange);
+    free(n->last_weight_change);
 
     /* clear the pointers to input neurons */
-    COUNTDOWN(i, n->NoOfInputs)
+    COUNTDOWN(i, n->no_of_inputs)
         n->inputs[i]=0;
 
     /* free the inputs */
@@ -212,7 +212,7 @@ void bp_neuron_feedForward(bp_neuron * n,
     adder = n->bias;
 
     /* calculate weighted sum of inputs */
-    COUNTDOWN(i, n->NoOfInputs)
+    COUNTDOWN(i, n->no_of_inputs)
         adder += n->weights[i] * n->inputs[i]->value;
 
 
@@ -237,16 +237,16 @@ void bp_neuron_backprop(bp_neuron * n)
     if (n->excluded > 0) return;
 
     /* output unit */
-    if (n->desiredValue > -1)
-        n->BPerror = n->desiredValue - n->value;
+    if (n->desired_value > -1)
+        n->backprop_error = n->desired_value - n->value;
 
     /* prepare variable so that we don't need to calculate
        it repeatedly within the loop */
-    bperr = n->BPerror * af(n->value);
+    bperr = n->backprop_error * af(n->value);
 
     /* back-propogate the error */
-    COUNTDOWN(i, n->NoOfInputs)
-        n->inputs[i]->BPerror += bperr * n->weights[i];
+    COUNTDOWN(i, n->no_of_inputs)
+        n->inputs[i]->backprop_error += bperr * n->weights[i];
 }
 
 /**
@@ -255,7 +255,7 @@ void bp_neuron_backprop(bp_neuron * n)
 */
 void bp_neuron_reproject(bp_neuron * n)
 {
-    COUNTDOWN(i, n->NoOfInputs) {
+    COUNTDOWN(i, n->no_of_inputs) {
         bp_neuron * nrn = n->inputs[i];
         if (nrn != 0)
             nrn->value_reprojected +=
@@ -266,30 +266,30 @@ void bp_neuron_reproject(bp_neuron * n)
 /**
 * @brief Adjust the weights of a neuron
 * @param n Backprop neuron object
-* @param learningRate Learning rate in the range 0.0 to 1.0
+* @param learning_rate Learning rate in the range 0.0 to 1.0
 */
 void bp_neuron_learn(bp_neuron * n,
-                     float learningRate)
+                     float learning_rate)
 {
     float afact,e,gradient;
 
     if (n->excluded > 0) return;
 
-    e = learningRate / (1.0f + n->NoOfInputs);
+    e = learning_rate / (1.0f + n->no_of_inputs);
     afact = af(n->value);
-    gradient = afact * n->BPerror;
-    n->lastBiasChange = e * (n->lastBiasChange + 1.0f) * gradient;
-    n->bias += n->lastBiasChange;
+    gradient = afact * n->backprop_error;
+    n->last_bias_change = e * (n->last_bias_change + 1.0f) * gradient;
+    n->bias += n->last_bias_change;
     n->min_weight = 9999;
     n->max_weight = -9999;
 
     /* for each input */
-    COUNTDOWN(i, n->NoOfInputs) {
+    COUNTDOWN(i, n->no_of_inputs) {
         if (n->inputs[i] != 0) {
-            n->lastWeightChange[i] =
-                e * (n->lastWeightChange[i] + 1) *
+            n->last_weight_change[i] =
+                e * (n->last_weight_change[i] + 1) *
                 gradient * n->inputs[i]->value;
-            n->weights[i] += n->lastWeightChange[i];
+            n->weights[i] += n->last_weight_change[i];
 
             /* limit weights within range */
             if (n->weights[i] < n->min_weight)
@@ -309,12 +309,12 @@ void bp_neuron_learn(bp_neuron * n,
 */
 void bp_weights_test_pattern(bp_neuron * n, int depth)
 {
-    int units = n->NoOfInputs/depth;
+    int units = n->no_of_inputs/depth;
     int width = (int)sqrt(units);
     int height = units / width;
 
     /* clear all weights */
-    COUNTDOWN(i, n->NoOfInputs)
+    COUNTDOWN(i, n->no_of_inputs)
         n->weights[i] = 0;
 
     /* draw a cross */
@@ -366,13 +366,13 @@ void bp_weights_test_pattern(bp_neuron * n, int depth)
 */
 int bp_neuron_save(FILE * fp, bp_neuron * n)
 {
-    if (INTWRITE(n->NoOfInputs) == 0)
+    if (INTWRITE(n->no_of_inputs) == 0)
         return -1;
 
-    if (FLOATWRITEARRAY(n->weights, n->NoOfInputs) == 0)
+    if (FLOATWRITEARRAY(n->weights, n->no_of_inputs) == 0)
         return -2;
 
-    if (FLOATWRITEARRAY(n->lastWeightChange, n->NoOfInputs) == 0)
+    if (FLOATWRITEARRAY(n->last_weight_change, n->no_of_inputs) == 0)
         return -3;
 
     if (FLOATWRITE(n->min_weight) == 0)
@@ -384,10 +384,10 @@ int bp_neuron_save(FILE * fp, bp_neuron * n)
     if (FLOATWRITE(n->bias) == 0)
         return -6;
 
-    if (FLOATWRITE(n->lastBiasChange) == 0)
+    if (FLOATWRITE(n->last_bias_change) == 0)
         return -7;
 
-    if (FLOATWRITE(n->desiredValue) == 0)
+    if (FLOATWRITE(n->desired_value) == 0)
         return -8;
 
     return 0;
@@ -401,13 +401,13 @@ int bp_neuron_save(FILE * fp, bp_neuron * n)
 */
 int bp_neuron_load(FILE * fp, bp_neuron * n)
 {
-    if (INTREAD(n->NoOfInputs) == 0)
+    if (INTREAD(n->no_of_inputs) == 0)
         return -1;
 
-    if (FLOATREADARRAY(n->weights, n->NoOfInputs) == 0)
+    if (FLOATREADARRAY(n->weights, n->no_of_inputs) == 0)
         return -2;
 
-    if (FLOATREADARRAY(n->lastWeightChange, n->NoOfInputs) == 0)
+    if (FLOATREADARRAY(n->last_weight_change, n->no_of_inputs) == 0)
         return -3;
 
     if (FLOATREAD(n->min_weight) == 0)
@@ -419,14 +419,14 @@ int bp_neuron_load(FILE * fp, bp_neuron * n)
     if (FLOATREAD(n->bias) == 0)
         return -6;
 
-    if (FLOATREAD(n->lastBiasChange) == 0)
+    if (FLOATREAD(n->last_bias_change) == 0)
         return -7;
 
-    if (FLOATREAD(n->desiredValue) == 0)
+    if (FLOATREAD(n->desired_value) == 0)
         return -8;
 
     n->value = 0;
-    n->BPerror = 0;
+    n->backprop_error = 0;
     n->excluded = 0;
 
     return 0;

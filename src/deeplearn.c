@@ -63,7 +63,7 @@ static void deeplearn_update_history(deeplearn * learner)
 
     learner->history_ctr++;
     if (learner->history_ctr >= learner->history_step) {
-        error_value = learner->BPerror;
+        error_value = learner->backprop_error;
         if (error_value == DEEPLEARN_UNKNOWN_ERROR)
             error_value = 0;
 
@@ -220,7 +220,7 @@ int deeplearn_init(deeplearn * learner,
 
     }
 
-    learner->BPerror = DEEPLEARN_UNKNOWN_ERROR;
+    learner->backprop_error = DEEPLEARN_UNKNOWN_ERROR;
     return 0;
 }
 
@@ -241,7 +241,7 @@ void deeplearn_feed_forward(deeplearn * learner)
 int deeplearn_training_last_layer(deeplearn * learner)
 {
     return (learner->current_hidden_layer >=
-            learner->net->HiddenLayers);
+            learner->net->hidden_layers);
 }
 
 /**
@@ -257,8 +257,8 @@ void copy_autocoder_to_hidden_layer(deeplearn * learner, int hidden_layer)
         bp_neuron * nrn  = learner->net->hiddens[hidden_layer][i];
         nrn->bias = autocoder->bias[i];
         memcpy((void*)nrn->weights,
-               &autocoder->weights[i*autocoder->NoOfInputs],
-               autocoder->NoOfInputs*sizeof(float));
+               &autocoder->weights[i*autocoder->no_of_inputs],
+               autocoder->no_of_inputs*sizeof(float));
     }
 }
 
@@ -282,7 +282,7 @@ void deeplearn_pretrain(bp * net, ac * autocoder, int current_layer)
     else {
         /* copy the input unit values to the inputs
            of the autocoder */
-        COUNTDOWN(i, net->NoOfInputs)
+        COUNTDOWN(i, net->no_of_inputs)
             autocoder_set_input(autocoder, i, bp_get_input(net, i));
     }
     autocoder_update(autocoder);
@@ -310,13 +310,13 @@ void deeplearn_update(deeplearn * learner)
 
     /* If there is only a single hidden layer */
     if ((current_layer == 0) &&
-        (learner->net->HiddenLayers == 1)) {
+        (learner->net->hidden_layers == 1)) {
         current_layer = 1;
         learner->current_hidden_layer = current_layer;
     }
 
     /* pretraining of autocoders */
-    if (current_layer < learner->net->HiddenLayers) {
+    if (current_layer < learner->net->hidden_layers) {
 
         /* train the autocoder for this layer */
         deeplearn_pretrain(learner->net,
@@ -324,14 +324,14 @@ void deeplearn_update(deeplearn * learner)
                            current_layer);
 
         /* update the backprop error value from the autocoder */
-        learner->BPerror =
-            learner->autocoder[current_layer]->BPerrorPercent;
+        learner->backprop_error =
+            learner->autocoder[current_layer]->backprop_error_percent;
 
         /* If below the error threshold.
            Only do this after a minimum number of itterations
            in order to allow the running average to stabilise */
-        if ((learner->BPerror != DEEPLEARN_UNKNOWN_ERROR) &&
-            (learner->BPerror < minimum_error_percent) &&
+        if ((learner->backprop_error != DEEPLEARN_UNKNOWN_ERROR) &&
+            (learner->backprop_error < minimum_error_percent) &&
             (learner->autocoder[current_layer]->itterations > 100)) {
 
             copy_autocoder_to_hidden_layer(learner, current_layer);
@@ -340,17 +340,17 @@ void deeplearn_update(deeplearn * learner)
             learner->current_hidden_layer++;
 
             /* reset the error value */
-            learner->BPerror = DEEPLEARN_UNKNOWN_ERROR;
+            learner->backprop_error = DEEPLEARN_UNKNOWN_ERROR;
         }
     }
     else {
         bp_update(learner->net,0);
 
         /* update the backprop error value */
-        learner->BPerror = learner->net->BPerrorPercent;
+        learner->backprop_error = learner->net->backprop_error_percent;
 
         /* set the training completed flag */
-        if (learner->BPerror < minimum_error_percent)
+        if (learner->backprop_error < minimum_error_percent)
             learner->training_complete = 1;
     }
 
@@ -368,19 +368,19 @@ void deeplearn_update(deeplearn * learner)
  */
 void deeplearn_update_continuous(deeplearn * learner)
 {
-    learner->BPerror = 0;
+    learner->backprop_error = 0;
 
-    COUNTUP(i, learner->net->HiddenLayers) {
+    COUNTUP(i, learner->net->hidden_layers) {
         /* train the autocoder for this layer */
         deeplearn_pretrain(learner->net, learner->autocoder[i], i);
 
         /* update the backprop error value */
-        learner->BPerror += learner->autocoder[i]->BPerrorPercent;
+        learner->backprop_error += learner->autocoder[i]->backprop_error_percent;
 
         copy_autocoder_to_hidden_layer(learner, i);
     }
 
-    learner->BPerror /= learner->net->HiddenLayers;
+    learner->backprop_error /= learner->net->hidden_layers;
 
     /* record the history of error values */
     deeplearn_update_history(learner);
@@ -455,7 +455,7 @@ void deeplearn_free(deeplearn * learner)
     free(learner->error_threshold);
 
     /* free the autocoder */
-    COUNTDOWN(i, learner->net->HiddenLayers) {
+    COUNTDOWN(i, learner->net->hidden_layers) {
         autocoder_free(learner->autocoder[i]);
         free(learner->autocoder[i]);
         learner->autocoder[i] = 0;
@@ -505,7 +505,7 @@ void deeplearn_set_inputs(deeplearn * learner, deeplearndata * sample)
             /* text value */
             enc_text_to_binary(sample->inputs_text[i],
                                learner->net->inputs,
-                               learner->net->NoOfInputs,
+                               learner->net->no_of_inputs,
                                pos, learner->field_length[i]/CHAR_BITS);
             pos += learner->field_length[i];
         }
@@ -599,7 +599,7 @@ int deeplearn_set_input_field_text(deeplearn * learner, int fieldindex,
     /* set the value */
     enc_text_to_binary(text,
                        learner->net->inputs,
-                       learner->net->NoOfInputs, pos,
+                       learner->net->no_of_inputs, pos,
                        learner->field_length[fieldindex]/CHAR_BITS);
     return 0;
 }
@@ -624,7 +624,7 @@ void deeplearn_set_output(deeplearn * learner, int index, float value)
  */
 void deeplearn_set_outputs(deeplearn * learner, deeplearndata * sample)
 {
-    COUNTDOWN(i, learner->net->NoOfOutputs) {
+    COUNTDOWN(i, learner->net->no_of_outputs) {
         float value = sample->outputs[i];
         float range =
             learner->output_range_max[i] - learner->output_range_min[i];
@@ -643,7 +643,7 @@ void deeplearn_set_outputs(deeplearn * learner, deeplearndata * sample)
  */
 void deeplearn_get_outputs(deeplearn * learner, float * outputs)
 {
-    COUNTDOWN(i, learner->net->NoOfOutputs) {
+    COUNTDOWN(i, learner->net->no_of_outputs) {
         float value = deeplearn_get_output(learner, i);
         float range =
             learner->output_range_max[i] - learner->output_range_min[i];
@@ -674,7 +674,7 @@ int deeplearn_get_class(deeplearn * learner)
     int class = -9999;
     float max = -1;
 
-    COUNTDOWN(i, learner->net->NoOfOutputs) {
+    COUNTDOWN(i, learner->net->no_of_outputs) {
         if (bp_get_output(learner->net, i) > max) {
             max = bp_get_output(learner->net, i);
             class = i;
@@ -690,7 +690,7 @@ int deeplearn_get_class(deeplearn * learner)
  */
 void deeplearn_set_class(deeplearn * learner, int class)
 {
-    COUNTDOWN(i, learner->net->NoOfOutputs) {
+    COUNTDOWN(i, learner->net->no_of_outputs) {
         if (i != class)
             bp_set_output(learner->net, i, 0.25f);
         else
@@ -715,7 +715,7 @@ int deeplearn_save(FILE * fp, deeplearn * learner)
     if (INTWRITE(learner->current_hidden_layer) == 0)
         return -3;
 
-    if (FLOATWRITE(learner->BPerror) == 0)
+    if (FLOATWRITE(learner->backprop_error) == 0)
         return -4;
 
     if (INTWRITE(learner->no_of_input_fields) == 0)
@@ -730,32 +730,32 @@ int deeplearn_save(FILE * fp, deeplearn * learner)
     if (bp_save(fp, learner->net) != 0)
         return -7;
 
-    COUNTUP(i, learner->net->HiddenLayers) {
+    COUNTUP(i, learner->net->hidden_layers) {
         if (autocoder_save(fp, learner->autocoder[i]) != 0)
             return -8;
     }
 
     /* save error thresholds */
     if (FLOATWRITEARRAY(learner->error_threshold,
-                        learner->net->HiddenLayers+1) == 0) {
+                        learner->net->hidden_layers+1) == 0) {
         return -9;
     }
 
     /* save ranges */
     if (FLOATWRITEARRAY(learner->input_range_min,
-                        learner->net->NoOfInputs) == 0)
+                        learner->net->no_of_inputs) == 0)
         return -10;
 
     if (FLOATWRITEARRAY(learner->input_range_max,
-                        learner->net->NoOfInputs) == 0)
+                        learner->net->no_of_inputs) == 0)
         return -11;
 
     if (FLOATWRITEARRAY(learner->output_range_min,
-                        learner->net->NoOfOutputs) == 0)
+                        learner->net->no_of_outputs) == 0)
         return -12;
 
     if (FLOATWRITEARRAY(learner->output_range_max,
-                        learner->net->NoOfOutputs) == 0)
+                        learner->net->no_of_outputs) == 0)
         return -13;
 
     /* save the history */
@@ -804,7 +804,7 @@ int deeplearn_load(FILE * fp, deeplearn * learner,
     if (INTREAD(learner->current_hidden_layer) == 0)
         return -3;
 
-    if (FLOATREAD(learner->BPerror) == 0)
+    if (FLOATREAD(learner->backprop_error) == 0)
         return -4;
 
     if (INTREAD(learner->no_of_input_fields) == 0)
@@ -824,53 +824,53 @@ int deeplearn_load(FILE * fp, deeplearn * learner,
     if (bp_load(fp, learner->net, random_seed) != 0)
         return -7;
 
-    learner->autocoder = (ac**)malloc(sizeof(ac*)*learner->net->HiddenLayers);
+    learner->autocoder = (ac**)malloc(sizeof(ac*)*learner->net->hidden_layers);
     if (!learner->autocoder)
         return -8;
 
-    COUNTUP(i, learner->net->HiddenLayers) {
+    COUNTUP(i, learner->net->hidden_layers) {
         learner->autocoder[i] = (ac*)malloc(sizeof(ac));
         if (autocoder_load(fp, learner->autocoder[i], 1) != 0)
             return -9;
     }
 
     /* load error thresholds */
-    FLOATALLOC(learner->error_threshold, learner->net->HiddenLayers+1);
+    FLOATALLOC(learner->error_threshold, learner->net->hidden_layers+1);
     if (FLOATREADARRAY(learner->error_threshold,
-                       learner->net->HiddenLayers+1) == 0)
+                       learner->net->hidden_layers+1) == 0)
         return -10;
 
     /* load ranges */
-    FLOATALLOC(learner->input_range_min, learner->net->NoOfInputs);
+    FLOATALLOC(learner->input_range_min, learner->net->no_of_inputs);
     if (!learner->input_range_min)
         return -15;
 
-    FLOATALLOC(learner->input_range_max, learner->net->NoOfInputs);
+    FLOATALLOC(learner->input_range_max, learner->net->no_of_inputs);
     if (!learner->input_range_max)
         return -16;
 
-    FLOATALLOC(learner->output_range_min, learner->net->NoOfOutputs);
+    FLOATALLOC(learner->output_range_min, learner->net->no_of_outputs);
     if (!learner->output_range_min)
         return -17;
 
-    FLOATALLOC(learner->output_range_max, learner->net->NoOfOutputs);
+    FLOATALLOC(learner->output_range_max, learner->net->no_of_outputs);
     if (!learner->output_range_max)
         return -18;
 
     if (FLOATREADARRAY(learner->input_range_min,
-                       learner->net->NoOfInputs) == 0)
+                       learner->net->no_of_inputs) == 0)
         return -19;
 
     if (FLOATREADARRAY(learner->input_range_max,
-                       learner->net->NoOfInputs) == 0)
+                       learner->net->no_of_inputs) == 0)
         return -20;
 
     if (FLOATREADARRAY(learner->output_range_min,
-                       learner->net->NoOfOutputs) == 0)
+                       learner->net->no_of_outputs) == 0)
         return -21;
 
     if (FLOATREADARRAY(learner->output_range_max,
-                       learner->net->NoOfOutputs) == 0)
+                       learner->net->no_of_outputs) == 0)
         return -22;
 
     /* load the history */
@@ -905,7 +905,7 @@ int deeplearn_compare(deeplearn * learner1,
         learner2->current_hidden_layer)
         return -1;
 
-    if (learner1->BPerror != learner2->BPerror)
+    if (learner1->backprop_error != learner2->backprop_error)
         return -2;
 
     retval = bp_compare(learner1->net,learner2->net);
@@ -932,13 +932,13 @@ int deeplearn_compare(deeplearn * learner1,
         learner2->itterations)
         return -9;
 
-    COUNTDOWN(i, learner1->net->HiddenLayers+1) {
+    COUNTDOWN(i, learner1->net->hidden_layers+1) {
         if (learner1->error_threshold[i] !=
             learner2->error_threshold[i])
             return -10;
     }
 
-    COUNTDOWN(i, learner1->net->NoOfInputs) {
+    COUNTDOWN(i, learner1->net->no_of_inputs) {
         if (learner1->input_range_min[i] !=
             learner2->input_range_min[i])
             return -11;
@@ -948,7 +948,7 @@ int deeplearn_compare(deeplearn * learner1,
             return -12;
     }
 
-    COUNTDOWN(i, learner1->net->NoOfOutputs) {
+    COUNTDOWN(i, learner1->net->no_of_outputs) {
         if (learner1->output_range_min[i] !=
             learner2->output_range_min[i])
             return -13;
@@ -1089,10 +1089,10 @@ int deeplearn_inputs_from_convnet(deeplearn * learner, deeplearn_conv * conv)
  */
 void deeplearn_set_learning_rate(deeplearn * learner, float rate)
 {
-    learner->net->learningRate = rate;
+    learner->net->learning_rate = rate;
 
-    COUNTDOWN(i, learner->net->HiddenLayers)
-        learner->autocoder[i]->learningRate = rate;
+    COUNTDOWN(i, learner->net->hidden_layers)
+        learner->autocoder[i]->learning_rate = rate;
 }
 
 /**
@@ -1102,10 +1102,10 @@ void deeplearn_set_learning_rate(deeplearn * learner, float rate)
  */
 void deeplearn_set_dropouts(deeplearn * learner, float dropout_percent)
 {
-    learner->net->DropoutPercent = dropout_percent;
+    learner->net->dropout_percent = dropout_percent;
 
-    COUNTDOWN(i, learner->net->HiddenLayers)
-        learner->autocoder[i]->DropoutPercent = dropout_percent;
+    COUNTDOWN(i, learner->net->hidden_layers)
+        learner->autocoder[i]->dropout_percent = dropout_percent;
 }
 
 /**
@@ -1151,13 +1151,13 @@ static int deeplearn_export_c_base(deeplearn * learner, int export_type,
                 learner->no_of_input_fields);
 
     fprintf(fp, "const int no_of_inputs = %d;\n",
-            learner->net->NoOfInputs);
+            learner->net->no_of_inputs);
     fprintf(fp, "const int no_of_hiddens = %d;\n",
-            learner->net->NoOfHiddens);
+            learner->net->no_of_hiddens);
     fprintf(fp, "const int no_of_outputs = %d;\n",
-            learner->net->NoOfOutputs);
+            learner->net->no_of_outputs);
     fprintf(fp, "const int hidden_layers = %d;\n\n",
-            learner->net->HiddenLayers);
+            learner->net->hidden_layers);
 
     /* field lengths */
     if (learner->field_length != 0) {
@@ -1176,44 +1176,44 @@ static int deeplearn_export_c_base(deeplearn * learner, int export_type,
     /* ranges */
     fprintf(fp, "%s", "float input_range_min[] = {\n");
     fprintf(fp, "%s", "  ");
-    COUNTUP(i, learner->net->NoOfInputs) {
+    COUNTUP(i, learner->net->no_of_inputs) {
         fprintf(fp, "%.10f", learner->input_range_min[i]);
-        if (i < learner->net->NoOfInputs-1)
+        if (i < learner->net->no_of_inputs-1)
             fprintf(fp, ",");
     }
     fprintf(fp, "%s", "\n};\n\n");
     fprintf(fp, "%s", "float input_range_max[] = {\n");
     fprintf(fp, "%s", "  ");
-    COUNTUP(i, learner->net->NoOfInputs) {
+    COUNTUP(i, learner->net->no_of_inputs) {
         fprintf(fp, "%.10f", learner->input_range_max[i]);
-        if (i < learner->net->NoOfInputs-1)
+        if (i < learner->net->no_of_inputs-1)
             fprintf(fp, ",");
     }
     fprintf(fp, "%s", "\n};\n\n");
     fprintf(fp, "%s", "float output_range_min[] = {\n");
     fprintf(fp, "%s", "  ");
-    COUNTUP(i, learner->net->NoOfOutputs) {
+    COUNTUP(i, learner->net->no_of_outputs) {
         fprintf(fp, "%.10f", learner->output_range_min[i]);
-        if (i < learner->net->NoOfOutputs-1)
+        if (i < learner->net->no_of_outputs-1)
             fprintf(fp, ",");
     }
     fprintf(fp, "%s", "\n};\n\n");
     fprintf(fp, "%s", "float output_range_max[] = {\n");
     fprintf(fp, "%s", "  ");
-    COUNTUP(i, learner->net->NoOfOutputs) {
+    COUNTUP(i, learner->net->no_of_outputs) {
         fprintf(fp, "%.10f", learner->output_range_max[i]);
-        if (i < learner->net->NoOfOutputs-1)
+        if (i < learner->net->no_of_outputs-1)
             fprintf(fp, ",");
     }
     fprintf(fp, "%s", "\n};\n\n");
 
     /* hidden unit weights */
-    COUNTUP(i, learner->net->HiddenLayers) {
+    COUNTUP(i, learner->net->hidden_layers) {
         fprintf(fp,
                 "float hidden_layer_%d_weights[] = {\n  ", i);
 
         if (i == 0)
-            no_of_weights = learner->net->NoOfInputs;
+            no_of_weights = learner->net->no_of_inputs;
         else
             no_of_weights = HIDDENS_IN_LAYER(learner->net, i-1);
 
@@ -1230,7 +1230,7 @@ static int deeplearn_export_c_base(deeplearn * learner, int export_type,
     }
 
     /* hidden unit biases */
-    COUNTUP(i, learner->net->HiddenLayers) {
+    COUNTUP(i, learner->net->hidden_layers) {
         fprintf(fp,
                 "float hidden_layer_%d_bias[] = {\n  ", i);
         COUNTUP(j, HIDDENS_IN_LAYER(learner->net, i)) {
@@ -1244,14 +1244,14 @@ static int deeplearn_export_c_base(deeplearn * learner, int export_type,
     /* output unit weights */
     fprintf(fp, "%s",
             "float output_layer_weights[] = {\n  ");
-    COUNTUP(i, learner->net->NoOfOutputs) {
+    COUNTUP(i, learner->net->no_of_outputs) {
         COUNTUP(j, HIDDENS_IN_LAYER(learner->net,
-                                       learner->net->HiddenLayers-1)) {
+                                       learner->net->hidden_layers-1)) {
             fprintf(fp, "%.10f",
                     learner->net->outputs[i]->weights[j]);
-            if (!((i == learner->net->NoOfOutputs-1) &&
+            if (!((i == learner->net->no_of_outputs-1) &&
                   (j == HIDDENS_IN_LAYER(learner->net,
-                                            learner->net->HiddenLayers-1)-1)))
+                                            learner->net->hidden_layers-1)-1)))
                 fprintf(fp, ",");
         }
     }
@@ -1260,18 +1260,18 @@ static int deeplearn_export_c_base(deeplearn * learner, int export_type,
     /* output unit biases */
     fprintf(fp, "%s",
             "float output_layer_bias[] = {\n  ");
-    COUNTUP(i, learner->net->NoOfOutputs) {
+    COUNTUP(i, learner->net->no_of_outputs) {
         fprintf(fp, "%.10f",
                 learner->net->outputs[i]->bias);
-        if (i < learner->net->NoOfOutputs-1)
+        if (i < learner->net->no_of_outputs-1)
             fprintf(fp, ",");
     }
     fprintf(fp, "%s", "\n};\n\n");
-    fprintf(fp, "float inputs[%d];\n",learner->net->NoOfInputs);
-    fprintf(fp, "float network_inputs[%d];\n",learner->net->NoOfInputs);
-    fprintf(fp, "float prev_hiddens[%d];\n",learner->net->NoOfHiddens);
-    fprintf(fp, "float hiddens[%d];\n",learner->net->NoOfHiddens);
-    fprintf(fp, "float outputs[%d];\n\n",learner->net->NoOfOutputs);
+    fprintf(fp, "float inputs[%d];\n",learner->net->no_of_inputs);
+    fprintf(fp, "float network_inputs[%d];\n",learner->net->no_of_inputs);
+    fprintf(fp, "float prev_hiddens[%d];\n",learner->net->no_of_hiddens);
+    fprintf(fp, "float hiddens[%d];\n",learner->net->no_of_hiddens);
+    fprintf(fp, "float outputs[%d];\n\n",learner->net->no_of_outputs);
 
     if (learner->no_of_input_fields > 0) {
         fprintf(fp, "%s", "/* Encode some text into the input units */\n");
@@ -1344,7 +1344,7 @@ static int deeplearn_export_c_base(deeplearn * learner, int export_type,
     if (export_type == EXPORT_C99) {
         if (learner->no_of_input_fields == 0)
             fprintf(fp, "  if (argc < %d) return -1;\n\n",
-                    learner->net->NoOfInputs);
+                    learner->net->no_of_inputs);
         else
             fprintf(fp, "  if (argc < %d) return -1;\n\n",
                     learner->no_of_input_fields);
@@ -1357,7 +1357,7 @@ static int deeplearn_export_c_base(deeplearn * learner, int export_type,
     }
     else {
         fprintf(fp, "%s", "  /* Change the read pin numbers as needed */\n");
-        COUNTUP(i, learner->net->NoOfInputs)
+        COUNTUP(i, learner->net->no_of_inputs)
             fprintf(fp, "  inputs[%d] = analogRead(%d);\n", i, i);
         fprintf(fp, "%s", "\n");
     }
@@ -1422,7 +1422,7 @@ static int deeplearn_export_c_base(deeplearn * learner, int export_type,
     fprintf(fp, "%s", "  for (i = 0; i < no_of_hiddens; i++) {\n");
     fprintf(fp, "%s", "    prev_hiddens[i] = hiddens[i];\n");
     fprintf(fp, "%s", "  }\n\n");
-    for (int i = 1; i < learner->net->HiddenLayers; i++) {
+    for (int i = 1; i < learner->net->hidden_layers; i++) {
         fprintf(fp, "  /* Hidden layer %d */\n", i);
         fprintf(fp, "  for (i = 0; i < %d; i++) {\n",
                 HIDDENS_IN_LAYER(learner->net,i));
@@ -1444,9 +1444,9 @@ static int deeplearn_export_c_base(deeplearn * learner, int export_type,
     fprintf(fp, "%s", "  for (i = 0; i < no_of_outputs; i++) {\n");
     fprintf(fp, "%s", "    sum = output_layer_bias[i];\n");
     fprintf(fp, "    for (j = 0; j < %d; j++) {\n",
-            HIDDENS_IN_LAYER(learner->net,learner->net->HiddenLayers-1));
+            HIDDENS_IN_LAYER(learner->net,learner->net->hidden_layers-1));
     fprintf(fp, "      sum += output_layer_weights[i*%d+j]*prev_hiddens[j];\n",
-            HIDDENS_IN_LAYER(learner->net,learner->net->HiddenLayers-1));
+            HIDDENS_IN_LAYER(learner->net,learner->net->hidden_layers-1));
     fprintf(fp, "%s", "    }\n");
     fprintf(fp, "%s", "    outputs[i] = AF(sum);\n");
     fprintf(fp, "%s", "  }\n\n");
@@ -1533,13 +1533,13 @@ static int deeplearn_export_python(deeplearn * learner, char * filename)
                 learner->no_of_input_fields);
     }
     fprintf(fp, "  no_of_inputs = %d\n",
-            learner->net->NoOfInputs);
+            learner->net->no_of_inputs);
     fprintf(fp, "  no_of_hiddens = %d\n",
-            learner->net->NoOfHiddens);
+            learner->net->no_of_hiddens);
     fprintf(fp, "  no_of_outputs = %d\n",
-            learner->net->NoOfOutputs);
+            learner->net->no_of_outputs);
     fprintf(fp, "  hidden_layers = %d\n\n",
-            learner->net->HiddenLayers);
+            learner->net->hidden_layers);
 
     /* field lengths */
     if (learner->field_length != 0) {
@@ -1556,41 +1556,41 @@ static int deeplearn_export_python(deeplearn * learner, char * filename)
 
     /* ranges */
     fprintf(fp, "%s", "  input_range_min = [");
-    COUNTUP(i, learner->net->NoOfInputs) {
+    COUNTUP(i, learner->net->no_of_inputs) {
         fprintf(fp, "%.10f", learner->input_range_min[i]);
-        if (i < learner->net->NoOfInputs-1)
+        if (i < learner->net->no_of_inputs-1)
             fprintf(fp, ",");
     }
     fprintf(fp, "%s", "]\n\n");
     fprintf(fp, "%s", "  input_range_max = [");
-    COUNTUP(i, learner->net->NoOfInputs) {
+    COUNTUP(i, learner->net->no_of_inputs) {
         fprintf(fp, "%.10f", learner->input_range_max[i]);
-        if (i < learner->net->NoOfInputs-1)
+        if (i < learner->net->no_of_inputs-1)
             fprintf(fp, ",");
     }
     fprintf(fp, "%s", "]\n\n");
     fprintf(fp, "%s", "  output_range_min = [");
-    COUNTUP(i, learner->net->NoOfOutputs) {
+    COUNTUP(i, learner->net->no_of_outputs) {
         fprintf(fp, "%.10f", learner->output_range_min[i]);
-        if (i < learner->net->NoOfOutputs-1)
+        if (i < learner->net->no_of_outputs-1)
             fprintf(fp, ",");
     }
     fprintf(fp, "%s", "]\n\n");
     fprintf(fp, "%s", "  output_range_max = [");
-    COUNTUP(i, learner->net->NoOfOutputs) {
+    COUNTUP(i, learner->net->no_of_outputs) {
         fprintf(fp, "%.10f", learner->output_range_max[i]);
-        if (i < learner->net->NoOfOutputs-1)
+        if (i < learner->net->no_of_outputs-1)
             fprintf(fp, ",");
     }
     fprintf(fp, "]\n\n");
 
     /* hidden unit weights */
-    COUNTUP(i, learner->net->HiddenLayers) {
+    COUNTUP(i, learner->net->hidden_layers) {
         fprintf(fp,
                 "  hidden_layer_%d_weights = [", i);
 
         if (i == 0)
-            no_of_weights = learner->net->NoOfInputs;
+            no_of_weights = learner->net->no_of_inputs;
         else
             no_of_weights = HIDDENS_IN_LAYER(learner->net, i-1);
 
@@ -1607,7 +1607,7 @@ static int deeplearn_export_python(deeplearn * learner, char * filename)
     }
 
     /* hidden unit biases */
-    COUNTUP(i, learner->net->HiddenLayers) {
+    COUNTUP(i, learner->net->hidden_layers) {
         fprintf(fp,
                 "  hidden_layer_%d_bias = [", i);
         COUNTUP(j, HIDDENS_IN_LAYER(learner->net, i)) {
@@ -1621,14 +1621,14 @@ static int deeplearn_export_python(deeplearn * learner, char * filename)
     /* output unit weights */
     fprintf(fp,
             "  output_layer_weights = [");
-    COUNTUP(i, learner->net->NoOfOutputs) {
+    COUNTUP(i, learner->net->no_of_outputs) {
         COUNTUP(j, HIDDENS_IN_LAYER(learner->net,
-                                       learner->net->HiddenLayers-1)) {
+                                       learner->net->hidden_layers-1)) {
             fprintf(fp, "%.10f",
                     learner->net->outputs[i]->weights[j]);
-            if (!((i == learner->net->NoOfOutputs-1) &&
+            if (!((i == learner->net->no_of_outputs-1) &&
                   (j == HIDDENS_IN_LAYER(learner->net,
-                                            learner->net->HiddenLayers-1)-1)))
+                                            learner->net->hidden_layers-1)-1)))
                 fprintf(fp, ",");
         }
     }
@@ -1637,10 +1637,10 @@ static int deeplearn_export_python(deeplearn * learner, char * filename)
     /* output unit biases */
     fprintf(fp, "%s",
             "  output_layer_bias = [");
-    COUNTUP(i, learner->net->NoOfOutputs) {
+    COUNTUP(i, learner->net->no_of_outputs) {
         fprintf(fp, "%.10f",
                 learner->net->outputs[i]->bias);
-        if (i < learner->net->NoOfOutputs-1)
+        if (i < learner->net->no_of_outputs-1)
             fprintf(fp, ",");
     }
     fprintf(fp, "%s", "]\n\n\n");
@@ -1716,7 +1716,7 @@ static int deeplearn_export_python(deeplearn * learner, char * filename)
     fprintf(fp, "%s", "    outputs = []\n\n");
 
     if (learner->no_of_input_fields == 0)
-        fprintf(fp, "    if len(inputs) < %d:\n", learner->net->NoOfInputs);
+        fprintf(fp, "    if len(inputs) < %d:\n", learner->net->no_of_inputs);
     else
         fprintf(fp, "    if len(inputs) < %d:\n", learner->no_of_input_fields);
 
@@ -1766,7 +1766,7 @@ static int deeplearn_export_python(deeplearn * learner, char * filename)
     fprintf(fp, "%s", "      hiddens.append(this.af(adder))\n");
     fprintf(fp, "%s", "    for i in range(this.no_of_hiddens):\n");
     fprintf(fp, "%s", "      prev_hiddens.append(hiddens[i])\n\n");
-    for (int i = 1; i < learner->net->HiddenLayers; i++) {
+    for (int i = 1; i < learner->net->hidden_layers; i++) {
         fprintf(fp, "    # Hidden layer %d\n", i);
         fprintf(fp, "    for i in range(%d):\n",
                 HIDDENS_IN_LAYER(learner->net,i));
@@ -1785,10 +1785,10 @@ static int deeplearn_export_python(deeplearn * learner, char * filename)
     fprintf(fp, "%s", "    for i in range(this.no_of_outputs):\n");
     fprintf(fp, "%s", "      adder = this.output_layer_bias[i]\n");
     fprintf(fp, "      for j in range(%d):\n",
-            HIDDENS_IN_LAYER(learner->net,learner->net->HiddenLayers-1));
+            HIDDENS_IN_LAYER(learner->net,learner->net->hidden_layers-1));
     fprintf(fp, "        adder = adder + " \
             "this.output_layer_weights[i*%d+j]*prev_hiddens[j]\n",
-            HIDDENS_IN_LAYER(learner->net,learner->net->HiddenLayers-1));
+            HIDDENS_IN_LAYER(learner->net,learner->net->hidden_layers-1));
     fprintf(fp, "%s", "      outputs.append(this.af(adder))\n\n");
     fprintf(fp, "%s",
             "    # Convert outputs from 0.25 - 0.75 " \

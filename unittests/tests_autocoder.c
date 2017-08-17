@@ -115,7 +115,7 @@ static void test_autocoder_update()
                           no_of_inputs,
                           no_of_hiddens,
                           random_seed) == 0);
-    autocoder.DropoutPercent = 0.1f;
+    autocoder.dropout_percent = 0.1f;
     autocoder.noise = 0;
 
     /* set some inputs */
@@ -127,13 +127,13 @@ static void test_autocoder_update()
     for (int t = 0; t < 100; t++) {
         autocoder_update(&autocoder);
     }
-    float initialErrorPercent = autocoder.BPerrorPercent;
+    float initialErrorPercent = autocoder.backprop_error_percent;
     assert(initialErrorPercent > 0);
     assert(initialErrorPercent < 100);
     for (int t = 0; t < 100; t++) {
         autocoder_update(&autocoder);
     }
-    float secondErrorPercent = autocoder.BPerrorPercent;
+    float secondErrorPercent = autocoder.backprop_error_percent;
     assert(secondErrorPercent > 0);
     assert(secondErrorPercent < 100);
     if (secondErrorPercent >= initialErrorPercent) {
@@ -145,7 +145,7 @@ static void test_autocoder_update()
     for (int t = 0; t < 100; t++) {
         autocoder_update(&autocoder);
     }
-    float thirdErrorPercent = autocoder.BPerrorPercent;
+    float thirdErrorPercent = autocoder.backprop_error_percent;
     assert(thirdErrorPercent > 0);
     assert(thirdErrorPercent < 100);
     assert(thirdErrorPercent < secondErrorPercent);

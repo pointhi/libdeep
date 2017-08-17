@@ -210,16 +210,16 @@ static void test_backprop2()
     /* set some inputs */
     for (i = 0; i < no_of_inputs; i++) {
         bp_set_input(&net, i, i/(float)no_of_inputs);
-        (&net)->inputs[i]->BPerror = 999;
+        (&net)->inputs[i]->backprop_error = 999;
     }
     for (l = 0; l < hidden_layers; l++) {
         for (i = 0; i < HIDDENS_IN_LAYER(&net,l); i++) {
-            (&net)->hiddens[l][i]->BPerror = 999;
+            (&net)->hiddens[l][i]->backprop_error = 999;
         }
     }
     /* set some target outputs */
     for (i = 0; i < no_of_outputs; i++) {
-        (&net)->outputs[i]->BPerror = 999;
+        (&net)->outputs[i]->backprop_error = 999;
         bp_set_output(&net, i, i/(float)no_of_inputs);
     }
 
@@ -229,15 +229,15 @@ static void test_backprop2()
 
     /* check for non-zero backprop error values */
     for (i = 0; i < no_of_inputs; i++) {
-        assert((&net)->inputs[i]->BPerror != 999);
+        assert((&net)->inputs[i]->backprop_error != 999);
     }
     for (l = 0; l < hidden_layers; l++) {
         for (i = 0; i < HIDDENS_IN_LAYER(&net,l); i++) {
-            assert((&net)->hiddens[l][i]->BPerror != 999);
+            assert((&net)->hiddens[l][i]->backprop_error != 999);
         }
     }
     for (i = 0; i < no_of_outputs; i++) {
-        assert((&net)->outputs[i]->BPerror != 999);
+        assert((&net)->outputs[i]->backprop_error != 999);
     }
 
     bp_free(&net);
@@ -268,16 +268,16 @@ static void test_backprop1()
     /* set some inputs */
     for (i = 0; i < no_of_inputs; i++) {
         bp_set_input(&net, i, i/(float)no_of_inputs);
-        (&net)->inputs[i]->BPerror = 999;
+        (&net)->inputs[i]->backprop_error = 999;
     }
     for (l = 0; l < hidden_layers; l++) {
         for (i = 0; i < HIDDENS_IN_LAYER(&net,l); i++) {
-            (&net)->hiddens[l][i]->BPerror = 999;
+            (&net)->hiddens[l][i]->backprop_error = 999;
         }
     }
     /* set some target outputs */
     for (i = 0; i < no_of_outputs; i++) {
-        (&net)->outputs[i]->BPerror = 999;
+        (&net)->outputs[i]->backprop_error = 999;
         bp_set_output(&net, i, i/(float)no_of_inputs);
     }
 
@@ -287,15 +287,15 @@ static void test_backprop1()
 
     /* check for non-zero backprop error values */
     for (i = 0; i < no_of_inputs; i++) {
-        assert((&net)->inputs[i]->BPerror != 999);
+        assert((&net)->inputs[i]->backprop_error != 999);
     }
     for (l = 0; l < hidden_layers; l++) {
         for (i = 0; i < HIDDENS_IN_LAYER(&net,l); i++) {
-            assert((&net)->hiddens[l][i]->BPerror != 999);
+            assert((&net)->hiddens[l][i]->backprop_error != 999);
         }
     }
     for (i = 0; i < no_of_outputs; i++) {
-        assert((&net)->outputs[i]->BPerror != 999);
+        assert((&net)->outputs[i]->backprop_error != 999);
     }
 
     bp_free(&net);
@@ -455,7 +455,7 @@ static void test_backprop_autocoder()
             no_of_outputs,
             &random_seed);
 
-    autocoder.learningRate = 0.5f;
+    autocoder.learning_rate = 0.5f;
 
     /* run the autocoder for some itterations */
     for (itt = 0; itt < 100; itt++) {
@@ -470,12 +470,12 @@ static void test_backprop_autocoder()
 
     for (i = 0; i < no_of_hiddens; i++) {
         /* check that some errors have been back-propogated */
-        assert((&autocoder)->hiddens[0][i]->BPerror != 0);
+        assert((&autocoder)->hiddens[0][i]->backprop_error != 0);
         /* check that weights have changed */
         tot = 0;
         for (j = 0; j < no_of_inputs; j++) {
-            assert((&autocoder)->hiddens[0][i]->lastWeightChange[j]!=0);
-            tot += fabs((&autocoder)->hiddens[0][i]->lastWeightChange[j]);
+            assert((&autocoder)->hiddens[0][i]->last_weight_change[j]!=0);
+            tot += fabs((&autocoder)->hiddens[0][i]->last_weight_change[j]);
         }
         /* total weight change */
         assert(tot > 0.00001f);

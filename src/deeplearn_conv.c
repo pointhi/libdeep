@@ -711,7 +711,7 @@ int bp_inputs_from_convnet(bp * net, deeplearn_conv * conv)
 {
     /* check that the number of inputs is the same as the
        number of convolution network outputs */
-    if(net->NoOfInputs != conv->no_of_outputs)
+    if(net->no_of_inputs != conv->no_of_outputs)
         return 1;
 
     /* set the inputs */

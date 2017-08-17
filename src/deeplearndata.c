@@ -742,8 +742,8 @@ int deeplearndata_training(deeplearn * learner)
     }
     learner->training_ctr++;
 
-    if ((learner->net->HiddenLayers > 1) &&
-        (learner->current_hidden_layer < learner->net->HiddenLayers)) {
+    if ((learner->net->hidden_layers > 1) &&
+        (learner->current_hidden_layer < learner->net->hidden_layers)) {
         /* index number of a random training sample */
         int index =
             rand_num(&learner->net->random_seed)%
@@ -783,7 +783,7 @@ float deeplearndata_get_performance(deeplearn * learner)
     float error_percent, total_error=0, average_error;
     float * outputs;
 
-    FLOATALLOC(outputs, learner->net->NoOfOutputs);
+    FLOATALLOC(outputs, learner->net->no_of_outputs);
 
     COUNTUP(index, learner->test_data_samples) {
         deeplearndata * sample = deeplearndata_get_test(learner, index);
@@ -791,7 +791,7 @@ float deeplearndata_get_performance(deeplearn * learner)
         deeplearn_feed_forward(learner);
         deeplearn_get_outputs(learner, outputs);
 
-        COUNTUP(i, learner->net->NoOfOutputs) {
+        COUNTUP(i, learner->net->no_of_outputs) {
             if (sample->outputs[i] != 0) {
                 error_percent =
                     (sample->outputs[i] - outputs[i]) / sample->outputs[i];

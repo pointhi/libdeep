@@ -42,19 +42,19 @@
 #include "deeplearn_random.h"
 
 struct bp_n {
-    int NoOfInputs;
+    int no_of_inputs;
     float * weights;
-    float * lastWeightChange;
+    float * last_weight_change;
     struct bp_n ** inputs;
     float min_weight,max_weight;
     float bias;
-    float lastBiasChange;
-    float BPerror;
+    float last_bias_change;
+    float backprop_error;
     int excluded;
 
     float value;
     float value_reprojected;
-    float desiredValue;
+    float desired_value;
 };
 typedef struct bp_n bp_neuron;
 
@@ -74,7 +74,7 @@ void bp_neuron_feedForward(bp_neuron * n,
                            unsigned int * random_seed);
 void bp_neuron_backprop(bp_neuron * n);
 void bp_neuron_learn(bp_neuron * n,
-                     float learningRate);
+                     float learning_rate);
 void bp_neuron_free(bp_neuron * n);
 void bp_neuron_copy(bp_neuron * source,
                     bp_neuron * dest);

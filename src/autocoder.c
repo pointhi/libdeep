@@ -42,8 +42,8 @@ int autocoder_init(ac * autocoder,
                    int no_of_hiddens,
                    unsigned int random_seed)
 {
-    autocoder->NoOfInputs = no_of_inputs;
-    autocoder->NoOfHiddens = no_of_hiddens;
+    autocoder->no_of_inputs = no_of_inputs;
+    autocoder->no_of_hiddens = no_of_hiddens;
 
     FLOATALLOC(autocoder->inputs, no_of_inputs);
     if (!autocoder->inputs)
@@ -61,8 +61,8 @@ int autocoder_init(ac * autocoder,
     if (!autocoder->weights)
         return -4;
 
-    FLOATALLOC(autocoder->lastWeightChange, no_of_hiddens*no_of_inputs);
-    if (!autocoder->lastWeightChange)
+    FLOATALLOC(autocoder->last_weight_change, no_of_hiddens*no_of_inputs);
+    if (!autocoder->last_weight_change)
         return -5;
 
     FLOATALLOC(autocoder->outputs, no_of_inputs);
@@ -73,23 +73,23 @@ int autocoder_init(ac * autocoder,
     if (!autocoder->bperr)
         return -7;
 
-    FLOATALLOC(autocoder->lastBiasChange, no_of_hiddens);
-    if (!autocoder->lastBiasChange)
+    FLOATALLOC(autocoder->last_bias_change, no_of_hiddens);
+    if (!autocoder->last_bias_change)
         return -8;
 
     FLOATCLEAR(autocoder->inputs, no_of_inputs);
     FLOATCLEAR(autocoder->outputs, no_of_inputs);
     FLOATCLEAR(autocoder->hiddens, no_of_hiddens);
-    FLOATCLEAR(autocoder->lastWeightChange, no_of_hiddens*no_of_inputs);
+    FLOATCLEAR(autocoder->last_weight_change, no_of_hiddens*no_of_inputs);
     FLOATCLEAR(autocoder->bperr, no_of_hiddens);
-    FLOATCLEAR(autocoder->lastBiasChange, no_of_hiddens);
-    autocoder->BPerror = AUTOCODER_UNKNOWN;
-    autocoder->BPerrorAverage = AUTOCODER_UNKNOWN;
-    autocoder->learningRate = 0.2f;
+    FLOATCLEAR(autocoder->last_bias_change, no_of_hiddens);
+    autocoder->backprop_error = AUTOCODER_UNKNOWN;
+    autocoder->backprop_error_average = AUTOCODER_UNKNOWN;
+    autocoder->learning_rate = 0.2f;
     autocoder->noise = 0;
     autocoder->random_seed = random_seed;
     autocoder->itterations = 0;
-    autocoder->DropoutPercent = 0.01f;
+    autocoder->dropout_percent = 0.01f;
 
     /* initial small random values */
     COUNTDOWN(h, no_of_hiddens) {
@@ -113,9 +113,9 @@ void autocoder_free(ac * autocoder)
     free(autocoder->hiddens);
     free(autocoder->bias);
     free(autocoder->weights);
-    free(autocoder->lastWeightChange);
+    free(autocoder->last_weight_change);
     free(autocoder->bperr);
-    free(autocoder->lastBiasChange);
+    free(autocoder->last_bias_change);
 }
 
 /**
@@ -127,10 +127,10 @@ void autocoder_free(ac * autocoder)
 void autocoder_encode(ac * autocoder, float * encoded,
                       unsigned char use_dropouts)
 {
-    COUNTDOWN(h, autocoder->NoOfHiddens) {
+    COUNTDOWN(h, autocoder->no_of_hiddens) {
         if (use_dropouts != 0) {
             if (rand_num(&autocoder->random_seed)%10000 <
-                autocoder->DropoutPercent*100) {
+                autocoder->dropout_percent*100) {
                 autocoder->hiddens[h] = (int)AUTOCODER_DROPPED_OUT;
                 continue;
             }
@@ -138,9 +138,9 @@ void autocoder_encode(ac * autocoder, float * encoded,
 
         /* weighted sum of inputs */
         float adder = autocoder->bias[h];
-        float * w = &autocoder->weights[h*autocoder->NoOfInputs];
+        float * w = &autocoder->weights[h*autocoder->no_of_inputs];
         float * inp = &autocoder->inputs[0];
-        int i = autocoder->NoOfInputs-1;
+        int i = autocoder->no_of_inputs-1;
         while (i >= 0) {
             adder += w[i] * inp[i];
             i--;
@@ -164,13 +164,13 @@ void autocoder_encode(ac * autocoder, float * encoded,
  */
 void autocoder_decode(ac * autocoder, float * decoded)
 {
-    COUNTDOWN(i, autocoder->NoOfInputs) {
+    COUNTDOWN(i, autocoder->no_of_inputs) {
         /* weighted sum of hidden inputs */
         float adder = 0;
-        int h = autocoder->NoOfHiddens-1;
+        int h = autocoder->no_of_hiddens-1;
         float * w = &autocoder->weights[i];
         float * inp = &autocoder->hiddens[0];
-        int step = autocoder->NoOfInputs;
+        int step = autocoder->no_of_inputs;
         int ctr = h*step;
         while (h >= 0) {
             if (inp[h] != AUTOCODER_DROPPED_OUT)
@@ -208,20 +208,20 @@ void autocoder_feed_forward(ac * autocoder)
 void autocoder_backprop(ac * autocoder)
 {
     /* clear the backptop error for each hidden unit */
-    FLOATCLEAR(autocoder->bperr, autocoder->NoOfHiddens);
+    FLOATCLEAR(autocoder->bperr, autocoder->no_of_hiddens);
 
     /* backprop from outputs to hiddens */
-    autocoder->BPerror = 0;
+    autocoder->backprop_error = 0;
     float errorPercent = 0;
-    COUNTDOWN(i, autocoder->NoOfInputs) {
-        float BPerror = autocoder->inputs[i] - autocoder->outputs[i];
-        autocoder->BPerror += fabs(BPerror);
-        errorPercent += fabs(BPerror);
+    COUNTDOWN(i, autocoder->no_of_inputs) {
+        float backprop_error = autocoder->inputs[i] - autocoder->outputs[i];
+        autocoder->backprop_error += fabs(backprop_error);
+        errorPercent += fabs(backprop_error);
         float afact = autocoder->outputs[i] * (1.0f - autocoder->outputs[i]);
-        float bperr = BPerror * afact;
+        float bperr = backprop_error * afact;
         float * w = &autocoder->weights[i];
-        int h = autocoder->NoOfHiddens-1;
-        int step = autocoder->NoOfInputs;
+        int h = autocoder->no_of_hiddens-1;
+        int step = autocoder->no_of_inputs;
         int ctr = h*step;
         while (h >= 0) {
             if (autocoder->hiddens[h] != AUTOCODER_DROPPED_OUT)
@@ -233,19 +233,19 @@ void autocoder_backprop(ac * autocoder)
 
     /* error percentage assuming an encoding range
        of 0.25 -> 0.75 */
-    errorPercent = errorPercent * 100 / (0.6f*autocoder->NoOfInputs);
+    errorPercent = errorPercent * 100 / (0.6f*autocoder->no_of_inputs);
 
     /* update the running average */
-    if (autocoder->BPerrorAverage == AUTOCODER_UNKNOWN) {
-        autocoder->BPerrorAverage = autocoder->BPerror;
-        autocoder->BPerrorPercent = errorPercent;
+    if (autocoder->backprop_error_average == AUTOCODER_UNKNOWN) {
+        autocoder->backprop_error_average = autocoder->backprop_error;
+        autocoder->backprop_error_percent = errorPercent;
     }
     else {
-        autocoder->BPerrorAverage =
-            (autocoder->BPerrorAverage*0.999f) +
-            (autocoder->BPerror*0.001f);
-        autocoder->BPerrorPercent =
-            (autocoder->BPerrorPercent*0.999f) +
+        autocoder->backprop_error_average =
+            (autocoder->backprop_error_average*0.999f) +
+            (autocoder->backprop_error*0.001f);
+        autocoder->backprop_error_percent =
+            (autocoder->backprop_error_percent*0.999f) +
             (errorPercent*0.001f);
     }
 
@@ -261,42 +261,42 @@ void autocoder_backprop(ac * autocoder)
 void autocoder_learn(ac * autocoder)
 {
     /* weights between outputs and hiddens */
-    float e = autocoder->learningRate / (1.0f + autocoder->NoOfHiddens);
-    COUNTDOWN(i, autocoder->NoOfInputs) {
+    float e = autocoder->learning_rate / (1.0f + autocoder->no_of_hiddens);
+    COUNTDOWN(i, autocoder->no_of_inputs) {
         float afact = autocoder->outputs[i] * (1.0f - autocoder->outputs[i]);
-        float BPerror = autocoder->inputs[i] - autocoder->outputs[i];
-        float gradient = afact * BPerror;
-        int step = autocoder->NoOfInputs;
-        int n = (autocoder->NoOfHiddens-1)*step + i;
-        COUNTDOWN(h, autocoder->NoOfHiddens) {
+        float backprop_error = autocoder->inputs[i] - autocoder->outputs[i];
+        float gradient = afact * backprop_error;
+        int step = autocoder->no_of_inputs;
+        int n = (autocoder->no_of_hiddens-1)*step + i;
+        COUNTDOWN(h, autocoder->no_of_hiddens) {
             if (autocoder->hiddens[h] != AUTOCODER_DROPPED_OUT) {
-                autocoder->lastWeightChange[n] =
-                    e * (autocoder->lastWeightChange[n] + 1) *
+                autocoder->last_weight_change[n] =
+                    e * (autocoder->last_weight_change[n] + 1) *
                     gradient * autocoder->hiddens[h];
-                autocoder->weights[n] += autocoder->lastWeightChange[n];
+                autocoder->weights[n] += autocoder->last_weight_change[n];
             }
             n -= step;
         }
     }
 
     /* weights between hiddens and inputs */
-    e = autocoder->learningRate / (1.0f + autocoder->NoOfInputs);
-    COUNTDOWN(h, autocoder->NoOfHiddens) {
+    e = autocoder->learning_rate / (1.0f + autocoder->no_of_inputs);
+    COUNTDOWN(h, autocoder->no_of_hiddens) {
         if (autocoder->hiddens[h] == AUTOCODER_DROPPED_OUT)
             continue;
 
         float afact = autocoder->hiddens[h] * (1.0f - autocoder->hiddens[h]);
-        float BPerror = autocoder->bperr[h];
-        float gradient = afact * BPerror;
-        autocoder->lastBiasChange[h] =
-            e * (autocoder->lastBiasChange[h] + 1.0f) * gradient;
-        autocoder->bias[h] += autocoder->lastBiasChange[h];
-        int n = (h+1)*autocoder->NoOfInputs - 1;
-        COUNTDOWN(i, autocoder->NoOfInputs) {
-            autocoder->lastWeightChange[n] =
-                e * (autocoder->lastWeightChange[n] + 1) *
+        float backprop_error = autocoder->bperr[h];
+        float gradient = afact * backprop_error;
+        autocoder->last_bias_change[h] =
+            e * (autocoder->last_bias_change[h] + 1.0f) * gradient;
+        autocoder->bias[h] += autocoder->last_bias_change[h];
+        int n = (h+1)*autocoder->no_of_inputs - 1;
+        COUNTDOWN(i, autocoder->no_of_inputs) {
+            autocoder->last_weight_change[n] =
+                e * (autocoder->last_weight_change[n] + 1) *
                 gradient * autocoder->inputs[i];
-            autocoder->weights[n] += autocoder->lastWeightChange[n];
+            autocoder->weights[n] += autocoder->last_weight_change[n];
             n--;
         }
     }
@@ -310,34 +310,34 @@ void autocoder_learn(ac * autocoder)
  */
 int autocoder_save(FILE * fp, ac * autocoder)
 {
-    if (INTWRITE(autocoder->NoOfInputs) == 0)
+    if (INTWRITE(autocoder->no_of_inputs) == 0)
         return -1;
 
-    if (INTWRITE(autocoder->NoOfHiddens) == 0)
+    if (INTWRITE(autocoder->no_of_hiddens) == 0)
         return -2;
 
     if (UINTWRITE(autocoder->random_seed) == 0)
         return -3;
 
-    if (FLOATWRITE(autocoder->DropoutPercent) == 0)
+    if (FLOATWRITE(autocoder->dropout_percent) == 0)
         return -4;
 
     if (FLOATWRITEARRAY(autocoder->weights,
-                        autocoder->NoOfInputs*autocoder->NoOfHiddens) == 0)
+                        autocoder->no_of_inputs*autocoder->no_of_hiddens) == 0)
         return -5;
 
-    if (FLOATWRITEARRAY(autocoder->lastWeightChange,
-                        autocoder->NoOfInputs*autocoder->NoOfHiddens) == 0)
+    if (FLOATWRITEARRAY(autocoder->last_weight_change,
+                        autocoder->no_of_inputs*autocoder->no_of_hiddens) == 0)
         return -6;
 
-    if (FLOATWRITEARRAY(autocoder->bias, autocoder->NoOfHiddens) == 0)
+    if (FLOATWRITEARRAY(autocoder->bias, autocoder->no_of_hiddens) == 0)
         return -7;
 
-    if (FLOATWRITEARRAY(autocoder->lastBiasChange,
-                        autocoder->NoOfHiddens) == 0)
+    if (FLOATWRITEARRAY(autocoder->last_bias_change,
+                        autocoder->no_of_hiddens) == 0)
         return -8;
 
-    if (FLOATWRITE(autocoder->learningRate) == 0)
+    if (FLOATWRITE(autocoder->learning_rate) == 0)
         return -9;
 
     if (FLOATWRITE(autocoder->noise) == 0)
@@ -381,29 +381,29 @@ int autocoder_load(FILE * fp, ac * autocoder, int initialise)
         }
     }
     else {
-        autocoder->NoOfInputs = no_of_inputs;
-        autocoder->NoOfHiddens = no_of_hiddens;
+        autocoder->no_of_inputs = no_of_inputs;
+        autocoder->no_of_hiddens = no_of_hiddens;
         autocoder->random_seed = random_seed;
     }
 
-    if (FLOATREAD(autocoder->DropoutPercent) == 0)
+    if (FLOATREAD(autocoder->dropout_percent) == 0)
         return -5;
 
     if (FLOATREADARRAY(autocoder->weights,
                        no_of_inputs*no_of_hiddens) == 0)
         return -6;
 
-    if (FLOATREADARRAY(autocoder->lastWeightChange,
+    if (FLOATREADARRAY(autocoder->last_weight_change,
                        no_of_inputs*no_of_hiddens) == 0)
         return -7;
 
     if (FLOATREADARRAY(autocoder->bias, no_of_hiddens) == 0)
         return -8;
 
-    if (FLOATREADARRAY(autocoder->lastBiasChange, no_of_hiddens) == 0)
+    if (FLOATREADARRAY(autocoder->last_bias_change, no_of_hiddens) == 0)
         return -9;
 
-    if (FLOATREAD(autocoder->learningRate) == 0)
+    if (FLOATREAD(autocoder->learning_rate) == 0)
         return -10;
 
     if (FLOATREAD(autocoder->noise) == 0)
@@ -434,7 +434,7 @@ void autocoder_set_input(ac * autocoder, int index, float value)
 void autocoder_set_inputs(ac * autocoder, float inputs[])
 {
     memcpy((void*)autocoder->inputs, inputs,
-           autocoder->NoOfInputs*sizeof(float));
+           autocoder->no_of_inputs*sizeof(float));
 }
 
 /**
@@ -479,7 +479,7 @@ void autocoder_normalise_inputs(ac * autocoder)
     float min = autocoder->inputs[0];
     float max = autocoder->inputs[0];
 
-    FOR(i, 1, autocoder->NoOfInputs) {
+    FOR(i, 1, autocoder->no_of_inputs) {
         if (autocoder->inputs[i] < min)
             min = autocoder->inputs[i];
 
@@ -490,7 +490,7 @@ void autocoder_normalise_inputs(ac * autocoder)
     float range = max - min;
     if (range <= 0) return;
 
-    COUNTUP(i, autocoder->NoOfInputs) {
+    COUNTUP(i, autocoder->no_of_inputs) {
         autocoder->inputs[i] =
             0.25f + (((autocoder->inputs[i] - min)/range)*0.5f);
     }
@@ -504,18 +504,18 @@ void autocoder_normalise_inputs(ac * autocoder)
  */
 int autocoder_compare(ac * autocoder0, ac * autocoder1)
 {
-    if (autocoder0->NoOfInputs != autocoder1->NoOfInputs)
+    if (autocoder0->no_of_inputs != autocoder1->no_of_inputs)
         return -1;
 
-    if (autocoder0->NoOfHiddens != autocoder1->NoOfHiddens)
+    if (autocoder0->no_of_hiddens != autocoder1->no_of_hiddens)
         return -2;
 
-    COUNTDOWN(h, autocoder0->NoOfHiddens) {
+    COUNTDOWN(h, autocoder0->no_of_hiddens) {
         if (autocoder0->bias[h] != autocoder1->bias[h])
             return -3;
     }
 
-    COUNTDOWN(i, autocoder0->NoOfInputs*autocoder0->NoOfHiddens) {
+    COUNTDOWN(i, autocoder0->no_of_inputs*autocoder0->no_of_hiddens) {
         if (autocoder0->weights[i] != autocoder1->weights[i])
             return -4;
     }
@@ -551,7 +551,7 @@ int autocoder_plot_weights(ac * autocoder,
     int no_of_weights = patch_width*patch_width*patch_depth;
 
     /* check that the number of inputs matches the expected patch size */
-    if (autocoder->NoOfInputs != no_of_weights)
+    if (autocoder->no_of_inputs != no_of_weights)
         return -1;
 
     float min_weight = autocoder->weights[0];
@@ -616,16 +616,16 @@ int autocoder_plot_weight_matrix(ac * net,
            image_width*image_height*3*sizeof(unsigned char));
 
     /* get the weight range */
-    COUNTDOWN(h, net->NoOfHiddens) {
-        COUNTDOWN(i, net->NoOfInputs) {
-            w = net->weights[h*net->NoOfInputs + i];
+    COUNTDOWN(h, net->no_of_hiddens) {
+        COUNTDOWN(i, net->no_of_inputs) {
+            w = net->weights[h*net->no_of_inputs + i];
             if (w < min_w) min_w = w;
             if (w > max_w) max_w = w;
         }
     }
 
     /* get the bias and hidden unit range */
-    COUNTDOWN(h, net->NoOfHiddens) {
+    COUNTDOWN(h, net->no_of_hiddens) {
         if (net->bias[h] < min_bias) min_bias = net->bias[h];
         if (net->bias[h] > max_bias) max_bias = net->bias[h];
         if (net->hiddens[h] < min_hidden) min_hidden = net->hiddens[h];
@@ -634,11 +634,11 @@ int autocoder_plot_weight_matrix(ac * net,
 
     if (max_bias > min_bias) {
         COUNTDOWN(y, image_height) {
-            int h = y*net->NoOfHiddens/image_height;
+            int h = y*net->no_of_hiddens/image_height;
             COUNTDOWN(x, image_width) {
-                int i = x*net->NoOfInputs/image_width;
+                int i = x*net->no_of_inputs/image_width;
                 int n = (y*image_width + x)*3;
-                w = net->weights[h*net->NoOfInputs + i];
+                w = net->weights[h*net->no_of_inputs + i];
                 img[n] = (unsigned char)((w - min_w)*255/(max_w - min_w));
                 img[n+1] =
                     (unsigned char)((net->bias[h]-min_bias)*255/

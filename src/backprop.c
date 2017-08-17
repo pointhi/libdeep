@@ -48,23 +48,23 @@ int bp_init(bp * net,
 {
     bp_neuron * n;
 
-    net->learningRate = 0.2f;
+    net->learning_rate = 0.2f;
     net->noise = 0.0f;
     net->random_seed = *random_seed;
-    net->BPerror = DEEPLEARN_UNKNOWN_ERROR;
-    net->BPerrorAverage = DEEPLEARN_UNKNOWN_ERROR;
-    net->BPerrorTotal = DEEPLEARN_UNKNOWN_ERROR;
+    net->backprop_error = DEEPLEARN_UNKNOWN_ERROR;
+    net->backprop_error_average = DEEPLEARN_UNKNOWN_ERROR;
+    net->backprop_error_total = DEEPLEARN_UNKNOWN_ERROR;
     net->itterations = 0;
-    net->DropoutPercent = 20;
+    net->dropout_percent = 20;
 
-    net->NoOfInputs = no_of_inputs;
+    net->no_of_inputs = no_of_inputs;
     NEURON_ARRAY_ALLOC(net->inputs, no_of_inputs);
     if (!net->inputs)
         return -1;
 
-    net->NoOfHiddens = no_of_hiddens;
-    net->NoOfOutputs = no_of_outputs;
-    net->HiddenLayers = hidden_layers;
+    net->no_of_hiddens = no_of_hiddens;
+    net->no_of_outputs = no_of_outputs;
+    net->hidden_layers = hidden_layers;
     NEURON_LAYERS_ALLOC(net->hiddens, hidden_layers);
     if (!net->hiddens)
         return -2;
@@ -80,7 +80,7 @@ int bp_init(bp * net,
         return -4;
 
     /* create inputs */
-    COUNTDOWN(i, net->NoOfInputs) {
+    COUNTDOWN(i, net->no_of_inputs) {
         NEURONALLOC(net->inputs[i]);
         if (!net->inputs[i])
             return -5;
@@ -103,7 +103,7 @@ int bp_init(bp * net,
                     return -8;
 
                 /* connect to input layer */
-                COUNTDOWN(j, net->NoOfInputs)
+                COUNTDOWN(j, net->no_of_inputs)
                     bp_neuron_add_connection(n, j, net->inputs[j]);
             }
             else {
@@ -119,7 +119,7 @@ int bp_init(bp * net,
     }
 
     /* create outputs */
-    COUNTDOWN(i, net->NoOfOutputs) {
+    COUNTDOWN(i, net->no_of_outputs) {
         NEURONALLOC(net->outputs[i]);
         if (!net->outputs[i])
             return -10;
@@ -141,14 +141,14 @@ int bp_init(bp * net,
 */
 void bp_free(bp * net)
 {
-    COUNTDOWN(i, net->NoOfInputs) {
+    COUNTDOWN(i, net->no_of_inputs) {
         bp_neuron_free(net->inputs[i]);
         free(net->inputs[i]);
         net->inputs[i] = 0;
     }
     free(net->inputs);
 
-    COUNTDOWN(l, net->HiddenLayers) {
+    COUNTDOWN(l, net->hidden_layers) {
         COUNTDOWN(i, HIDDENS_IN_LAYER(net,l)) {
             bp_neuron_free(net->hiddens[l][i]);
             free(net->hiddens[l][i]);
@@ -159,7 +159,7 @@ void bp_free(bp * net)
     }
     free(net->hiddens);
 
-    COUNTDOWN(i, net->NoOfOutputs) {
+    COUNTDOWN(i, net->no_of_outputs) {
         bp_neuron_free(net->outputs[i]);
         free(net->outputs[i]);
         net->outputs[i] = 0;
@@ -174,7 +174,7 @@ void bp_free(bp * net)
 void bp_feed_forward(bp * net)
 {
     /* for each hidden layer */
-    COUNTUP(l, net->HiddenLayers) {
+    COUNTUP(l, net->hidden_layers) {
         /* For each unit within the layer */
         COUNTDOWN(i, HIDDENS_IN_LAYER(net,l))
             bp_neuron_feedForward(net->hiddens[l][i],
@@ -182,7 +182,7 @@ void bp_feed_forward(bp * net)
     }
 
     /* for each unit in the output layer */
-    COUNTDOWN(i, net->NoOfOutputs)
+    COUNTDOWN(i, net->no_of_outputs)
         bp_neuron_feedForward(net->outputs[i], net->noise, &net->random_seed);
 }
 
@@ -197,7 +197,7 @@ void bp_feed_forward_layers(bp * net, int layers)
     /* for each hidden layer */
     COUNTUP(l, layers) {
         /* if this layer is a hidden layer */
-        if (l < net->HiddenLayers) {
+        if (l < net->hidden_layers) {
             /* For each unit within the layer */
             COUNTDOWN(i, HIDDENS_IN_LAYER(net,l))
                 bp_neuron_feedForward(net->hiddens[l][i],
@@ -205,7 +205,7 @@ void bp_feed_forward_layers(bp * net, int layers)
         }
         else {
             /* For each unit within the output layer */
-            COUNTDOWN(i, net->NoOfOutputs)
+            COUNTDOWN(i, net->no_of_outputs)
                 bp_neuron_feedForward(net->outputs[i],
                                       net->noise, &net->random_seed);
         }
@@ -224,23 +224,23 @@ void bp_backprop(bp * net, int current_hidden_layer)
     float errorPercent=0;
 
     /* clear all previous backprop errors */
-    COUNTDOWN(i, net->NoOfInputs)
-        net->inputs[i]->BPerror = 0;
+    COUNTDOWN(i, net->no_of_inputs)
+        net->inputs[i]->backprop_error = 0;
 
     /* for every hidden layer */
     if (start_hidden_layer < 0)
         start_hidden_layer = 0;
 
-    FOR(l, start_hidden_layer, net->HiddenLayers) {
+    FOR(l, start_hidden_layer, net->hidden_layers) {
         /* For each unit within the layer */
         COUNTDOWN(i, HIDDENS_IN_LAYER(net,l))
-            net->hiddens[l][i]->BPerror = 0;
+            net->hiddens[l][i]->backprop_error = 0;
     }
 
     /* now back-propogate the error from the output units */
-    net->BPerrorTotal = 0;
+    net->backprop_error_total = 0;
     /* for every output unit */
-    COUNTDOWN(i, net->NoOfOutputs) {
+    COUNTDOWN(i, net->no_of_outputs) {
         /* get the neuron object */
         n = net->outputs[i];
 
@@ -249,35 +249,35 @@ void bp_backprop(bp * net, int current_hidden_layer)
 
         /* update the total error which is used to assess
             network performance */
-        net->BPerrorTotal += n->BPerror;
-        errorPercent += fabs(n->BPerror);
+        net->backprop_error_total += n->backprop_error;
+        errorPercent += fabs(n->backprop_error);
         neuron_count++;
     }
 
     /* error percentage assuming an encoding range
        of 0.25 -> 0.75 */
-    errorPercent = errorPercent * 100 / (0.5f*net->NoOfOutputs);
+    errorPercent = errorPercent * 100 / (0.5f*net->no_of_outputs);
 
     /* error on the output units */
-    net->BPerror = fabs(net->BPerrorTotal / net->NoOfOutputs);
+    net->backprop_error = fabs(net->backprop_error_total / net->no_of_outputs);
 
     /* update the running average */
-    if (net->BPerrorAverage == DEEPLEARN_UNKNOWN_ERROR) {
-        net->BPerrorAverage = net->BPerror;
-        net->BPerrorPercent = errorPercent;
+    if (net->backprop_error_average == DEEPLEARN_UNKNOWN_ERROR) {
+        net->backprop_error_average = net->backprop_error;
+        net->backprop_error_percent = errorPercent;
     }
     else {
-        net->BPerrorAverage =
-            (net->BPerrorAverage*0.999f) +
-            (net->BPerror*0.001f);
+        net->backprop_error_average =
+            (net->backprop_error_average*0.999f) +
+            (net->backprop_error*0.001f);
 
-        net->BPerrorPercent =
-            (net->BPerrorPercent*0.999f) +
+        net->backprop_error_percent =
+            (net->backprop_error_percent*0.999f) +
             (errorPercent*0.001f);
     }
 
     /* back-propogate through the hidden layers */
-    for (int l = net->HiddenLayers-1; l >= start_hidden_layer; l--) {
+    for (int l = net->hidden_layers-1; l >= start_hidden_layer; l--) {
         /* for every unit in the hidden layer */
         COUNTDOWN(i, HIDDENS_IN_LAYER(net,l)) {
             /* get the neuron object */
@@ -288,14 +288,14 @@ void bp_backprop(bp * net, int current_hidden_layer)
 
             /* update the total error which is used to assess
                 network performance */
-            net->BPerrorTotal += n->BPerror;
+            net->backprop_error_total += n->backprop_error;
             neuron_count++;
         }
     }
 
     /* overall average error */
-    net->BPerrorTotal =
-        fabs(net->BPerrorTotal / neuron_count);
+    net->backprop_error_total =
+        fabs(net->backprop_error_total / neuron_count);
 
     /* increment the number of training itterations */
     if (net->itterations < UINT_MAX)
@@ -314,7 +314,7 @@ void bp_reproject(bp * net, int layer, int neuron_index)
     bp_neuron * n;
 
     /* clear all previous backprop errors */
-    COUNTDOWN(i, net->NoOfInputs)
+    COUNTDOWN(i, net->no_of_inputs)
         net->inputs[i]->value_reprojected = 0;
 
     /* for every hidden layer */
@@ -367,13 +367,13 @@ void bp_learn(bp * net, int current_hidden_layer)
     if (start_hidden_layer < 0)
         start_hidden_layer = 0;
 
-    FOR(l, start_hidden_layer, net->HiddenLayers) {
+    FOR(l, start_hidden_layer, net->hidden_layers) {
         COUNTDOWN(i, HIDDENS_IN_LAYER(net,l))
-            bp_neuron_learn(net->hiddens[l][i],net->learningRate);
+            bp_neuron_learn(net->hiddens[l][i],net->learning_rate);
     }
 
-    COUNTDOWN(i, net->NoOfOutputs)
-        bp_neuron_learn(net->outputs[i],net->learningRate);
+    COUNTDOWN(i, net->no_of_outputs)
+        bp_neuron_learn(net->outputs[i],net->learning_rate);
 }
 
 /**
@@ -395,7 +395,7 @@ void bp_normalise_inputs(bp * net)
 {
     float max = 0,  min = 1;
 
-    COUNTDOWN(i, net->NoOfInputs) {
+    COUNTDOWN(i, net->no_of_inputs) {
         if (net->inputs[i]->value > max)
             max = net->inputs[i]->value;
 
@@ -405,7 +405,7 @@ void bp_normalise_inputs(bp * net)
 
     float range = max - min;
     if (range > 0.00001f) {
-        COUNTDOWN(i, net->NoOfInputs)
+        COUNTDOWN(i, net->no_of_inputs)
             net->inputs[i]->value =
                 0.25f + ((net->inputs[i]->value-min)*0.5f/range);
     }
@@ -418,7 +418,7 @@ void bp_normalise_inputs(bp * net)
 */
 void bp_set_input_text(bp * net, char * text)
 {
-    enc_text_to_binary(text, net->inputs, net->NoOfInputs, 0, strlen(text));
+    enc_text_to_binary(text, net->inputs, net->no_of_inputs, 0, strlen(text));
 }
 
 /**
@@ -441,10 +441,10 @@ int bp_inputs_from_image_patch(bp * net,
 
     /* The patch size is calculated from the number of inputs
         of the neural net.  It's assumed to be square. */
-    int patch_size = (int)sqrt(net->NoOfInputs);
+    int patch_size = (int)sqrt(net->no_of_inputs);
 
     /* make sure that the patch fits within the number of inputs */
-    if (patch_size*patch_size > net->NoOfInputs)
+    if (patch_size*patch_size > net->no_of_inputs)
         return 1;
 
     /* set the inputs from the patch */
@@ -480,7 +480,7 @@ int bp_inputs_from_image(bp * net,
 {
     /* check that the number of inputs is the same as the
        number of pixels */
-    if (net->NoOfInputs != image_width*image_height)
+    if (net->no_of_inputs != image_width*image_height)
         return 1;
 
     /* set the inputs */
@@ -525,22 +525,22 @@ int bp_plot_weights(bp * net,
            image_width*image_height*3*sizeof(unsigned char));
 
     /* dimension of the neurons matrix for each layer */
-    neurons_x = (int)sqrt(net->NoOfHiddens);
-    neurons_y = (net->NoOfHiddens/neurons_x);
+    neurons_x = (int)sqrt(net->no_of_hiddens);
+    neurons_y = (net->no_of_hiddens/neurons_x);
 
     /* dimensions of the weight matrix */
     if (input_image_width <= 0)
-        inputs_x = (int)sqrt(net->NoOfInputs);
+        inputs_x = (int)sqrt(net->no_of_inputs);
     else
         inputs_x = input_image_width;
 
-    inputs_y = (net->NoOfInputs/inputs_x);
+    inputs_y = (net->no_of_inputs/inputs_x);
 
-    no_of_weights = net->NoOfInputs;
+    no_of_weights = net->no_of_inputs;
 
     /* plot the inputs */
     ty = 0;
-    by = image_height/(net->HiddenLayers+3);
+    by = image_height/(net->hidden_layers+3);
     h = (by-ty)*95/100;
     wdth = h;
     if (wdth>=image_width) wdth=image_width;
@@ -549,7 +549,7 @@ int bp_plot_weights(bp * net,
         COUNTUP(x, wdth) {
             ix = x*inputs_x/wdth;
             unit = (iy*inputs_x) + ix;
-            if (unit < net->NoOfInputs) {
+            if (unit < net->no_of_inputs) {
                 n = (y*image_width + x)*3;
                 img[n] = (unsigned char)(net->inputs[unit]->value*255);
                 img[n+1] = img[n];
@@ -558,10 +558,10 @@ int bp_plot_weights(bp * net,
         }
     }
 
-    COUNTUP(layer, net->HiddenLayers+1) {
+    COUNTUP(layer, net->hidden_layers+1) {
         /* vertical top and bottom coordinates */
-        ty = (layer+1)*image_height/(net->HiddenLayers+3);
-        by = (layer+2)*image_height/(net->HiddenLayers+3);
+        ty = (layer+1)*image_height/(net->hidden_layers+3);
+        by = (layer+2)*image_height/(net->hidden_layers+3);
         h = (by-ty)*95/100;
 
         /* reset ranges */
@@ -571,12 +571,12 @@ int bp_plot_weights(bp * net,
         max_activation = -9999999.0f;
 
         /* number of patches across and down for the final layer */
-        if (layer == net->HiddenLayers) {
-            neurons_x = (int)sqrt(net->NoOfOutputs);
-            neurons_y = (net->NoOfOutputs/neurons_x);
+        if (layer == net->hidden_layers) {
+            neurons_x = (int)sqrt(net->no_of_outputs);
+            neurons_y = (net->no_of_outputs/neurons_x);
             neurons = net->outputs;
-            no_of_neurons = net->NoOfOutputs;
-            max_unit = net->NoOfOutputs;
+            no_of_neurons = net->no_of_outputs;
+            max_unit = net->no_of_outputs;
         }
         else {
             neurons_x = (int)sqrt(HIDDENS_IN_LAYER(net,layer));
@@ -640,7 +640,7 @@ int bp_plot_weights(bp * net,
                 }
             }
         }
-        if (layer < net->HiddenLayers) {
+        if (layer < net->hidden_layers) {
             /* dimensions of the weight matrix for the next layer */
             inputs_x = (int)sqrt(HIDDENS_IN_LAYER(net,layer));
             inputs_y = (HIDDENS_IN_LAYER(net,layer)/inputs_x);
@@ -648,12 +648,12 @@ int bp_plot_weights(bp * net,
         }
     }
 
-    ty = (net->HiddenLayers+2)*image_height/(net->HiddenLayers+3);
-    by = (net->HiddenLayers+3)*image_height/(net->HiddenLayers+3);
+    ty = (net->hidden_layers+2)*image_height/(net->hidden_layers+3);
+    by = (net->hidden_layers+3)*image_height/(net->hidden_layers+3);
     h = (by-ty)*95/100;
 
-    inputs_x = (int)sqrt(net->NoOfOutputs);
-    inputs_y = (net->NoOfOutputs/inputs_x);
+    inputs_x = (int)sqrt(net->no_of_outputs);
+    inputs_y = (net->no_of_outputs/inputs_x);
 
     wdth = h;
     if (wdth >= image_width) wdth = image_width;
@@ -662,7 +662,7 @@ int bp_plot_weights(bp * net,
         COUNTUP(x, wdth) {
             ix = x*inputs_x/wdth;
             unit = (iy*inputs_x) + ix;
-            if (unit < net->NoOfOutputs) {
+            if (unit < net->no_of_outputs) {
                 n = ((ty+y)*image_width + x)*3;
                 img[n] = (unsigned char)(net->outputs[unit]->value*255);
                 img[n+1] = img[n];
@@ -701,7 +701,7 @@ float bp_get_input(bp * net, int index)
 */
 void bp_set_output(bp * net, int index, float value)
 {
-    net->outputs[index]->desiredValue = value;
+    net->outputs[index]->desired_value = value;
 }
 
 /**
@@ -735,10 +735,10 @@ float bp_get_output(bp * net, int index)
 static void bp_clear_dropouts(bp * net)
 {
     /* if no dropouts then don't continue */
-    if (net->DropoutPercent == 0) return;
+    if (net->dropout_percent == 0) return;
 
     /* for every hidden layer */
-    COUNTDOWN(l, net->HiddenLayers) {
+    COUNTDOWN(l, net->hidden_layers) {
         COUNTDOWN(i, HIDDENS_IN_LAYER(net,l))
             net->hiddens[l][i]->excluded = 0;
     }
@@ -752,18 +752,18 @@ static void bp_dropouts(bp * net)
 {
     int no_of_dropouts, hidden_units=0;
 
-    if (net->DropoutPercent == 0) return;
+    if (net->dropout_percent == 0) return;
 
     /* total number of hidden units */
-    COUNTDOWN(l, net->HiddenLayers)
+    COUNTDOWN(l, net->hidden_layers)
         hidden_units += HIDDENS_IN_LAYER(net,l);
 
     /* total number of dropouts */
-    no_of_dropouts = net->DropoutPercent*hidden_units/100;
+    no_of_dropouts = net->dropout_percent*hidden_units/100;
 
     /* set the exclusion flags */
     COUNTDOWN(n, no_of_dropouts) {
-        int l = rand_num(&net->random_seed)%net->HiddenLayers;
+        int l = rand_num(&net->random_seed)%net->hidden_layers;
         int i = rand_num(&net->random_seed)%HIDDENS_IN_LAYER(net,l);
         net->hiddens[l][i]->excluded = 1;
     }
@@ -793,36 +793,36 @@ int bp_save(FILE * fp, bp * net)
     if (UINTWRITE(net->itterations) == 0)
         return -1;
 
-    if (INTWRITE(net->NoOfInputs) == 0)
+    if (INTWRITE(net->no_of_inputs) == 0)
         return -2;
 
-    if (INTWRITE(net->NoOfHiddens) == 0)
+    if (INTWRITE(net->no_of_hiddens) == 0)
         return -3;
 
-    if (INTWRITE(net->NoOfOutputs) == 0)
+    if (INTWRITE(net->no_of_outputs) == 0)
         return -4;
 
-    if (INTWRITE(net->HiddenLayers) == 0)
+    if (INTWRITE(net->hidden_layers) == 0)
         return -5;
 
-    if (FLOATWRITE(net->learningRate) == 0)
+    if (FLOATWRITE(net->learning_rate) == 0)
         return -6;
 
     if (FLOATWRITE(net->noise) == 0)
         return -7;
 
-    if (FLOATWRITE(net->BPerrorAverage) == 0)
+    if (FLOATWRITE(net->backprop_error_average) == 0)
         return -8;
 
-    if (FLOATWRITE(net->DropoutPercent) == 0)
+    if (FLOATWRITE(net->dropout_percent) == 0)
         return -9;
 
-    COUNTUP(l, net->HiddenLayers) {
+    COUNTUP(l, net->hidden_layers) {
         COUNTUP(i, HIDDENS_IN_LAYER(net,l))
             bp_neuron_save(fp,net->hiddens[l][i]);
     }
 
-    COUNTUP(i, net->NoOfOutputs)
+    COUNTUP(i, net->no_of_outputs)
         bp_neuron_save(fp,net->outputs[i]);
 
     return 0;
@@ -840,8 +840,8 @@ int bp_load(FILE * fp, bp * net,
 {
     int no_of_inputs=0, no_of_hiddens=0, no_of_outputs=0;
     int hidden_layers=0;
-    float learning_rate=0, noise=0, BPerrorAverage=0;
-    float DropoutPercent=0;
+    float learning_rate=0, noise=0, backprop_error_average=0;
+    float dropout_percent=0;
     unsigned int itterations=0;
 
     if (UINTREAD(itterations) == 0)
@@ -865,10 +865,10 @@ int bp_load(FILE * fp, bp * net,
     if (FLOATREAD(noise) == 0)
         return -7;
 
-    if (FLOATREAD(BPerrorAverage) == 0)
+    if (FLOATREAD(backprop_error_average) == 0)
         return -8;
 
-    if (FLOATREAD(DropoutPercent) == 0)
+    if (FLOATREAD(dropout_percent) == 0)
         return -9;
 
     if (bp_init(net, no_of_inputs, no_of_hiddens,
@@ -876,25 +876,25 @@ int bp_load(FILE * fp, bp * net,
                 random_seed) != 0)
         return -10;
 
-    COUNTUP(l, net->HiddenLayers) {
+    COUNTUP(l, net->hidden_layers) {
         COUNTUP(i, HIDDENS_IN_LAYER(net,l)) {
             if (bp_neuron_load(fp,net->hiddens[l][i]) != 0)
                 return -11;
         }
     }
 
-    COUNTUP(i, net->NoOfOutputs) {
+    COUNTUP(i, net->no_of_outputs) {
         if (bp_neuron_load(fp,net->outputs[i]) != 0)
             return -12;
     }
 
-    net->learningRate = learning_rate;
+    net->learning_rate = learning_rate;
     net->noise = noise;
-    net->BPerrorAverage = BPerrorAverage;
-    net->BPerror = BPerrorAverage;
-    net->BPerrorTotal = BPerrorAverage;
+    net->backprop_error_average = backprop_error_average;
+    net->backprop_error = backprop_error_average;
+    net->backprop_error_total = backprop_error_average;
     net->itterations = itterations;
-    net->DropoutPercent = DropoutPercent;
+    net->dropout_percent = dropout_percent;
 
     return 0;
 }
@@ -909,25 +909,25 @@ int bp_compare(bp * net1, bp * net2)
 {
     int retval;
 
-    if (net1->NoOfInputs != net2->NoOfInputs)
+    if (net1->no_of_inputs != net2->no_of_inputs)
         return -1;
 
-    if (net1->NoOfHiddens != net2->NoOfHiddens)
+    if (net1->no_of_hiddens != net2->no_of_hiddens)
         return -2;
 
-    if (net1->NoOfOutputs != net2->NoOfOutputs)
+    if (net1->no_of_outputs != net2->no_of_outputs)
         return -3;
 
-    if (net1->HiddenLayers != net2->HiddenLayers)
+    if (net1->hidden_layers != net2->hidden_layers)
         return -4;
 
-    if (net1->learningRate != net2->learningRate)
+    if (net1->learning_rate != net2->learning_rate)
         return -5;
 
     if (net1->noise != net2->noise)
         return -6;
 
-    COUNTDOWN(l, net1->HiddenLayers) {
+    COUNTDOWN(l, net1->hidden_layers) {
         COUNTDOWN(i, HIDDENS_IN_LAYER(net1,l)) {
             retval =
                 bp_neuron_compare(net1->hiddens[l][i],
@@ -937,7 +937,7 @@ int bp_compare(bp * net1, bp * net2)
         }
     }
 
-    COUNTDOWN(i, net1->NoOfOutputs) {
+    COUNTDOWN(i, net1->no_of_outputs) {
         retval = bp_neuron_compare(net1->outputs[i], net2->outputs[i]);
         if (retval == 0)
             return -8;
@@ -946,10 +946,10 @@ int bp_compare(bp * net1, bp * net2)
     if (net1->itterations != net2->itterations)
         return -9;
 
-    if (net1->BPerrorAverage != net2->BPerrorAverage)
+    if (net1->backprop_error_average != net2->backprop_error_average)
         return -9;
 
-    if (net1->DropoutPercent!= net2->DropoutPercent)
+    if (net1->dropout_percent!= net2->dropout_percent)
         return -10;
 
     return 1;

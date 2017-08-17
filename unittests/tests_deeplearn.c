@@ -51,11 +51,11 @@ static void test_deeplearn_init()
     assert((&learner)->net!=0);
     assert((&learner)->autocoder!=0);
 
-    assert((&learner)->autocoder[0]->NoOfInputs==no_of_inputs);
-    assert((&learner)->autocoder[0]->NoOfHiddens==no_of_hiddens);
+    assert((&learner)->autocoder[0]->no_of_inputs==no_of_inputs);
+    assert((&learner)->autocoder[0]->no_of_hiddens==no_of_hiddens);
 
-    assert((&learner)->autocoder[1]->NoOfInputs==no_of_hiddens);
-    assert((&learner)->autocoder[1]->NoOfHiddens==9);
+    assert((&learner)->autocoder[1]->no_of_inputs==no_of_hiddens);
+    assert((&learner)->autocoder[1]->no_of_hiddens==9);
 
     /* free memory */
     deeplearn_free(&learner);
@@ -111,13 +111,13 @@ static void test_deeplearn_update()
     }
 
     if (learner.current_hidden_layer < hidden_layers) {
-        printf("\nDidn't finish training (at layer %d)\nBPerror %.5f\n",
-               learner.current_hidden_layer,learner.BPerror);
+        printf("\nDidn't finish training (at layer %d)\nbackprop_error %.5f\n",
+               learner.current_hidden_layer,learner.backprop_error);
     }
     assert(learner.current_hidden_layer >= hidden_layers);
 
     /* we expect that there will be some non-zero error */
-    assert(learner.BPerror!=0);
+    assert(learner.backprop_error!=0);
 
     /* test that it took some itterations to train */
     assert(itterations[0] > 4);
@@ -143,7 +143,7 @@ static void test_deeplearn_update()
     assert(itterations[2] > 4);
 
     /* we expect that there will be some non-zero error */
-    assert(learner.BPerror!=0);
+    assert(learner.backprop_error!=0);
 
     /* check that there is some variation in the outputs */
     v = deeplearn_get_output(&learner,0);
@@ -332,7 +332,7 @@ static void test_deeplearn_csv_with_text()
     assert(learner.indexed_training_data_labeled_samples == 6);
     assert(learner.test_data_samples == 2);
     assert(learner.indexed_test_data_samples == 2);
-    assert(learner.net->NoOfInputs == 2 + (5*CHAR_BITS));
+    assert(learner.net->no_of_inputs == 2 + (5*CHAR_BITS));
     assert(learner.no_of_input_fields == 3);
 
     assert(learner.field_length != 0);
@@ -398,7 +398,7 @@ static void test_deeplearn_csv_numeric()
     assert(learner.indexed_training_data_labeled_samples == 6);
     assert(learner.test_data_samples == 2);
     assert(learner.indexed_test_data_samples == 2);
-    assert(learner.net->NoOfInputs == 3);
+    assert(learner.net->no_of_inputs == 3);
     assert(learner.no_of_input_fields == 3);
 
     assert(learner.field_length != 0);
@@ -447,7 +447,7 @@ static void test_deeplearn_set_input_field_text()
                            error_threshold_percent,
                            &random_seed);
 
-    assert(learner.net->NoOfInputs == 2*4*CHAR_BITS);
+    assert(learner.net->no_of_inputs == 2*4*CHAR_BITS);
     assert(learner.no_of_input_fields == 2);
 
     assert(learner.field_length != 0);
@@ -455,7 +455,7 @@ static void test_deeplearn_set_input_field_text()
     assert(learner.field_length[1] == 4*CHAR_BITS);
 
     /* clear the inputs */
-    for (i = 0; i < learner.net->NoOfInputs; i++) {
+    for (i = 0; i < learner.net->no_of_inputs; i++) {
         deeplearn_set_input(&learner, i, 0.0f);
     }
 
@@ -475,7 +475,7 @@ static void test_deeplearn_set_input_field_text()
     }
     /*
     printf("\n");
-    for (i = 0; i < learner.net->NoOfInputs; i++) {
+    for (i = 0; i < learner.net->no_of_inputs; i++) {
         if (learner.net->inputs[i]->value > 0.6f) {
             printf("1");
         }

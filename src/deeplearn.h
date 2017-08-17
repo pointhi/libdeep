@@ -68,7 +68,7 @@ struct deepl {
     bp * net;
     ac ** autocoder;
     int current_hidden_layer;
-    float BPerror;
+    float backprop_error;
     unsigned int itterations;
     float * error_threshold;
     int training_complete;
