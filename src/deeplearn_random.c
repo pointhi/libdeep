@@ -29,6 +29,8 @@
 
 #include "deeplearn_random.h"
 
+#define PRNG_LEHMER(x) (((unsigned long long)(x) * 279470273UL) % 4294967291UL)
+
 /**
  * @brief Lehmer random number generator
  * @param seed Random number generator seed
@@ -36,17 +38,20 @@
  */
 int rand_num(unsigned int * seed)
 {
-    unsigned int v =
-        ((unsigned long long)(*seed) * 279470273UL) % 4294967291UL;
+    unsigned int v = PRNG_LEHMER(*seed);
 
-    /* avoid the singularity */
-    if (v==0) {
+    /* If the seed value is zero then further sequence generation
+       stops and this is a singularity. We can avoid this by incrementing
+       the value until a non-zero result occurs */
+    if (v == 0) {
         v++;
-        while (((unsigned long long)v * 279470273UL) % 4294967291UL == 0)
+        while (PRNG_LEHMER(v) == 0)
             v++;
     }
 
+    /* new seed value */
     *seed = v;
+
     return abs((int)v);
 }
 
