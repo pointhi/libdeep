@@ -206,14 +206,14 @@ int deeplearn_init(deeplearn * learner,
                for the autocoder is the same as the number of
                neural net input units */
             if (autocoder_init(learner->autocoder[i], no_of_inputs,
-                               bp_hiddens_in_layer(learner->net,i),
+                               HIDDENS_IN_LAYER(learner->net,i),
                                learner->net->random_seed) != 0)
                 return -10;
         }
         else {
             if (autocoder_init(learner->autocoder[i],
-                               bp_hiddens_in_layer(learner->net,i-1),
-                               bp_hiddens_in_layer(learner->net,i),
+                               HIDDENS_IN_LAYER(learner->net,i-1),
+                               HIDDENS_IN_LAYER(learner->net,i),
                                learner->net->random_seed) != 0)
                 return -11;
         }
@@ -253,7 +253,7 @@ void copy_autocoder_to_hidden_layer(deeplearn * learner, int hidden_layer)
 {
     ac * autocoder = learner->autocoder[hidden_layer];
     /* for each unit on the hidden layer */
-    COUNTDOWN(i, bp_hiddens_in_layer(learner->net,hidden_layer)) {
+    COUNTDOWN(i, HIDDENS_IN_LAYER(learner->net,hidden_layer)) {
         bp_neuron * nrn  = learner->net->hiddens[hidden_layer][i];
         nrn->bias = autocoder->bias[i];
         memcpy((void*)nrn->weights,
@@ -274,7 +274,7 @@ void deeplearn_pretrain(bp * net, ac * autocoder, int current_layer)
     if (current_layer > 0) {
         /* copy the hidden unit values to the inputs
            of the autocoder */
-        COUNTDOWN(i, bp_hiddens_in_layer(net,current_layer-1)) {
+        COUNTDOWN(i, HIDDENS_IN_LAYER(net,current_layer-1)) {
             float hidden_value = bp_get_hidden(net, current_layer-1, i);
             autocoder_set_input(autocoder, i, hidden_value);
         }
@@ -1215,13 +1215,13 @@ static int deeplearn_export_c_base(deeplearn * learner, int export_type,
         if (i == 0)
             no_of_weights = learner->net->NoOfInputs;
         else
-            no_of_weights = bp_hiddens_in_layer(learner->net, i-1);
+            no_of_weights = HIDDENS_IN_LAYER(learner->net, i-1);
 
-        COUNTUP(j, bp_hiddens_in_layer(learner->net, i)) {
+        COUNTUP(j, HIDDENS_IN_LAYER(learner->net, i)) {
             COUNTUP(k, no_of_weights) {
                 fprintf(fp, "%.10f",
                         learner->net->hiddens[i][j]->weights[k]);
-                if (!((j == bp_hiddens_in_layer(learner->net, i)-1) &&
+                if (!((j == HIDDENS_IN_LAYER(learner->net, i)-1) &&
                       (k == no_of_weights-1)))
                     fprintf(fp, ",");
             }
@@ -1233,9 +1233,9 @@ static int deeplearn_export_c_base(deeplearn * learner, int export_type,
     COUNTUP(i, learner->net->HiddenLayers) {
         fprintf(fp,
                 "float hidden_layer_%d_bias[] = {\n  ", i);
-        COUNTUP(j, bp_hiddens_in_layer(learner->net, i)) {
+        COUNTUP(j, HIDDENS_IN_LAYER(learner->net, i)) {
             fprintf(fp,"%.10f",learner->net->hiddens[i][j]->bias);
-            if (j < bp_hiddens_in_layer(learner->net, i)-1)
+            if (j < HIDDENS_IN_LAYER(learner->net, i)-1)
                 fprintf(fp, ",");
         }
         fprintf(fp, "\n};\n\n");
@@ -1245,12 +1245,12 @@ static int deeplearn_export_c_base(deeplearn * learner, int export_type,
     fprintf(fp, "%s",
             "float output_layer_weights[] = {\n  ");
     COUNTUP(i, learner->net->NoOfOutputs) {
-        COUNTUP(j, bp_hiddens_in_layer(learner->net,
+        COUNTUP(j, HIDDENS_IN_LAYER(learner->net,
                                        learner->net->HiddenLayers-1)) {
             fprintf(fp, "%.10f",
                     learner->net->outputs[i]->weights[j]);
             if (!((i == learner->net->NoOfOutputs-1) &&
-                  (j == bp_hiddens_in_layer(learner->net,
+                  (j == HIDDENS_IN_LAYER(learner->net,
                                             learner->net->HiddenLayers-1)-1)))
                 fprintf(fp, ",");
         }
@@ -1425,18 +1425,18 @@ static int deeplearn_export_c_base(deeplearn * learner, int export_type,
     for (int i = 1; i < learner->net->HiddenLayers; i++) {
         fprintf(fp, "  /* Hidden layer %d */\n", i);
         fprintf(fp, "  for (i = 0; i < %d; i++) {\n",
-                bp_hiddens_in_layer(learner->net,i));
+                HIDDENS_IN_LAYER(learner->net,i));
         fprintf(fp, "    sum = hidden_layer_%d_bias[i];\n",i);
         fprintf(fp, "    for (j = 0; j < %d; j++) {\n",
-                bp_hiddens_in_layer(learner->net,i-1));
+                HIDDENS_IN_LAYER(learner->net,i-1));
         fprintf(fp, "      sum += " \
                 "hidden_layer_%d_weights[i*%d+j]*prev_hiddens[j];\n",
-                i,bp_hiddens_in_layer(learner->net,i-1));
+                i,HIDDENS_IN_LAYER(learner->net,i-1));
         fprintf(fp, "%s", "    }\n");
         fprintf(fp, "%s", "    hiddens[i] = AF(sum);\n");
         fprintf(fp, "%s", "  }\n");
         fprintf(fp, "  for (i = 0; i < %d; i++) {\n",
-                bp_hiddens_in_layer(learner->net,i));
+                HIDDENS_IN_LAYER(learner->net,i));
         fprintf(fp, "%s", "    prev_hiddens[i] = hiddens[i];\n");
         fprintf(fp, "%s", "  }\n\n");
     }
@@ -1444,9 +1444,9 @@ static int deeplearn_export_c_base(deeplearn * learner, int export_type,
     fprintf(fp, "%s", "  for (i = 0; i < no_of_outputs; i++) {\n");
     fprintf(fp, "%s", "    sum = output_layer_bias[i];\n");
     fprintf(fp, "    for (j = 0; j < %d; j++) {\n",
-            bp_hiddens_in_layer(learner->net,learner->net->HiddenLayers-1));
+            HIDDENS_IN_LAYER(learner->net,learner->net->HiddenLayers-1));
     fprintf(fp, "      sum += output_layer_weights[i*%d+j]*prev_hiddens[j];\n",
-            bp_hiddens_in_layer(learner->net,learner->net->HiddenLayers-1));
+            HIDDENS_IN_LAYER(learner->net,learner->net->HiddenLayers-1));
     fprintf(fp, "%s", "    }\n");
     fprintf(fp, "%s", "    outputs[i] = AF(sum);\n");
     fprintf(fp, "%s", "  }\n\n");
@@ -1592,13 +1592,13 @@ static int deeplearn_export_python(deeplearn * learner, char * filename)
         if (i == 0)
             no_of_weights = learner->net->NoOfInputs;
         else
-            no_of_weights = bp_hiddens_in_layer(learner->net, i-1);
+            no_of_weights = HIDDENS_IN_LAYER(learner->net, i-1);
 
-        COUNTUP(j, bp_hiddens_in_layer(learner->net, i)) {
+        COUNTUP(j, HIDDENS_IN_LAYER(learner->net, i)) {
             COUNTUP(k, no_of_weights) {
                 fprintf(fp, "%.10f",
                         learner->net->hiddens[i][j]->weights[k]);
-                if (!((j == bp_hiddens_in_layer(learner->net, i)-1) &&
+                if (!((j == HIDDENS_IN_LAYER(learner->net, i)-1) &&
                       (k == no_of_weights-1)))
                     fprintf(fp, ",");
             }
@@ -1610,9 +1610,9 @@ static int deeplearn_export_python(deeplearn * learner, char * filename)
     COUNTUP(i, learner->net->HiddenLayers) {
         fprintf(fp,
                 "  hidden_layer_%d_bias = [", i);
-        COUNTUP(j, bp_hiddens_in_layer(learner->net, i)) {
+        COUNTUP(j, HIDDENS_IN_LAYER(learner->net, i)) {
             fprintf(fp,"%.10f",learner->net->hiddens[i][j]->bias);
-            if (j < bp_hiddens_in_layer(learner->net, i)-1)
+            if (j < HIDDENS_IN_LAYER(learner->net, i)-1)
                 fprintf(fp, ",");
         }
         fprintf(fp, "]\n\n");
@@ -1622,12 +1622,12 @@ static int deeplearn_export_python(deeplearn * learner, char * filename)
     fprintf(fp,
             "  output_layer_weights = [");
     COUNTUP(i, learner->net->NoOfOutputs) {
-        COUNTUP(j, bp_hiddens_in_layer(learner->net,
+        COUNTUP(j, HIDDENS_IN_LAYER(learner->net,
                                        learner->net->HiddenLayers-1)) {
             fprintf(fp, "%.10f",
                     learner->net->outputs[i]->weights[j]);
             if (!((i == learner->net->NoOfOutputs-1) &&
-                  (j == bp_hiddens_in_layer(learner->net,
+                  (j == HIDDENS_IN_LAYER(learner->net,
                                             learner->net->HiddenLayers-1)-1)))
                 fprintf(fp, ",");
         }
@@ -1769,26 +1769,26 @@ static int deeplearn_export_python(deeplearn * learner, char * filename)
     for (int i = 1; i < learner->net->HiddenLayers; i++) {
         fprintf(fp, "    # Hidden layer %d\n", i);
         fprintf(fp, "    for i in range(%d):\n",
-                bp_hiddens_in_layer(learner->net,i));
+                HIDDENS_IN_LAYER(learner->net,i));
         fprintf(fp, "      adder = this.hidden_layer_%d_bias[i]\n",i);
         fprintf(fp, "      for j in range(%d):\n",
-                bp_hiddens_in_layer(learner->net,i-1));
+                HIDDENS_IN_LAYER(learner->net,i-1));
         fprintf(fp, "        adder = adder + " \
                 "this.hidden_layer_%d_weights[i*%d+j]*prev_hiddens[j]\n",
-                i,bp_hiddens_in_layer(learner->net,i-1));
+                i,HIDDENS_IN_LAYER(learner->net,i-1));
         fprintf(fp, "%s", "      hiddens[i] = this.af(adder)\n");
         fprintf(fp, "    for i in range(%d):\n",
-                bp_hiddens_in_layer(learner->net,i));
+                HIDDENS_IN_LAYER(learner->net,i));
         fprintf(fp, "%s", "      prev_hiddens[i] = hiddens[i]\n\n");
     }
     fprintf(fp, "%s", "    # Output layer\n");
     fprintf(fp, "%s", "    for i in range(this.no_of_outputs):\n");
     fprintf(fp, "%s", "      adder = this.output_layer_bias[i]\n");
     fprintf(fp, "      for j in range(%d):\n",
-            bp_hiddens_in_layer(learner->net,learner->net->HiddenLayers-1));
+            HIDDENS_IN_LAYER(learner->net,learner->net->HiddenLayers-1));
     fprintf(fp, "        adder = adder + " \
             "this.output_layer_weights[i*%d+j]*prev_hiddens[j]\n",
-            bp_hiddens_in_layer(learner->net,learner->net->HiddenLayers-1));
+            HIDDENS_IN_LAYER(learner->net,learner->net->HiddenLayers-1));
     fprintf(fp, "%s", "      outputs.append(this.af(adder))\n\n");
     fprintf(fp, "%s",
             "    # Convert outputs from 0.25 - 0.75 " \

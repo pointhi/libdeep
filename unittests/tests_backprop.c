@@ -138,8 +138,8 @@ static void test_backprop_init()
     assert((&net)->inputs!=0);
     assert((&net)->hiddens!=0);
     assert((&net)->outputs!=0);
-    assert(bp_hiddens_in_layer(&net,1) < bp_hiddens_in_layer(&net,0));
-    assert(bp_hiddens_in_layer(&net,2) < bp_hiddens_in_layer(&net,1));
+    assert(HIDDENS_IN_LAYER(&net,1) < HIDDENS_IN_LAYER(&net,0));
+    assert(HIDDENS_IN_LAYER(&net,2) < HIDDENS_IN_LAYER(&net,1));
     bp_free(&net);
 
     printf("Ok\n");
@@ -213,7 +213,7 @@ static void test_backprop2()
         (&net)->inputs[i]->BPerror = 999;
     }
     for (l = 0; l < hidden_layers; l++) {
-        for (i = 0; i < bp_hiddens_in_layer(&net,l); i++) {
+        for (i = 0; i < HIDDENS_IN_LAYER(&net,l); i++) {
             (&net)->hiddens[l][i]->BPerror = 999;
         }
     }
@@ -232,7 +232,7 @@ static void test_backprop2()
         assert((&net)->inputs[i]->BPerror != 999);
     }
     for (l = 0; l < hidden_layers; l++) {
-        for (i = 0; i < bp_hiddens_in_layer(&net,l); i++) {
+        for (i = 0; i < HIDDENS_IN_LAYER(&net,l); i++) {
             assert((&net)->hiddens[l][i]->BPerror != 999);
         }
     }
@@ -271,7 +271,7 @@ static void test_backprop1()
         (&net)->inputs[i]->BPerror = 999;
     }
     for (l = 0; l < hidden_layers; l++) {
-        for (i = 0; i < bp_hiddens_in_layer(&net,l); i++) {
+        for (i = 0; i < HIDDENS_IN_LAYER(&net,l); i++) {
             (&net)->hiddens[l][i]->BPerror = 999;
         }
     }
@@ -290,7 +290,7 @@ static void test_backprop1()
         assert((&net)->inputs[i]->BPerror != 999);
     }
     for (l = 0; l < hidden_layers; l++) {
-        for (i = 0; i < bp_hiddens_in_layer(&net,l); i++) {
+        for (i = 0; i < HIDDENS_IN_LAYER(&net,l); i++) {
             assert((&net)->hiddens[l][i]->BPerror != 999);
         }
     }

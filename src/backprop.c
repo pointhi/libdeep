@@ -30,25 +30,6 @@
 #include "backprop.h"
 
 /**
-* @brief The number of hidden units varies over the hidden layers
-*        such that you have an increasing data compression effect
-* @param net Backprop neural net object
-* @param layer Index number of the hidden layer
-* @returns The number of units in the hidden layer
-*/
-int bp_hiddens_in_layer(bp * net, int layer)
-{
-    if (layer == 0)
-        return net->NoOfHiddens;
-
-    if (layer >= net->HiddenLayers)
-        layer = net->HiddenLayers-1;
-
-    return net->NoOfHiddens -
-        ((net->NoOfHiddens - net->NoOfOutputs)*layer/net->HiddenLayers);
-}
-
-/**
 * @brief Initialise a backprop neural net
 * @param net Backprop neural net object
 * @param no_of_inputs The number of input units
@@ -89,7 +70,7 @@ int bp_init(bp * net,
         return -2;
 
     COUNTDOWN(l, hidden_layers) {
-        NEURON_ARRAY_ALLOC(net->hiddens[l], bp_hiddens_in_layer(net,l));
+        NEURON_ARRAY_ALLOC(net->hiddens[l], HIDDENS_IN_LAYER(net,l));
         if (!net->hiddens[l])
             return -3;
     }
@@ -110,7 +91,7 @@ int bp_init(bp * net,
 
     /* create hiddens */
     COUNTUP(l, hidden_layers) {
-        COUNTUP(i, bp_hiddens_in_layer(net,l)) {
+        COUNTUP(i, HIDDENS_IN_LAYER(net,l)) {
             net->hiddens[l][i] =
                 (bp_neuron*)malloc(sizeof(bp_neuron));
             if (!net->hiddens[l][i])
@@ -126,12 +107,12 @@ int bp_init(bp * net,
                     bp_neuron_add_connection(n, j, net->inputs[j]);
             }
             else {
-                if (bp_neuron_init(n, bp_hiddens_in_layer(net,l-1),
+                if (bp_neuron_init(n, HIDDENS_IN_LAYER(net,l-1),
                                    random_seed) != 0)
                     return -9;
 
                 /* connect to previous hidden layer */
-                COUNTDOWN(j, bp_hiddens_in_layer(net,l-1))
+                COUNTDOWN(j, HIDDENS_IN_LAYER(net,l-1))
                     bp_neuron_add_connection(n, j, net->hiddens[l-1][j]);
             }
         }
@@ -144,11 +125,11 @@ int bp_init(bp * net,
             return -10;
 
         n = net->outputs[i];
-        if (bp_neuron_init(n, bp_hiddens_in_layer(net,hidden_layers-1),
+        if (bp_neuron_init(n, HIDDENS_IN_LAYER(net,hidden_layers-1),
                            random_seed) != 0)
             return -11;
 
-        COUNTDOWN(j, bp_hiddens_in_layer(net,hidden_layers-1))
+        COUNTDOWN(j, HIDDENS_IN_LAYER(net,hidden_layers-1))
             bp_neuron_add_connection(n, j, net->hiddens[hidden_layers-1][j]);
     }
     return 0;
@@ -168,7 +149,7 @@ void bp_free(bp * net)
     free(net->inputs);
 
     COUNTDOWN(l, net->HiddenLayers) {
-        COUNTDOWN(i, bp_hiddens_in_layer(net,l)) {
+        COUNTDOWN(i, HIDDENS_IN_LAYER(net,l)) {
             bp_neuron_free(net->hiddens[l][i]);
             free(net->hiddens[l][i]);
             net->hiddens[l][i] = 0;
@@ -195,7 +176,7 @@ void bp_feed_forward(bp * net)
     /* for each hidden layer */
     COUNTUP(l, net->HiddenLayers) {
         /* For each unit within the layer */
-        COUNTDOWN(i, bp_hiddens_in_layer(net,l))
+        COUNTDOWN(i, HIDDENS_IN_LAYER(net,l))
             bp_neuron_feedForward(net->hiddens[l][i],
                                   net->noise, &net->random_seed);
     }
@@ -218,7 +199,7 @@ void bp_feed_forward_layers(bp * net, int layers)
         /* if this layer is a hidden layer */
         if (l < net->HiddenLayers) {
             /* For each unit within the layer */
-            COUNTDOWN(i, bp_hiddens_in_layer(net,l))
+            COUNTDOWN(i, HIDDENS_IN_LAYER(net,l))
                 bp_neuron_feedForward(net->hiddens[l][i],
                                       net->noise, &net->random_seed);
         }
@@ -252,7 +233,7 @@ void bp_backprop(bp * net, int current_hidden_layer)
 
     FOR(l, start_hidden_layer, net->HiddenLayers) {
         /* For each unit within the layer */
-        COUNTDOWN(i, bp_hiddens_in_layer(net,l))
+        COUNTDOWN(i, HIDDENS_IN_LAYER(net,l))
             net->hiddens[l][i]->BPerror = 0;
     }
 
@@ -298,7 +279,7 @@ void bp_backprop(bp * net, int current_hidden_layer)
     /* back-propogate through the hidden layers */
     for (int l = net->HiddenLayers-1; l >= start_hidden_layer; l--) {
         /* for every unit in the hidden layer */
-        COUNTDOWN(i, bp_hiddens_in_layer(net,l)) {
+        COUNTDOWN(i, HIDDENS_IN_LAYER(net,l)) {
             /* get the neuron object */
             n = net->hiddens[l][i];
 
@@ -339,7 +320,7 @@ void bp_reproject(bp * net, int layer, int neuron_index)
     /* for every hidden layer */
     COUNTDOWN(l, layer) {
         /* For each unit within the layer */
-        COUNTDOWN(i, bp_hiddens_in_layer(net,l))
+        COUNTDOWN(i, HIDDENS_IN_LAYER(net,l))
             net->hiddens[l][i]->value_reprojected = 0;
     }
 
@@ -351,7 +332,7 @@ void bp_reproject(bp * net, int layer, int neuron_index)
     if (layer > 0) {
         /* apply the sigmoid function in the previous layer,
            as with feedforward */
-        COUNTDOWN(i, bp_hiddens_in_layer(net,layer-1)) {
+        COUNTDOWN(i, HIDDENS_IN_LAYER(net,layer-1)) {
             n = net->hiddens[layer-1][i];
             n->value_reprojected =
                 AF(n->value_reprojected);
@@ -361,12 +342,12 @@ void bp_reproject(bp * net, int layer, int neuron_index)
     /* reproject through the hidden layers */
     for (int l = layer-1; l > 0; l--) {
         /* for every unit in the hidden layer */
-        COUNTDOWN(i, bp_hiddens_in_layer(net,l))
+        COUNTDOWN(i, HIDDENS_IN_LAYER(net,l))
             bp_neuron_reproject(net->hiddens[l][i]);
 
         /* apply the sigmoid function in the previous layer,
            as with feedforward */
-        COUNTDOWN(i, bp_hiddens_in_layer(net,l-1)) {
+        COUNTDOWN(i, HIDDENS_IN_LAYER(net,l-1)) {
             n = net->hiddens[l-1][i];
             n->value_reprojected =
                 AF(n->value_reprojected);
@@ -387,7 +368,7 @@ void bp_learn(bp * net, int current_hidden_layer)
         start_hidden_layer = 0;
 
     FOR(l, start_hidden_layer, net->HiddenLayers) {
-        COUNTDOWN(i, bp_hiddens_in_layer(net,l))
+        COUNTDOWN(i, HIDDENS_IN_LAYER(net,l))
             bp_neuron_learn(net->hiddens[l][i],net->learningRate);
     }
 
@@ -598,11 +579,11 @@ int bp_plot_weights(bp * net,
             max_unit = net->NoOfOutputs;
         }
         else {
-            neurons_x = (int)sqrt(bp_hiddens_in_layer(net,layer));
-            neurons_y = (bp_hiddens_in_layer(net,layer)/neurons_x);
+            neurons_x = (int)sqrt(HIDDENS_IN_LAYER(net,layer));
+            neurons_y = (HIDDENS_IN_LAYER(net,layer)/neurons_x);
             neurons = net->hiddens[layer];
-            no_of_neurons = bp_hiddens_in_layer(net,layer);
-            max_unit = bp_hiddens_in_layer(net,layer);
+            no_of_neurons = HIDDENS_IN_LAYER(net,layer);
+            max_unit = HIDDENS_IN_LAYER(net,layer);
         }
 
         /* get the bias range within this layer */
@@ -661,9 +642,9 @@ int bp_plot_weights(bp * net,
         }
         if (layer < net->HiddenLayers) {
             /* dimensions of the weight matrix for the next layer */
-            inputs_x = (int)sqrt(bp_hiddens_in_layer(net,layer));
-            inputs_y = (bp_hiddens_in_layer(net,layer)/inputs_x);
-            no_of_weights = bp_hiddens_in_layer(net,layer);
+            inputs_x = (int)sqrt(HIDDENS_IN_LAYER(net,layer));
+            inputs_y = (HIDDENS_IN_LAYER(net,layer)/inputs_x);
+            no_of_weights = HIDDENS_IN_LAYER(net,layer);
         }
     }
 
@@ -758,7 +739,7 @@ static void bp_clear_dropouts(bp * net)
 
     /* for every hidden layer */
     COUNTDOWN(l, net->HiddenLayers) {
-        COUNTDOWN(i, bp_hiddens_in_layer(net,l))
+        COUNTDOWN(i, HIDDENS_IN_LAYER(net,l))
             net->hiddens[l][i]->excluded = 0;
     }
 }
@@ -775,7 +756,7 @@ static void bp_dropouts(bp * net)
 
     /* total number of hidden units */
     COUNTDOWN(l, net->HiddenLayers)
-        hidden_units += bp_hiddens_in_layer(net,l);
+        hidden_units += HIDDENS_IN_LAYER(net,l);
 
     /* total number of dropouts */
     no_of_dropouts = net->DropoutPercent*hidden_units/100;
@@ -783,7 +764,7 @@ static void bp_dropouts(bp * net)
     /* set the exclusion flags */
     COUNTDOWN(n, no_of_dropouts) {
         int l = rand_num(&net->random_seed)%net->HiddenLayers;
-        int i = rand_num(&net->random_seed)%bp_hiddens_in_layer(net,l);
+        int i = rand_num(&net->random_seed)%HIDDENS_IN_LAYER(net,l);
         net->hiddens[l][i]->excluded = 1;
     }
 }
@@ -837,7 +818,7 @@ int bp_save(FILE * fp, bp * net)
         return -9;
 
     COUNTUP(l, net->HiddenLayers) {
-        COUNTUP(i, bp_hiddens_in_layer(net,l))
+        COUNTUP(i, HIDDENS_IN_LAYER(net,l))
             bp_neuron_save(fp,net->hiddens[l][i]);
     }
 
@@ -896,7 +877,7 @@ int bp_load(FILE * fp, bp * net,
         return -10;
 
     COUNTUP(l, net->HiddenLayers) {
-        COUNTUP(i, bp_hiddens_in_layer(net,l)) {
+        COUNTUP(i, HIDDENS_IN_LAYER(net,l)) {
             if (bp_neuron_load(fp,net->hiddens[l][i]) != 0)
                 return -11;
         }
@@ -947,7 +928,7 @@ int bp_compare(bp * net1, bp * net2)
         return -6;
 
     COUNTDOWN(l, net1->HiddenLayers) {
-        COUNTDOWN(i, bp_hiddens_in_layer(net1,l)) {
+        COUNTDOWN(i, HIDDENS_IN_LAYER(net1,l)) {
             retval =
                 bp_neuron_compare(net1->hiddens[l][i],
                                   net2->hiddens[l][i]);
