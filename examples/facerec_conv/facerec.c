@@ -52,28 +52,20 @@ static void facerec_training()
     int no_of_convolutions = 1;
     int no_of_deep_layers = 2;
     int max_features_per_convolution = 8*8;
-    int reduction_factor = 3;
     int no_of_outputs = 5*5;
     int output_classes = 25;
+    int feature_width = 4;
     float error_threshold[] = { 4.0, 15.0, 8.0, 8.0 };
     unsigned int ctr, random_seed = 34217;
     float performance;
-
-    unsigned char *** images;
-    char *** classifications;
-    int ** classification_number;
-    assert(deeplearn_load_training_images("../facerec/images",
-                                          images,
-                                          classifications,
-                                          classification_number,
-                                          image_width, image_height) > 0);
 
     if (deepconvnet_read_images("../facerec/images",
                                 &convnet,
                                 image_width, image_height,
                                 no_of_convolutions,
                                 max_features_per_convolution,
-                                reduction_factor,
+                                feature_width,
+                                image_width/2, image_height/2,
                                 no_of_deep_layers,
                                 no_of_outputs,
                                 output_classes,
@@ -99,7 +91,7 @@ static void facerec_training()
     sprintf(convnet.history_plot_title, "%s", TITLE);
 
     ctr = 99999;
-    while (deepconvnet_training(&convnet) >= 0) {
+    while (deepconvnet_training(&convnet, &random_seed) >= 0) {
         if (convnet.current_layer == 0) {
             if (ctr > 1000) {
                 deepconvnet_plot_features(&convnet, 0,
@@ -110,13 +102,13 @@ static void facerec_training()
             ctr++;
         }
     }
-    if (deepconvnet_training(&convnet) < 0) {
+    if (deepconvnet_training(&convnet, &random_seed) < 0) {
         printf("Training error\n");
         return;
     }
 
     printf("Training Completed\n");
-    performance = deepconvnet_get_performance(&convnet);
+    performance = deepconvnet_get_performance(&convnet, &random_seed);
     if (performance >= 0) {
         printf("Test data set performance is %.2f\n",
                performance);
