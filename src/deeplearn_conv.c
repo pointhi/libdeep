@@ -721,3 +721,24 @@ int bp_inputs_from_convnet(bp * net, deeplearn_conv * conv)
 
     return 0;
 }
+
+/**
+ * @brief Returns the value of an output from the convolutional network
+ * @param conv Convolutional network instance
+ * @param index Index of the output
+ * @returns Output value in the range 0.0 -> 1.0
+ */
+float conv_get_output(deeplearn_conv * conv, int index)
+{
+    return conv->layer[conv->no_of_layers-1].layer[index];
+}
+
+/**
+ * @brief Returns the current training error
+ * @param conv Convolutional network instance
+ * @returns Training error in the range 0.0 -> 100.0
+ */
+float conv_get_error(deeplearn_conv * conv)
+{
+    return conv->history[conv->history_index];
+}

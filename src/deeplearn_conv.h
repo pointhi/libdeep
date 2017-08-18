@@ -125,6 +125,8 @@ void convolve_image_mono(float img[],
                          int feature_width, int no_of_features,
                          float feature[],
                          float layer[], int layer_width);
+float conv_get_output(deeplearn_conv * conv, int index);
+float conv_get_error(deeplearn_conv * conv);
 int bp_inputs_from_convnet(bp * net, deeplearn_conv * conv);
 
 #endif
