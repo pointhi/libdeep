@@ -646,6 +646,9 @@ int deepconvnet_create_training_test_sets(deepconvnet * convnet)
  * @param no_of_convolutions The number of convolution layers
  * @param max_features_per_convolution Number of features learned at
  *        each convolution layer
+ * @param feature_width Width of features in the input image
+ * @param final_image_width Width of the output of the convolutional network
+ * @param final_image_height Height of the output of the convolutional network
  * @param no_of_deep_layers Number of layers for the deep learner
  * @param no_of_outputs Number of output units
  * @param output_classes The number of output classes if the output in the
