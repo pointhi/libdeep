@@ -117,7 +117,7 @@ int deepconvnet_read_images(char * directory,
 int deepconvnet_training(deepconvnet * convnet, unsigned int * random_seed);
 int deepconvnet_plot_history(deepconvnet * convnet,
                              int image_width, int image_height);
-float deepconvnet_get_performance(deepconvnet * convnet, unsigned int * random_seed);
+float deepconvnet_get_performance(deepconvnet * convnet);
 void deepconvnet_set_output(deepconvnet * convnet, int index, float value);
 float deepconvnet_get_output(deepconvnet * convnet, int index);
 void deepconvnet_set_class(deepconvnet * convnet, int class_number);

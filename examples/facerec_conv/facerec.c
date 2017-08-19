@@ -49,13 +49,13 @@ deeplearn learner;
 */
 static void facerec_training()
 {
-    int no_of_convolutions = 1;
+    int no_of_convolutions = 3;
     int no_of_deep_layers = 2;
     int max_features_per_convolution = 8*8;
     int no_of_outputs = 5*5;
     int output_classes = 25;
     int feature_width = 4;
-    float error_threshold[] = { 4.0, 15.0, 8.0, 8.0 };
+    float error_threshold[] = { 4.0, 0.0, 0.0, 15.0, 8.0, 8.0 };
     unsigned int ctr, random_seed = 34217;
     float performance;
 
@@ -108,7 +108,7 @@ static void facerec_training()
     }
 
     printf("Training Completed\n");
-    performance = deepconvnet_get_performance(&convnet, &random_seed);
+    performance = deepconvnet_get_performance(&convnet);
     if (performance >= 0) {
         printf("Test data set performance is %.2f\n",
                performance);

@@ -363,8 +363,6 @@ int deepconvnet_update_img(deepconvnet * convnet, unsigned char img[],
  */
 int deepconvnet_test_img(deepconvnet * convnet, unsigned char img[])
 {
-    const unsigned char use_dropouts = 0;
-
     conv_feed_forward(img, convnet->convolution, convnet->convolution->no_of_layers);
 
     if (deepconvnet_set_inputs_conv(convnet->learner,
@@ -554,10 +552,9 @@ int deepconvnet_training(deepconvnet * convnet, unsigned int * random_seed)
 /**
  * @brief Returns performance on the test set
  * @param convnet Deep convnet object
- * @param random_seed Random number generator seed
  * @return Percentage of correct classifications or a negative number on error
  */
-float deepconvnet_get_performance(deepconvnet * convnet, unsigned int * random_seed)
+float deepconvnet_get_performance(deepconvnet * convnet)
 {
     float performance = 0;
     int ctr = 0;
@@ -572,7 +569,7 @@ float deepconvnet_get_performance(deepconvnet * convnet, unsigned int * random_s
     COUNTUP(i, test_images) {
         int index = convnet->test_set_index[i];
         unsigned char * img = convnet->images[index];
-        deepconvnet_update_img(convnet, img, random_seed, -1);
+        conv_feed_forward(img, convnet->convolution, convnet->convolution->no_of_layers);
 
         if (deeplearn_get_class(convnet->learner) ==
             convnet->classification_number[index])
