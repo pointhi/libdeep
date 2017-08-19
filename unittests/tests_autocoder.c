@@ -164,5 +164,5 @@ int run_tests_autocoder()
     test_autocoder_update();
 
     printf("All autocoder tests completed\n");
-    return 1;
+    return 0;
 }

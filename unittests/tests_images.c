@@ -181,5 +181,5 @@ int run_tests_images()
     test_load_training_images();
 
     printf("All images tests completed\n");
-    return 1;
+    return 0;
 }

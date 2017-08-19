@@ -212,5 +212,5 @@ int run_tests_conv()
     test_conv_learn();
 
     printf("All convolution tests completed\n");
-    return 1;
+    return 0;
 }

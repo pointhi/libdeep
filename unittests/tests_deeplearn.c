@@ -509,5 +509,5 @@ int run_tests_deeplearn()
     test_deeplearn_set_input_field_text();
 
     printf("All deeplearn tests completed\n");
-    return 1;
+    return 0;
 }

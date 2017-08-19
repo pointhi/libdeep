@@ -229,5 +229,5 @@ int run_tests_data()
     test_data_training_test();
 
     printf("All data tests completed\n");
-    return 1;
+    return 0;
 }

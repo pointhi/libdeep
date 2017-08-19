@@ -130,5 +130,5 @@ int run_tests_encoding()
     test_encode_text();
 
     printf("All encoding tests completed\n");
-    return 1;
+    return 0;
 }

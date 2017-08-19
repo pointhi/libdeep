@@ -100,5 +100,5 @@ int run_tests_random()
     test_rand_num();
 
     printf("All random number generator tests completed\n");
-    return 1;
+    return 0;
 }

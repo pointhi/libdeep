@@ -626,5 +626,5 @@ int run_tests_backprop()
     test_backprop_classifications_to_numbers();
 
     printf("All backprop tests completed\n");
-    return 1;
+    return 0;
 }

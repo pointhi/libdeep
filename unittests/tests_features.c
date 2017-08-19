@@ -34,5 +34,5 @@ int run_tests_features()
     printf("\nRunning feature learning tests\n");
 
     printf("All feature learning tests completed\n");
-    return 1;
+    return 0;
 }

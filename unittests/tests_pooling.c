@@ -77,5 +77,5 @@ int run_tests_pooling()
     test_pooling_update();
 
     printf("All pooling tests completed\n");
-    return 1;
+    return 0;
 }
