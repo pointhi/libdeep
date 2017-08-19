@@ -109,9 +109,7 @@ static void learn_features_from_image()
     draw_features(img_features,
                   features_img_width, features_img_height,
                   (int)(bitsperpixel/8),
-                  feature_width, no_of_features, feature);
-
-    printf("test\n");
+                  3, feature_width, no_of_features, feature);
 
     deeplearn_write_png_file("features.png",
                              (unsigned int)features_img_width,

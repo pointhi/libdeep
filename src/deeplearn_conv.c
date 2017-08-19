@@ -51,9 +51,6 @@ int conv_init(int no_of_layers,
               float match_threshold[],
               deeplearn_conv * conv)
 {
-    /* used to initially randomize the learned feature arrays */
-    unsigned int rand_seed = 234;
-
     conv->no_of_layers = no_of_layers;
     conv->current_layer = 0;
     conv->learning_rate = 0.1f;
@@ -115,11 +112,10 @@ int conv_init(int no_of_layers,
                    conv->layer[l].depth);
         if (!conv->layer[l].feature)
             return 2;
-        COUNTDOWN(r, conv->layer[l].no_of_features*
-                  conv->layer[l].feature_width*conv->layer[l].feature_width*
-                  conv->layer[l].depth)
-            conv->layer[l].feature[r] =
-                (rand_num(&rand_seed) % 10000)/10000.0f;
+        FLOATCLEAR(conv->layer[l].feature,
+                   conv->layer[l].no_of_features*
+                   conv->layer[l].feature_width*conv->layer[l].feature_width*
+                   conv->layer[l].depth);
     }
 
     conv->outputs_width = final_image_width;
@@ -582,6 +578,20 @@ void conv_feed_forward(unsigned char * img,
 }
 
 /**
+ * @brief Clears all values in all layers other than the first,
+ *        typically for testing purposes
+ * @param conv Convolution instance
+ */
+void conv_clear(deeplearn_conv * conv)
+{
+    FOR(l, 1, conv->no_of_layers) {
+        FLOATCLEAR(conv->layer[l].layer,
+                   conv->layer[l].width * conv->layer[l].height *
+                   conv->layer[l].depth);
+    }
+}
+
+/**
  * @brief Update the history of scores during feature learning
  * @param conv Convolution instance
  * @param matching score Current score when matching features
@@ -647,6 +657,7 @@ float conv_learn(unsigned char * img,
                        &conv->layer[layer].feature[0],
                        feature_score,
                        samples, conv->learning_rate, random_seed);
+
     /* check for NaN */
     if (matching_score != matching_score) {
         printf("matching_score = %f\n", matching_score);
@@ -680,7 +691,7 @@ int conv_draw_features(unsigned char img[],
                        int layer,
                        deeplearn_conv * conv)
 {
-    int feature_width;
+    int feature_width, feature_depth;
     int no_of_features;
     float * feature;
 
@@ -688,12 +699,14 @@ int conv_draw_features(unsigned char img[],
         return -1;
 
     feature_width = conv->layer[layer].feature_width;
+    feature_depth = conv->layer[layer].depth;
     no_of_features = conv->layer[layer].no_of_features;
     feature = conv->layer[layer].feature;
 
     if (layer == 0)
         return draw_features(img, img_width, img_height, img_depth,
-                             feature_width, no_of_features, feature);
+                             feature_depth, feature_width,
+                             no_of_features, feature);
 
     /* TODO: subsequent layers */
 

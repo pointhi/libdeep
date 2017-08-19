@@ -1,6 +1,6 @@
 /*
  Face recognition demo
- Copyright (C) 2013-2015  Bob Mottram <bob@robotics.uk.to>
+ Copyright (C) 2013-2017  Bob Mottram <bob@robotics.uk.to>
 
  Redistribution and use in source and binary forms, with or without
  modification, are permitted provided that the following conditions
@@ -51,11 +51,12 @@ static void facerec_training()
 {
     int no_of_convolutions = 3;
     int no_of_deep_layers = 2;
-    int max_features_per_convolution = 8*8;
+    int max_features_per_convolution = 4*4;
+    int final_image_width = 4;
     int no_of_outputs = 5*5;
     int output_classes = 25;
-    int feature_width = 4;
-    float error_threshold[] = { 4.0, 0.0, 0.0, 15.0, 8.0, 8.0 };
+    int feature_width = 6;
+    float error_threshold[] = { 3.3, 1.55, 0.7, 10.0, 5.0, 8.0 };
     unsigned int ctr, random_seed = 34217;
     float performance;
 
@@ -65,7 +66,7 @@ static void facerec_training()
                                 no_of_convolutions,
                                 max_features_per_convolution,
                                 feature_width,
-                                image_width/2, image_height/2,
+                                final_image_width, final_image_width,
                                 no_of_deep_layers,
                                 no_of_outputs,
                                 output_classes,
@@ -78,9 +79,8 @@ static void facerec_training()
     printf("Number of labeled training examples: %d\n",convnet.no_of_images*8/10);
     printf("Number of test examples: %d\n",convnet.no_of_images*2/10);
 
-    if (convnet.no_of_images == 0) {
+    if (convnet.no_of_images == 0)
         return;
-    }
 
     deepconvnet_set_learning_rate(&convnet, 0.2f);
 
@@ -91,9 +91,9 @@ static void facerec_training()
     sprintf(convnet.history_plot_title, "%s", TITLE);
 
     ctr = 99999;
-    while (deepconvnet_training(&convnet, &random_seed) >= 0) {
+    while (deepconvnet_training(&convnet, &random_seed) == 0) {
         if (convnet.current_layer == 0) {
-            if (ctr > 1000) {
+            if (ctr > 10000) {
                 deepconvnet_plot_features(&convnet, 0,
                                           "features0.png",
                                           640, 640);
@@ -102,6 +102,7 @@ static void facerec_training()
             ctr++;
         }
     }
+
     if (deepconvnet_training(&convnet, &random_seed) < 0) {
         printf("Training error\n");
         return;

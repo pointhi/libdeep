@@ -321,21 +321,25 @@ static void deepconvnet_update(deepconvnet * convnet)
  * @brief Update routine for training the system
  * @param convnet Deep convnet object
  * @param img Array containing input image
+ * @param samples The number of samples to take from the image
+ *        for convolution network training
  * @param random_seed Random number generator seed
  * @param class_number Desired class number
  * @return Zero on success
  */
 int deepconvnet_update_img(deepconvnet * convnet, unsigned char img[],
-                           unsigned int * random_seed,
+                           int samples, unsigned int * random_seed,
                            int class_number)
 {
-    if (convnet->convolution->current_layer < convnet->convolution->no_of_layers) {
-        conv_learn(img, convnet->convolution, 50, random_seed);
+    if (convnet->convolution->current_layer <
+        convnet->convolution->no_of_layers) {
+        conv_learn(img, convnet->convolution, samples, random_seed);
         deepconvnet_update(convnet);
         return 0;
     }
 
-    conv_feed_forward(img, convnet->convolution, convnet->convolution->no_of_layers);
+    conv_feed_forward(img, convnet->convolution,
+                      convnet->convolution->no_of_layers);
 
     if (deepconvnet_set_inputs_conv(convnet->learner,
                                     convnet->convolution) != 0)
@@ -526,7 +530,7 @@ int deepconvnet_plot_history(deepconvnet * convnet,
 int deepconvnet_training(deepconvnet * convnet, unsigned int * random_seed)
 {
     if (convnet->learner->training_complete != 0)
-        return 0;
+        return 1;
 
     if (convnet->no_of_images == 0)
         return 0;
@@ -540,9 +544,10 @@ int deepconvnet_training(deepconvnet * convnet, unsigned int * random_seed)
         rand_num(&convnet->learner->net->random_seed)%training_images;
     int index = convnet->training_set_index[index0];
     unsigned char * img = convnet->images[index];
+    int samples = 20;
 
     if (deepconvnet_update_img(convnet, img,
-                               random_seed,
+                               samples, random_seed,
                                convnet->classification_number[index]) != 0)
         return -2;
 
@@ -570,6 +575,12 @@ float deepconvnet_get_performance(deepconvnet * convnet)
         int index = convnet->test_set_index[i];
         unsigned char * img = convnet->images[index];
         conv_feed_forward(img, convnet->convolution, convnet->convolution->no_of_layers);
+
+        if (deepconvnet_set_inputs_conv(convnet->learner,
+                                        convnet->convolution) != 0)
+            return -2;
+
+        deeplearn_feed_forward(convnet->learner);
 
         if (deeplearn_get_class(convnet->learner) ==
             convnet->classification_number[index])
