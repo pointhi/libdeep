@@ -48,6 +48,8 @@
  * @param feature_width Width of each feature in the input image
  * @param final_image_width Width of the output of the convolutional stage
  * @param final_image_height Height of the output of the convolutional stage
+ * @param layer_itterations The number of training itterations for each
+ *        convolution layer
  * @param no_of_outputs Number of outputs of the deep learner
  * @param convnet Deep convnet object
  * @param error_threshold Array containing learning thresholds (percent error)
@@ -64,12 +66,15 @@ int deepconvnet_init(int no_of_convolutions,
                      int feature_width,
                      int final_image_width,
                      int final_image_height,
+                     unsigned int layer_itterations,
                      int no_of_outputs,
                      deepconvnet * convnet,
                      float error_threshold[],
                      unsigned int * random_seed)
 {
     convnet->convolution = (deeplearn_conv*)malloc(sizeof(deeplearn_conv));
+
+    convnet->layer_itterations = layer_itterations;
 
     if (!convnet->convolution)
         return -1;
@@ -80,7 +85,6 @@ int deepconvnet_init(int no_of_convolutions,
                   image_depth,
                   max_features, feature_width,
                   final_image_width, final_image_height,
-                  error_threshold,
                   convnet->convolution) != 0)
         return -2;
 
@@ -323,17 +327,21 @@ static void deepconvnet_update(deepconvnet * convnet)
  * @param img Array containing input image
  * @param samples The number of samples to take from the image
  *        for convolution network training
+ * @param layer_itterations The number of training itterations per layer
+ *        for the convolution network
  * @param random_seed Random number generator seed
  * @param class_number Desired class number
  * @return Zero on success
  */
 int deepconvnet_update_img(deepconvnet * convnet, unsigned char img[],
-                           int samples, unsigned int * random_seed,
+                           int samples, unsigned int layer_itterations,
+                           unsigned int * random_seed,
                            int class_number)
 {
     if (convnet->convolution->current_layer <
         convnet->convolution->no_of_layers) {
-        conv_learn(img, convnet->convolution, samples, random_seed);
+        conv_learn(img, convnet->convolution, samples,
+                   layer_itterations, random_seed);
         deepconvnet_update(convnet);
         return 0;
     }
@@ -547,7 +555,7 @@ int deepconvnet_training(deepconvnet * convnet, unsigned int * random_seed)
     int samples = 20;
 
     if (deepconvnet_update_img(convnet, img,
-                               samples, random_seed,
+                               samples, convnet->layer_itterations, random_seed,
                                convnet->classification_number[index]) != 0)
         return -2;
 
@@ -657,6 +665,8 @@ int deepconvnet_create_training_test_sets(deepconvnet * convnet)
  * @param feature_width Width of features in the input image
  * @param final_image_width Width of the output of the convolutional network
  * @param final_image_height Height of the output of the convolutional network
+ * @param layer_itterations Number of training itterations for each
+ *        convolution layer
  * @param no_of_deep_layers Number of layers for the deep learner
  * @param no_of_outputs Number of output units
  * @param output_classes The number of output classes if the output in the
@@ -673,6 +683,7 @@ int deepconvnet_read_images(char * directory,
                             int feature_width,
                             int final_image_width,
                             int final_image_height,
+                            unsigned int layer_itterations,
                             int no_of_deep_layers,
                             int no_of_outputs,
                             int output_classes,
@@ -686,6 +697,7 @@ int deepconvnet_read_images(char * directory,
                          feature_width,
                          final_image_width,
                          final_image_height,
+                         layer_itterations,
                          no_of_outputs,
                          convnet,
                          error_threshold,

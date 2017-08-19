@@ -59,6 +59,7 @@ static void facerec_training()
     float error_threshold[] = { 3.3, 1.55, 0.7, 10.0, 5.0, 8.0 };
     unsigned int ctr, random_seed = 34217;
     float performance;
+    unsigned int layer_itterations = 2000;
 
     if (deepconvnet_read_images("../facerec/images",
                                 &convnet,
@@ -67,6 +68,7 @@ static void facerec_training()
                                 max_features_per_convolution,
                                 feature_width,
                                 final_image_width, final_image_width,
+                                layer_itterations,
                                 no_of_deep_layers,
                                 no_of_outputs,
                                 output_classes,

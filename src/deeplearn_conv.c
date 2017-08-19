@@ -39,8 +39,6 @@
  * @param feature_width Width of features in the first layer
  * @param final_image_width Width of the final output layer
  * @param final_image_height Height of the final layer
- * @param match_threshold Array containing the minimum matching threshold
- *        for each convolution layer
  * @param conv Instance to be updated
  * @returns zero on success
  */
@@ -48,7 +46,6 @@ int conv_init(int no_of_layers,
               int image_width, int image_height, int image_depth,
               int no_of_features, int feature_width,
               int final_image_width, int final_image_height,
-              float match_threshold[],
               deeplearn_conv * conv)
 {
     conv->no_of_layers = no_of_layers;
@@ -66,6 +63,8 @@ int conv_init(int no_of_layers,
             "Feature Learning Training History");
 
     COUNTUP(l, no_of_layers) {
+        conv->layer[l].ctr = (unsigned int)0;
+
         conv->layer[l].width =
             image_width -
             ((image_width-final_image_width)*l/no_of_layers);
@@ -132,15 +131,6 @@ int conv_init(int no_of_layers,
     /* clear the outputs */
     FLOATCLEAR(conv->outputs, conv->no_of_outputs);
 
-    /* allocate array containing training thresholds */
-    FLOATALLOC(conv->match_threshold, conv->no_of_layers);
-    if (!conv->match_threshold)
-        return 4;
-
-    /* copy threshold values into the array */
-    memcpy((void*)conv->match_threshold, match_threshold,
-           conv->no_of_layers*sizeof(float));
-
     return 0;
 }
 
@@ -201,7 +191,6 @@ void conv_free(deeplearn_conv * conv)
     }
 
     free(conv->outputs);
-    free(conv->match_threshold);
 }
 
 /**
@@ -315,9 +304,6 @@ int conv_save(FILE * fp, deeplearn_conv * conv)
         return -9;
     if (INTWRITE(conv->current_layer) == 0)
         return -10;
-    if (FLOATWRITEARRAY(conv->match_threshold,
-                        conv->no_of_layers) == 0)
-        return -11;
     if (UINTWRITE(conv->itterations) == 0)
         return -12;
 
@@ -367,22 +353,18 @@ int conv_load(FILE * fp, deeplearn_conv * conv)
     if (INTREAD(conv->no_of_outputs) == 0)
         return -8;
 
-    float match_threshold[PREPROCESS_MAX_LAYERS];
     conv_init(conv->no_of_layers,
               conv->layer[0].width, conv->layer[0].height,
               conv->layer[0].depth,
               conv->layer[0].no_of_features,
               conv->layer[0].feature_width,
               conv->outputs_width, conv->outputs_width,
-              &match_threshold[0], conv);
+              conv);
 
     if (INTREAD(conv->learning_rate) == 0)
         return -9;
     if (INTREAD(conv->current_layer) == 0)
         return -10;
-    if (FLOATREADARRAY(conv->match_threshold,
-                        conv->no_of_layers) == 0)
-        return -11;
     if (UINTREAD(conv->itterations) == 0)
         return -12;
 
@@ -625,12 +607,13 @@ static void conv_update_history(deeplearn_conv * conv,
  * @brief Learn features
  * @param conv Convolution instance
  * @param samples The number of samples from the image or layer
+ * @param layer_itterations The number of training itterations per layer
  * @param random_seed Random number generator seed
  * @returns matching score/error, with lower values being better match
  */
 float conv_learn(unsigned char * img,
                  deeplearn_conv * conv,
-                 int samples,
+                 int samples, int layer_itterations,
                  unsigned int * random_seed)
 {
     float matching_score = 0;
@@ -669,8 +652,9 @@ float conv_learn(unsigned char * img,
 
     free(feature_score);
 
-    /* proceed to the next layer if the match is good enough */
-    if (matching_score < conv->match_threshold[layer])
+    /* proceed to the next layer if the counter threshold is reached */
+    conv->layer[conv->current_layer].ctr++;
+    if (conv->layer[conv->current_layer].ctr >= layer_itterations)
         conv->current_layer++;
 
     return matching_score;

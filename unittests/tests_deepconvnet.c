@@ -41,6 +41,7 @@ static void test_deepconvnet_init()
     int final_image_height = 4;
     float error_threshold[] = { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f };
     unsigned int random_seed = 123;
+    unsigned int layer_itterations = 1000;
 
     /* deep learner */
     int no_of_deep_layers = 3;
@@ -59,6 +60,7 @@ static void test_deepconvnet_init()
                             feature_width,
                             final_image_width,
                             final_image_height,
+                            layer_itterations,
                             no_of_outputs,
                             &convnet,
                             error_threshold,

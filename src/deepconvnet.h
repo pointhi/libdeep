@@ -56,6 +56,9 @@ typedef struct {
     /* current layer being trained */
     int current_layer;
 
+    /* number of training itterations per convolution layer */
+    unsigned int layer_itterations;
+
     /* training/test images */
     int no_of_images;
     unsigned char ** images;
@@ -87,6 +90,7 @@ int deepconvnet_init(int no_of_convolutions,
                      int feature_width,
                      int final_image_width,
                      int final_image_height,
+                     unsigned int layer_itterations,
                      int no_of_outputs,
                      deepconvnet * convnet,
                      float error_threshold[],
@@ -96,8 +100,8 @@ int deepconvnet_save(FILE * fp, deepconvnet * convnet);
 int deepconvnet_load(FILE * fp, deepconvnet * convnet,
                      unsigned int * random_seed);
 int deepconvnet_update_img(deepconvnet * convnet, unsigned char img[],
-                           int samples, unsigned int * random_seed,
-                           int class_number);
+                           int samples, unsigned int layer_itterations,
+                           unsigned int * random_seed, int class_number);
 int deepconvnet_test_img(deepconvnet * convnet, unsigned char img[]);
 void deepconvnet_set_learning_rate(deepconvnet * convnet, float rate);
 void deepconvnet_set_dropouts(deepconvnet * convnet, float dropout_percent);
@@ -109,6 +113,7 @@ int deepconvnet_read_images(char * directory,
                             int feature_width,
                             int final_image_width,
                             int final_image_height,
+                            unsigned int layer_itterations,
                             int no_of_deep_layers,
                             int no_of_outputs,
                             int output_classes,
