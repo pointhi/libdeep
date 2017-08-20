@@ -108,6 +108,11 @@ void convolve_image(float img[],
                     int feature_width, int no_of_features,
                     float feature[],
                     float layer[], int layer_width);
+void deconvolve_image(float img[],
+                      int img_width, int img_height, int img_depth,
+                      int feature_width, int no_of_features,
+                      float feature[],
+                      float layer[], int layer_width);
 
 int conv_draw_features(unsigned char img[],
                        int img_width, int img_height, int img_depth,

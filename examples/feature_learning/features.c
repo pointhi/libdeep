@@ -47,20 +47,26 @@ static void learn_features_from_image()
     int features_img_width = 800;
     int features_img_height = 800;
     const float learning_rate = 0.1f;
+    float * layer;
+    int layer_width = 128;
+    float maxval, minval;
 
     /* load image from file */
     assert(deeplearn_read_png_file((char*)"../../unittests/Lenna.png",
                                    &img_width, &img_height,
                                    &bitsperpixel, &img)==0);
 
-    img_float = (float*)malloc(img_width*img_height*(bitsperpixel/8)*sizeof(float));
+    img_float = (float*)malloc(img_width*img_height*
+                               (bitsperpixel/8)*sizeof(float));
     if (!img_float) {
         printf("Failed to allocate image feature memory\n");
         free(img);
         return;
     }
 
-    feature = (float*)malloc(no_of_features*feature_width*feature_width*(bitsperpixel/8)*sizeof(float));
+    feature = (float*)malloc(no_of_features*feature_width*
+                             feature_width*
+                             (bitsperpixel/8)*sizeof(float));
     if (!feature) {
         printf("Failed to allocate learned feature memory\n");
         free(img_float);
@@ -76,7 +82,9 @@ static void learn_features_from_image()
         return;
     }
     img_features =
-        (unsigned char*)malloc(features_img_width*features_img_height*((int)bitsperpixel/8)*sizeof(unsigned char));
+        (unsigned char*)malloc(features_img_width*
+                               features_img_height*
+                               ((int)bitsperpixel/8)*sizeof(unsigned char));
     if (!img_features) {
         printf("Failed to allocate memory for features image\n");
         free(img_float);
@@ -86,9 +94,23 @@ static void learn_features_from_image()
         return;
     }
 
-    /* initially random features */
-    for (i = 0; i < no_of_features*feature_width*feature_width*(bitsperpixel/8); i++)
-        feature[i] = rand_num(&random_seed) % 256;
+    layer =
+        (float*)malloc(no_of_features*layer_width*layer_width*
+                       ((int)bitsperpixel/8)*sizeof(float));
+    if (!layer) {
+        printf("Failed to allocate memory for convolution layer\n");
+        free(img_float);
+        free(img);
+        free(feature);
+        free(feature_score);
+        free(img_features);
+        return;
+    }
+
+    /* clear features */
+    memset((void*)feature, '\0',
+           no_of_features*feature_width*feature_width*
+           (bitsperpixel/8)*sizeof(float));
 
     /* convert the loaded image to floats */
     for (i = 0; i < img_width*img_height*(bitsperpixel/8); i++)
@@ -97,11 +119,12 @@ static void learn_features_from_image()
     for (i = 0; i < 30; i++) {
         float match_score =
             learn_features(img_float,
-                           (int)img_width, (int)img_height, (int)bitsperpixel/8,
+                           (int)img_width, (int)img_height,
+                           (int)bitsperpixel/8,
                            feature_width, no_of_features,
                            feature, feature_score,
                            samples, learning_rate, &random_seed);
-        printf("%.4f\n", match_score);
+        if (i % 5 == 0) printf("%.4f\n", match_score);
     }
 
     printf("Learning completed\n");
@@ -116,11 +139,41 @@ static void learn_features_from_image()
                              (unsigned int)features_img_height,
                              bitsperpixel, img_features);
 
+    printf("Convolving\n");
+    convolve_image(img_float, (int)img_width, (int)img_height,
+                   (int)bitsperpixel/8,
+                   feature_width, no_of_features,
+                   feature, layer, layer_width);
+
+    printf("Deconvolving\n");
+    deconvolve_image(img_float, (int)img_width, (int)img_height,
+                     (int)bitsperpixel/8,
+                     feature_width, no_of_features,
+                     feature, layer, layer_width);
+
+    /* convert floats back to the image */
+    maxval = img_float[0];
+    minval = img_float[0];
+    for (i = 1; i < img_width*img_height*(bitsperpixel/8); i++) {
+        if (img_float[i] > maxval) maxval = img_float[i];
+        if (img_float[i] < minval) minval = img_float[i];
+    }
+
+    for (i = 0; i < img_width*img_height*(bitsperpixel/8); i++) {
+        img_float[i] = (img_float[i] - minval)/((maxval - minval)*0.04f);
+        img[i] = (unsigned char)(img_float[i]*255);
+    }
+
+    deeplearn_write_png_file("reconstruction.png",
+                             img_width, img_height,
+                             bitsperpixel, img);
+
     free(img_float);
     free(img);
     free(feature_score);
     free(feature);
     free(img_features);
+    free(layer);
 }
 
 int main(int argc, char* argv[])

@@ -406,9 +406,16 @@ void convolve_image(float img[],
                     float feature[],
                     float layer[], int layer_width)
 {
+    if (img_depth == 1) {
+        convolve_image_mono(img, img_width, img_height,
+                            feature_width, no_of_features,
+                            feature, layer, layer_width);
+        return;
+    }
+
     int half_feature_width = feature_width/2;
-    float feature_pixels =
-        1.0f / (float)(feature_width*feature_width*img_depth);
+    /* float feature_pixels =
+       1.0f / (float)(feature_width*feature_width*img_depth); */
 
     /* for each unit in the output layer */
     COUNTDOWN(layer_y, layer_width) {
@@ -436,17 +443,22 @@ void convolve_image(float img[],
                     /* position within the feature */
                     int n1 = ((yy-ty) * feature_width) * img_depth;
                     FOR(xx, tx, bx) {
-                        COUNTDOWN(d, img_depth)
+                        COUNTDOWN(d, img_depth) {
                             match +=
                                 (img[n0+d] - curr_feature[n1+d])*
                                 (img[n0+d] - curr_feature[n1+d]);
+                        }
                         n0 += img_depth;
                         n1 += img_depth;
                     }
                 }
 
+                /*
                 layer[((layer_y*layer_width) + layer_x)*no_of_features + f] =
                     1.0f - (float)sqrt(match * feature_pixels);
+                */
+                layer[((layer_y*layer_width) + layer_x)*no_of_features + f] =
+                    AF(match);
             }
         }
     }
@@ -474,8 +486,8 @@ void convolve_image_mono(float img[],
                          float layer[], int layer_width)
 {
     int half_feature_width = feature_width/2;
-    float feature_pixels =
-        1.0f / (float)(feature_width*feature_width);
+    /* float feature_pixels =
+       1.0f / (float)(feature_width*feature_width); */
 
     /* for each unit in the output layer */
     COUNTDOWN(layer_y, layer_width) {
@@ -511,11 +523,169 @@ void convolve_image_mono(float img[],
                     }
                 }
 
+                /*
                 layer[((layer_y*layer_width) + layer_x)*no_of_features + f] =
                     1.0f - (float)sqrt(match * feature_pixels);
+                */
+                layer[((layer_y*layer_width) + layer_x)*no_of_features + f] =
+                    AF(match);
             }
         }
     }
+}
+
+/**
+ * @brief Deconvolves a layer back to the source image
+ * @param img Input image or previous layer with values in the range 0.0 -> 1.0
+ * @param img_width Width of the image
+ * @param img_height Height of the image
+ *        the color depth, otherwise it is the number of features learned in
+ *        the previous layer
+ * @param feature_width Width if each image patch
+ * @param no_of_features The number of features in the set
+ * @param feature Array containing the learned features, having values in
+ *        the range 0.0 -> 1.0
+ * @param layer The output layer to begin from
+ * @param layer_width Width of the output layer. The total size of the
+ *        output layer should be layer_width*layer_width*no_of_features
+ */
+void deconvolve_image_mono(float img[],
+                           int img_width, int img_height,
+                           int feature_width, int no_of_features,
+                           float feature[],
+                           float layer[], int layer_width)
+{
+    int half_feature_width = feature_width/2;
+
+    /* clear the input image */
+    FLOATCLEAR(img, img_width*img_height);
+
+    /* for each unit in the output layer */
+    COUNTDOWN(layer_y, layer_width) {
+        int y_img = layer_y * img_height / layer_width;
+        int ty = y_img - half_feature_width;
+        int by = ty + feature_width;
+        if (ty < 0) ty = 0;
+        if (by >= img_height) by = img_height-1;
+        COUNTDOWN(layer_x, layer_width) {
+            int x_img = layer_x * img_width / layer_width;
+            int tx = x_img - half_feature_width;
+            int bx = tx + feature_width;
+            if (tx < 0) tx = 0;
+            if (bx >= img_width) bx = img_width-1;
+
+            /* for every learned feature */
+            COUNTDOWN(f, no_of_features) {
+                float * curr_feature =
+                    &feature[f*feature_width*feature_width];
+
+                float weight =
+                    layer[((layer_y*layer_width) + layer_x)*no_of_features + f];
+
+                FOR(yy, ty, by) {
+                    /* position in the input image */
+                    int n0 = (yy*img_width) + tx;
+                    /* position within the feature */
+                    int n1 = (yy-ty) * feature_width;
+                    FOR(xx, tx, bx) {
+                        img[n0++] += weight*curr_feature[n1++];
+                    }
+                }
+            }
+        }
+    }
+}
+
+/**
+ * @brief Deconvolves a layer back to the source image
+ * @param img Input image or previous layer with values in the range 0.0 -> 1.0
+ * @param img_width Width of the image
+ * @param img_height Height of the image
+ * @param img_depth Depth of the image. If this is the first layer then it is
+ *        the color depth, otherwise it is the number of features learned in
+ *        the previous layer
+ * @param feature_width Width if each image patch
+ * @param no_of_features The number of features in the set
+ * @param feature Array containing the learned features, having values in
+ *        the range 0.0 -> 1.0
+ * @param layer The output layer to start from
+ * @param layer_width Width of the output layer. The total size of the
+ *        output layer should be layer_width*layer_width*no_of_features
+ */
+void deconvolve_image(float img[],
+                      int img_width, int img_height, int img_depth,
+                      int feature_width, int no_of_features,
+                      float feature[],
+                      float layer[], int layer_width)
+{
+    if (img_depth == 1) {
+        convolve_image_mono(img, img_width, img_height,
+                            feature_width, no_of_features,
+                            feature, layer, layer_width);
+        return;
+    }
+
+    int half_feature_width = feature_width/2;
+    unsigned int * updates_per_pixel;
+
+    UINTALLOC(updates_per_pixel, img_width*img_height);
+    if (!updates_per_pixel)
+        return;
+    UINTCLEAR(updates_per_pixel, img_width*img_height);
+
+    /* clear the input image */
+    FLOATCLEAR(img, img_width*img_height*img_depth);
+
+    /* for each unit in the output layer */
+    COUNTDOWN(layer_y, layer_width) {
+        int y_img = layer_y * img_height / layer_width;
+        int ty = y_img - half_feature_width;
+        int by = ty + feature_width;
+        if (ty < 0) ty = 0;
+        if (by >= img_height) by = img_height-1;
+        COUNTDOWN(layer_x, layer_width) {
+            int x_img = layer_x * img_width / layer_width;
+            int tx = x_img - half_feature_width;
+            int bx = tx + feature_width;
+            if (tx < 0) tx = 0;
+            if (bx >= img_width) bx = img_width-1;
+
+            /* for every learned feature */
+            COUNTDOWN(f, no_of_features) {
+                float * curr_feature =
+                    &feature[f*feature_width*feature_width*img_depth];
+
+                float weight =
+                    layer[((layer_y*layer_width) + layer_x)*no_of_features + f];
+
+                FOR(yy, ty, by) {
+                    /* position in the input image */
+                    int n0 = ((yy*img_width) + tx) * img_depth;
+                    /* position within the feature */
+                    int n1 = ((yy-ty) * feature_width) * img_depth;
+                    updates_per_pixel[(yy*img_width) + tx]++;
+                    FOR(xx, tx, bx) {
+                        COUNTDOWN(d, img_depth)
+                            img[n0+d] += weight*curr_feature[n1+d];
+                        n0 += img_depth;
+                        n1 += img_depth;
+                    }
+                }
+            }
+        }
+    }
+
+    /* divide the values for each pixel by the number of times that
+       pixel is touched during convolution */
+    COUNTDOWN(i, img_width*img_height) {
+        if (updates_per_pixel[i] == 0)
+            continue;
+
+        COUNTDOWN(d, img_depth)
+            img[i*img_depth + d] /= (float)updates_per_pixel[i];
+    }
+
+    free(updates_per_pixel);
 }
 
 /**

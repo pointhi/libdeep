@@ -68,6 +68,9 @@
 #define FLOATALLOC(m, size) m = (float*)malloc((size)*sizeof(float))
 #define FLOATCLEAR(m, size) memset((void*)m, '\0', size*sizeof(float))
 
+#define UINTALLOC(m, size) m = (unsigned int*)malloc((size)*sizeof(unsigned int))
+#define UINTCLEAR(m, size) memset((void*)m, '\0', size*sizeof(unsigned int))
+
 #define WRITEVAR(m, type) fwrite(&m, sizeof(type), 1, fp)
 #define WRITEARRAY(m, type, size) fwrite(m, sizeof(type), size, fp)
 
