@@ -444,8 +444,12 @@ void convolve_image(float img[],
                     int n1 = ((yy-ty) * feature_width) * img_depth;
                     FOR(xx, tx, bx) {
                         COUNTDOWN(d, img_depth) {
+                            /*
                             match +=
                                 (img[n0+d] - curr_feature[n1+d])*
+                                (img[n0+d] - curr_feature[n1+d]);
+                            */
+                            match +=
                                 (img[n0+d] - curr_feature[n1+d]);
                         }
                         n0 += img_depth;
@@ -556,6 +560,12 @@ void deconvolve_image_mono(float img[],
                            float layer[], int layer_width)
 {
     int half_feature_width = feature_width/2;
+    unsigned int * updates_per_pixel;
+
+    UINTALLOC(updates_per_pixel, img_width*img_height);
+    if (!updates_per_pixel)
+        return;
+    UINTCLEAR(updates_per_pixel, img_width*img_height);
 
     /* clear the input image */
     FLOATCLEAR(img, img_width*img_height);
@@ -588,12 +598,40 @@ void deconvolve_image_mono(float img[],
                     /* position within the feature */
                     int n1 = (yy-ty) * feature_width;
                     FOR(xx, tx, bx) {
-                        img[n0++] += weight*curr_feature[n1++];
+                        img[n0] += weight*curr_feature[n1];
+                        updates_per_pixel[n0]++;
+                        n0++;
+                        n1++;
                     }
                 }
             }
         }
     }
+
+    /* divide the values for each pixel by the number of times that
+       pixel is touched during convolution */
+    COUNTDOWN(i, img_width*img_height) {
+        if (updates_per_pixel[i] == 0)
+            continue;
+
+        img[i] /= (float)updates_per_pixel[i];
+    }
+
+    /* get the range of values */
+    int minval = img[0];
+    int maxval = img[0];
+    COUNTDOWN(i, img_width*img_height) {
+        if (img[i] < minval) minval = img[i];
+        if (img[i] > maxval) maxval = img[i];
+    }
+
+    /* normalise */
+    float range = maxval - minval;
+    COUNTDOWN(i, img_width*img_height) {
+        img[i] = (img[i] - minval)/range;
+    }
+
+    free(updates_per_pixel);
 }
 
 /**
@@ -683,6 +721,20 @@ void deconvolve_image(float img[],
 
         COUNTDOWN(d, img_depth)
             img[i*img_depth + d] /= (float)updates_per_pixel[i];
+    }
+
+    /* get the range of values */
+    int minval = img[0];
+    int maxval = img[0];
+    FOR(i, 1, img_width*img_height*img_depth) {
+        if (img[i] < minval) minval = img[i];
+        if (img[i] > maxval) maxval = img[i];
+    }
+
+    /* normalise */
+    float range = maxval - minval;
+    COUNTDOWN(i, img_width*img_height*img_depth) {
+        img[i] = (img[i] - minval)/range;
     }
 
     free(updates_per_pixel);

@@ -49,7 +49,6 @@ static void learn_features_from_image()
     const float learning_rate = 0.1f;
     float * layer;
     int layer_width = 128;
-    float maxval, minval;
 
     /* load image from file */
     assert(deeplearn_read_png_file((char*)"../../unittests/Lenna.png",
@@ -152,15 +151,7 @@ static void learn_features_from_image()
                      feature, layer, layer_width);
 
     /* convert floats back to the image */
-    maxval = img_float[0];
-    minval = img_float[0];
-    for (i = 1; i < img_width*img_height*(bitsperpixel/8); i++) {
-        if (img_float[i] > maxval) maxval = img_float[i];
-        if (img_float[i] < minval) minval = img_float[i];
-    }
-
     for (i = 0; i < img_width*img_height*(bitsperpixel/8); i++) {
-        img_float[i] = (img_float[i] - minval)/((maxval - minval)*0.04f);
         img[i] = (unsigned char)(img_float[i]*255);
     }
 
