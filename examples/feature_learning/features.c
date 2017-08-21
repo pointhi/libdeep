@@ -44,7 +44,7 @@ static void learn_features_from_image()
     int no_of_layers = 3;
     int final_image_width, final_image_height;
     int no_of_features = 8*8;
-    int feature_width = 10;
+    int feature_width = 8;
     unsigned int random_seed = 123;
     int layer_itterations = 30;
 
