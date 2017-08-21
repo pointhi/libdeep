@@ -774,6 +774,38 @@ void conv_feed_forward(unsigned char * img,
 }
 
 /**
+ * @brief Feed forward to the given layer
+ * @param img image to reconstruct
+ * @param conv Convolution instance
+ * @param layer The number of layers to convolve
+ */
+void conv_feed_backwards(unsigned char img[], deeplearn_conv * conv, int layer)
+{
+    COUNTDOWN(l, layer) {
+        float * next_layer = conv->outputs;
+        int next_layer_width = conv->outputs_width;
+
+        if (l < conv->no_of_layers-1) {
+            next_layer = conv->layer[l+1].layer;
+            next_layer_width = conv->layer[l+1].width;
+        }
+
+        deconvolve_image(conv->layer[l].layer,
+                         conv->layer[l].width, conv->layer[l].height,
+                         conv->layer[l].depth,
+                         conv->layer[l].feature_width,
+                         conv->layer[l].no_of_features,
+                         conv->layer[l].feature,
+                         next_layer, next_layer_width);
+    }
+
+    /* convert the input image to bytes */
+    COUNTDOWN(i,
+              conv->layer[0].width*conv->layer[0].height*conv->layer[0].depth)
+        img[i] = (unsigned char)(conv->layer[0].layer[i]*255);
+}
+
+/**
  * @brief Clears all values in all layers other than the first,
  *        typically for testing purposes
  * @param conv Convolution instance

@@ -131,5 +131,6 @@ float conv_get_output(deeplearn_conv * conv, int index);
 float conv_get_error(deeplearn_conv * conv);
 int bp_inputs_from_convnet(bp * net, deeplearn_conv * conv);
 void conv_clear(deeplearn_conv * conv);
+void conv_feed_backwards(unsigned char img[], deeplearn_conv * conv, int layer);
 
 #endif
