@@ -774,10 +774,10 @@ void conv_feed_forward(unsigned char * img,
 }
 
 /**
- * @brief Feed forward to the given layer
+ * @brief Feed backwards to the input layer and return the image
  * @param img image to reconstruct
  * @param conv Convolution instance
- * @param layer The number of layers to convolve
+ * @param layer The starting layer to deconvolve from
  */
 void conv_feed_backwards(unsigned char img[], deeplearn_conv * conv, int layer)
 {
