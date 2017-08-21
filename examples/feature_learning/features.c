@@ -49,14 +49,16 @@ static void learn_features_from_image()
     const float learning_rate = 0.1f;
     float * layer;
     int layer_width = 128;
+    int img_depth = 3;
 
     /* load image from file */
     assert(deeplearn_read_png_file((char*)"../../unittests/Lenna.png",
                                    &img_width, &img_height,
                                    &bitsperpixel, &img)==0);
 
-    img_float = (float*)malloc(img_width*img_height*
-                               (bitsperpixel/8)*sizeof(float));
+    img_depth = (int)bitsperpixel/8;
+
+    img_float = (float*)malloc(img_width*img_height*img_depth*sizeof(float));
     if (!img_float) {
         printf("Failed to allocate image feature memory\n");
         free(img);
@@ -64,8 +66,7 @@ static void learn_features_from_image()
     }
 
     feature = (float*)malloc(no_of_features*feature_width*
-                             feature_width*
-                             (bitsperpixel/8)*sizeof(float));
+                             feature_width*img_depth*sizeof(float));
     if (!feature) {
         printf("Failed to allocate learned feature memory\n");
         free(img_float);
@@ -82,8 +83,8 @@ static void learn_features_from_image()
     }
     img_features =
         (unsigned char*)malloc(features_img_width*
-                               features_img_height*
-                               ((int)bitsperpixel/8)*sizeof(unsigned char));
+                               features_img_height*img_depth*
+                               sizeof(unsigned char));
     if (!img_features) {
         printf("Failed to allocate memory for features image\n");
         free(img_float);
@@ -95,7 +96,7 @@ static void learn_features_from_image()
 
     layer =
         (float*)malloc(no_of_features*layer_width*layer_width*
-                       ((int)bitsperpixel/8)*sizeof(float));
+                       img_depth*sizeof(float));
     if (!layer) {
         printf("Failed to allocate memory for convolution layer\n");
         free(img_float);
@@ -109,18 +110,17 @@ static void learn_features_from_image()
     /* clear features */
     memset((void*)feature, '\0',
            no_of_features*feature_width*feature_width*
-           (bitsperpixel/8)*sizeof(float));
+           img_depth*sizeof(float));
 
     /* convert the loaded image to floats */
-    for (i = 0; i < img_width*img_height*(bitsperpixel/8); i++)
+    for (i = 0; i < img_width*img_height*img_depth; i++)
         img_float[i] = (float)img[i]/255.0f;
 
     for (i = 0; i < 30; i++) {
         float match_score =
             learn_features(img_float,
                            (int)img_width, (int)img_height,
-                           (int)bitsperpixel/8,
-                           feature_width, no_of_features,
+                           img_depth, feature_width, no_of_features,
                            feature, feature_score,
                            samples, learning_rate, &random_seed);
         if (i % 5 == 0) printf("%.4f\n", match_score);
@@ -129,8 +129,7 @@ static void learn_features_from_image()
     printf("Learning completed\n");
 
     draw_features(img_features,
-                  features_img_width, features_img_height,
-                  (int)(bitsperpixel/8),
+                  features_img_width, features_img_height, img_depth,
                   3, feature_width, no_of_features, feature);
 
     deeplearn_write_png_file("features.png",
@@ -139,19 +138,17 @@ static void learn_features_from_image()
                              bitsperpixel, img_features);
 
     printf("Convolving\n");
-    convolve_image(img_float, (int)img_width, (int)img_height,
-                   (int)bitsperpixel/8,
+    convolve_image(img_float, (int)img_width, (int)img_height, img_depth,
                    feature_width, no_of_features,
                    feature, layer, layer_width);
 
     printf("Deconvolving\n");
-    deconvolve_image(img_float, (int)img_width, (int)img_height,
-                     (int)bitsperpixel/8,
+    deconvolve_image(img_float, (int)img_width, (int)img_height, img_depth,
                      feature_width, no_of_features,
                      feature, layer, layer_width);
 
     /* convert floats back to the image */
-    for (i = 0; i < img_width*img_height*(bitsperpixel/8); i++) {
+    for (i = 0; i < img_width*img_height*img_depth; i++) {
         img[i] = (unsigned char)(img_float[i]*255);
     }
 

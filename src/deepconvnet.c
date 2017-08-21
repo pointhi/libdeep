@@ -98,7 +98,7 @@ int deepconvnet_init(int no_of_convolutions,
                        convnet->convolution->no_of_outputs*8/10,
                        no_of_deep_layers,
                        no_of_outputs,
-                       &error_threshold[no_of_convolutions],
+                       &error_threshold[0],
                        random_seed) != 0)
         return -4;
 
