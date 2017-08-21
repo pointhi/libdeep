@@ -64,6 +64,8 @@ int conv_init(int no_of_layers,
 
     COUNTUP(l, no_of_layers) {
         conv->layer[l].ctr = (unsigned int)0;
+        conv->layer[l].depth = image_depth;
+        conv->layer[l].no_of_features = no_of_features;
 
         conv->layer[l].width =
             image_width -
@@ -77,15 +79,6 @@ int conv_init(int no_of_layers,
         else
             conv->layer[l].height = conv->layer[l].width;
 
-        /* first layer is the image depth, after that depth is the number
-           of features on the previous layer */
-        if (l == 0)
-            conv->layer[l].depth = image_depth;
-        else
-            conv->layer[l].depth = conv->layer[l-1].no_of_features;
-
-        conv->layer[l].no_of_features = no_of_features;
-
         /* make feature width proportional to width of the layer */
         conv->layer[l].feature_width =
             feature_width*conv->layer[l].width/image_width;
@@ -94,15 +87,28 @@ int conv_init(int no_of_layers,
         if (conv->layer[l].feature_width < 3)
             conv->layer[l].feature_width = 3;
 
-        /* allocate memory for the layer */
-        FLOATALLOC(conv->layer[l].layer,
-                   conv->layer[l].width*conv->layer[l].height*
-                   conv->layer[l].depth);
-        if (!conv->layer[l].layer)
-            return 1;
-        FLOATCLEAR(conv->layer[l].layer,
-                   conv->layer[l].width*conv->layer[l].height*
-                   conv->layer[l].depth);
+        if (l == 0) {
+            /* allocate memory for the layer */
+            FLOATALLOC(conv->layer[l].layer,
+                       conv->layer[l].width*conv->layer[l].height*
+                       conv->layer[l].depth);
+            if (!conv->layer[l].layer)
+                return 1;
+            FLOATCLEAR(conv->layer[l].layer,
+                       conv->layer[l].width*conv->layer[l].height*
+                       conv->layer[l].depth);
+        }
+        else {
+            /* allocate memory for the layer */
+            FLOATALLOC(conv->layer[l].layer,
+                       conv->layer[l].width*conv->layer[l].height*
+                       conv->layer[l].depth*conv->layer[l-1].no_of_features);
+            if (!conv->layer[l].layer)
+                return 1;
+            FLOATCLEAR(conv->layer[l].layer,
+                       conv->layer[l].width*conv->layer[l].height*
+                       conv->layer[l].depth*conv->layer[l-1].no_of_features);
+        }
 
         /* allocate memory for learned feature set */
         FLOATALLOC(conv->layer[l].feature,
@@ -121,7 +127,8 @@ int conv_init(int no_of_layers,
 
     /* for convenience this is the size of the outputs array */
     conv->no_of_outputs =
-        final_image_width*final_image_width*conv->layer[no_of_layers-1].depth;
+        final_image_width*final_image_width*image_depth*
+        conv->layer[no_of_layers-1].no_of_features;
 
     /* allocate array of output values */
     FLOATALLOC(conv->outputs, conv->no_of_outputs);
@@ -414,8 +421,6 @@ void convolve_image(float img[],
     }
 
     int half_feature_width = feature_width/2;
-    /* float feature_pixels =
-       1.0f / (float)(feature_width*feature_width*img_depth); */
 
     /* for each unit in the output layer */
     COUNTDOWN(layer_y, layer_width) {
@@ -436,7 +441,7 @@ void convolve_image(float img[],
                 float * curr_feature =
                     &feature[f*feature_width*feature_width*img_depth];
 
-                float match = 0.0f;
+                float match[3] = { 0.0f, 0.0f, 0.0f };
                 FOR(yy, ty, by) {
                     /* position in the input image */
                     int n0 = ((yy*img_width) + tx) * img_depth;
@@ -444,12 +449,7 @@ void convolve_image(float img[],
                     int n1 = ((yy-ty) * feature_width) * img_depth;
                     FOR(xx, tx, bx) {
                         COUNTDOWN(d, img_depth) {
-                            /*
-                            match +=
-                                (img[n0+d] - curr_feature[n1+d])*
-                                (img[n0+d] - curr_feature[n1+d]);
-                            */
-                            match +=
+                            match[d] +=
                                 (img[n0+d] - curr_feature[n1+d]);
                         }
                         n0 += img_depth;
@@ -457,12 +457,11 @@ void convolve_image(float img[],
                     }
                 }
 
-                /*
-                layer[((layer_y*layer_width) + layer_x)*no_of_features + f] =
-                    1.0f - (float)sqrt(match * feature_pixels);
-                */
-                layer[((layer_y*layer_width) + layer_x)*no_of_features + f] =
-                    AF(match);
+                int layer_unit_index =
+                    ((layer_y*layer_width) + layer_x)*no_of_features + f;
+                COUNTDOWN(d, img_depth) {
+                    layer[(layer_unit_index*img_depth) + d] = AF(match[d]);
+                }
             }
         }
     }
@@ -527,12 +526,9 @@ void convolve_image_mono(float img[],
                     }
                 }
 
-                /*
-                layer[((layer_y*layer_width) + layer_x)*no_of_features + f] =
-                    1.0f - (float)sqrt(match * feature_pixels);
-                */
-                layer[((layer_y*layer_width) + layer_x)*no_of_features + f] =
-                    AF(match);
+                int layer_unit_index =
+                    ((layer_y*layer_width) + layer_x)*no_of_features + f;
+                layer[layer_unit_index] = AF(match);
             }
         }
     }
@@ -589,8 +585,9 @@ void deconvolve_image_mono(float img[],
                 float * curr_feature =
                     &feature[f*feature_width*feature_width];
 
-                float weight =
-                    layer[((layer_y*layer_width) + layer_x)*no_of_features + f];
+                int layer_unit_index =
+                    ((layer_y*layer_width) + layer_x)*no_of_features + f;
+                float weight = layer[layer_unit_index];
 
                 FOR(yy, ty, by) {
                     /* position in the input image */
@@ -693,8 +690,8 @@ void deconvolve_image(float img[],
                 float * curr_feature =
                     &feature[f*feature_width*feature_width*img_depth];
 
-                float weight =
-                    layer[((layer_y*layer_width) + layer_x)*no_of_features + f];
+                int layer_unit_index =
+                    ((layer_y*layer_width) + layer_x)*no_of_features + f;
 
                 FOR(yy, ty, by) {
                     /* position in the input image */
@@ -703,8 +700,11 @@ void deconvolve_image(float img[],
                     int n1 = ((yy-ty) * feature_width) * img_depth;
                     updates_per_pixel[(yy*img_width) + tx]++;
                     FOR(xx, tx, bx) {
-                        COUNTDOWN(d, img_depth)
+                        COUNTDOWN(d, img_depth) {
+                            float weight =
+                                layer[(layer_unit_index*img_depth) + d];
                             img[n0+d] += weight*curr_feature[n1+d];
+                        }
                         n0 += img_depth;
                         n1 += img_depth;
                     }
@@ -763,21 +763,13 @@ void conv_feed_forward(unsigned char * img,
             next_layer_width = conv->layer[l+1].width;
         }
 
-        if (conv->layer[l].depth == 1)
-            convolve_image_mono(conv->layer[l].layer,
-                                conv->layer[l].width, conv->layer[l].height,
-                                conv->layer[l].feature_width,
-                                conv->layer[l].no_of_features,
-                                conv->layer[l].feature,
-                                next_layer, next_layer_width);
-        else
-            convolve_image(conv->layer[l].layer,
-                           conv->layer[l].width, conv->layer[l].height,
-                           conv->layer[l].depth,
-                           conv->layer[l].feature_width,
-                           conv->layer[l].no_of_features,
-                           conv->layer[l].feature,
-                           next_layer, next_layer_width);
+        convolve_image(conv->layer[l].layer,
+                       conv->layer[l].width, conv->layer[l].height,
+                       conv->layer[l].depth,
+                       conv->layer[l].feature_width,
+                       conv->layer[l].no_of_features,
+                       conv->layer[l].feature,
+                       next_layer, next_layer_width);
     }
 }
 
