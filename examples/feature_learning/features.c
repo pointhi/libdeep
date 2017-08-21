@@ -82,8 +82,8 @@ static void learn_features_from_image()
 
     printf("Learning completed\n");
 
-    conv_draw_features(img_features, (int)img_width, (int)img_height, img_depth,
-                       0, &convnet);
+    conv_draw_features(img_features, (int)img_width, (int)img_height,
+                       img_depth, 0, &convnet);
 
     deeplearn_write_png_file("features.png",
                              img_width, img_height,

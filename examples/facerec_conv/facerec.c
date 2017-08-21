@@ -56,7 +56,7 @@ static void facerec_training()
     int no_of_outputs = 5*5;
     int output_classes = 25;
     int feature_width = 8;
-    float error_threshold[] = { 20.0, 20.0, 20.0 };
+    float error_threshold[] = { 7.0, 4.0, 8.0 };
     unsigned int ctr, random_seed = 34217;
     float performance;
     unsigned int layer_itterations = 5000;
@@ -78,7 +78,8 @@ static void facerec_training()
     }
 
     printf("Number of images: %d\n", convnet.no_of_images);
-    printf("Number of labeled training examples: %d\n",convnet.no_of_images*8/10);
+    printf("Number of labeled training examples: %d\n",
+           convnet.no_of_images*8/10);
     printf("Number of test examples: %d\n",convnet.no_of_images*2/10);
 
     if (convnet.no_of_images == 0)
