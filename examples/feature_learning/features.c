@@ -33,135 +33,72 @@
 
 static void learn_features_from_image()
 {
+    unsigned char * img, * img_features;
     unsigned int img_width = 0;
     unsigned int img_height = 0;
-    unsigned int random_seed = 123;
-    unsigned int bitsperpixel = 0;
-    unsigned char * img, * img_features;
-    float * img_float, * feature;
-    int no_of_features = 16*16;
-    int feature_width = 10;
-    float * feature_score;
-    int samples = 1000;
-    int i;
-    int features_img_width = 800;
-    int features_img_height = 800;
-    const float learning_rate = 0.1f;
-    float * layer;
-    int layer_width = 128;
     int img_depth = 3;
+    unsigned int bitsperpixel = 0;
+
+    deeplearn_conv convnet;
+    int i;
+    int no_of_layers = 3;
+    int final_image_width, final_image_height;
+    int no_of_features = 8*8;
+    int feature_width = 10;
+    unsigned int random_seed = 123;
+    int layer_itterations = 30;
 
     /* load image from file */
     assert(deeplearn_read_png_file((char*)"../../unittests/Lenna.png",
                                    &img_width, &img_height,
                                    &bitsperpixel, &img)==0);
 
+    printf("Image loaded\n");
+
     img_depth = (int)bitsperpixel/8;
+    final_image_width = (int)img_width/16;
+    final_image_height = (int)img_height/16;
 
-    img_float = (float*)malloc(img_width*img_height*img_depth*sizeof(float));
-    if (!img_float) {
-        printf("Failed to allocate image feature memory\n");
-        free(img);
-        return;
-    }
-
-    feature = (float*)malloc(no_of_features*feature_width*
-                             feature_width*img_depth*sizeof(float));
-    if (!feature) {
-        printf("Failed to allocate learned feature memory\n");
-        free(img_float);
-        free(img);
-        return;
-    }
-    feature_score = (float*)malloc(no_of_features*sizeof(float));
-    if (!feature_score) {
-        printf("Failed to allocate memory for feature scores\n");
-        free(img_float);
-        free(img);
-        free(feature);
-        return;
-    }
     img_features =
-        (unsigned char*)malloc(features_img_width*
-                               features_img_height*img_depth*
-                               sizeof(unsigned char));
-    if (!img_features) {
-        printf("Failed to allocate memory for features image\n");
-        free(img_float);
-        free(img);
-        free(feature);
-        free(feature_score);
+        (unsigned char *)malloc(img_width*img_height*img_depth*
+                                sizeof(unsigned char));
+    if (!img_features)
         return;
+
+    assert(conv_init(no_of_layers,
+                     (int)img_width, (int)img_height, img_depth,
+                     no_of_features, feature_width,
+                     final_image_width, final_image_height,
+                     &convnet) == 0);
+
+    for (i = 0; i < layer_itterations; i++) {
+        conv_learn(img, &convnet, 500, layer_itterations, &random_seed);
+        printf(".");
+        fflush(stdout);
+        if ((i > 0) && (i % layer_itterations == 0))
+            printf("\n");
     }
-
-    layer =
-        (float*)malloc(no_of_features*layer_width*layer_width*
-                       img_depth*sizeof(float));
-    if (!layer) {
-        printf("Failed to allocate memory for convolution layer\n");
-        free(img_float);
-        free(img);
-        free(feature);
-        free(feature_score);
-        free(img_features);
-        return;
-    }
-
-    /* clear features */
-    memset((void*)feature, '\0',
-           no_of_features*feature_width*feature_width*
-           img_depth*sizeof(float));
-
-    /* convert the loaded image to floats */
-    for (i = 0; i < img_width*img_height*img_depth; i++)
-        img_float[i] = (float)img[i]/255.0f;
-
-    for (i = 0; i < 30; i++) {
-        float match_score =
-            learn_features(img_float,
-                           (int)img_width, (int)img_height,
-                           img_depth, feature_width, no_of_features,
-                           feature, feature_score,
-                           samples, learning_rate, &random_seed);
-        if (i % 5 == 0) printf("%.4f\n", match_score);
-    }
+    printf("\n");
 
     printf("Learning completed\n");
 
-    draw_features(img_features,
-                  features_img_width, features_img_height, img_depth,
-                  3, feature_width, no_of_features, feature);
+    conv_draw_features(img_features, (int)img_width, (int)img_height, img_depth,
+                       0, &convnet);
 
     deeplearn_write_png_file("features.png",
-                             (unsigned int)features_img_width,
-                             (unsigned int)features_img_height,
+                             img_width, img_height,
                              bitsperpixel, img_features);
 
-    printf("Convolving\n");
-    convolve_image(img_float, (int)img_width, (int)img_height, img_depth,
-                   feature_width, no_of_features,
-                   feature, layer, layer_width);
-
-    printf("Deconvolving\n");
-    deconvolve_image(img_float, (int)img_width, (int)img_height, img_depth,
-                     feature_width, no_of_features,
-                     feature, layer, layer_width);
-
-    /* convert floats back to the image */
-    for (i = 0; i < img_width*img_height*img_depth; i++) {
-        img[i] = (unsigned char)(img_float[i]*255);
-    }
+    conv_feed_forward(img, &convnet, 1);
+    conv_feed_backwards(img, &convnet, 0);
 
     deeplearn_write_png_file("reconstruction.png",
                              img_width, img_height,
                              bitsperpixel, img);
 
-    free(img_float);
+    conv_free(&convnet);
     free(img);
-    free(feature_score);
-    free(feature);
     free(img_features);
-    free(layer);
 }
 
 int main(int argc, char* argv[])

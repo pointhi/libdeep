@@ -733,8 +733,10 @@ void deconvolve_image(float img[],
 
     /* normalise */
     float range = maxval - minval;
-    COUNTDOWN(i, img_width*img_height*img_depth) {
-        img[i] = (img[i] - minval)/range;
+    if (range > 0) {
+        COUNTDOWN(i, img_width*img_height*img_depth) {
+            img[i] = (img[i] - minval)/range;
+        }
     }
 
     free(updates_per_pixel);
@@ -781,7 +783,7 @@ void conv_feed_forward(unsigned char * img,
  */
 void conv_feed_backwards(unsigned char img[], deeplearn_conv * conv, int layer)
 {
-    COUNTDOWN(l, layer) {
+    for (int l = layer; l >= 0; l--) {
         float * next_layer = conv->outputs;
         int next_layer_width = conv->outputs_width;
 
