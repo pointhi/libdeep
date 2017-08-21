@@ -628,6 +628,36 @@ void deconvolve_image_mono(float img[],
         img[i] = (img[i] - minval)/range;
     }
 
+    /* fill horizontal gaps */
+    COUNTDOWN(y, img_height) {
+        int prev_n = -1;
+        COUNTDOWN(x, img_width) {
+            int n = y * img_width + x;
+            if (img[n] > MIN_DECONVOLVED) {
+                prev_n = n;
+            }
+            else {
+                if (prev_n > -1)
+                    img[n] = img[prev_n];
+            }
+        }
+    }
+
+    /* fill vertical gaps */
+    COUNTDOWN(x, img_width) {
+        int prev_n = -1;
+        COUNTDOWN(y, img_height) {
+            int n = y * img_width + x;
+            if (img[n] > MIN_DECONVOLVED) {
+                prev_n = n;
+            }
+            else {
+                if (prev_n > -1)
+                    img[n] = img[prev_n];
+            }
+        }
+    }
+
     free(updates_per_pixel);
 }
 
@@ -736,6 +766,40 @@ void deconvolve_image(float img[],
     if (range > 0) {
         COUNTDOWN(i, img_width*img_height*img_depth) {
             img[i] = (img[i] - minval)/range;
+        }
+    }
+
+    /* fill horizontal gaps */
+    COUNTDOWN(y, img_height) {
+        int prev_n = -1;
+        COUNTDOWN(x, img_width) {
+            int n = (y * img_width + x)*img_depth;
+            if (img[n] > MIN_DECONVOLVED) {
+                prev_n = n;
+            }
+            else {
+                if (prev_n > -1) {
+                    COUNTDOWN(d, img_depth)
+                        img[n+d] = img[prev_n+d];
+                }
+            }
+        }
+    }
+
+    /* fill vertical gaps */
+    COUNTDOWN(x, img_width) {
+        int prev_n = -1;
+        COUNTDOWN(y, img_height) {
+            int n = (y * img_width + x)*img_depth;
+            if (img[n] > MIN_DECONVOLVED) {
+                prev_n = n;
+            }
+            else {
+                if (prev_n > -1) {
+                    COUNTDOWN(d, img_depth)
+                        img[n+d] = img[prev_n+d];
+                }
+            }
         }
     }
 

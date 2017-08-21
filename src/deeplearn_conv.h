@@ -46,6 +46,9 @@
 #define PREPROCESS_MAX_LAYERS 100
 #define POOLING_FACTOR        2
 
+/* minimum deconvolved value for gap filling */
+#define MIN_DECONVOLVED       0.01f
+
 typedef struct {
     int width, height, depth;
     float * layer;
