@@ -233,7 +233,14 @@ static void test_reconstruction_from_features()
     }
 
     conv_feed_forward(img, &convnet, 1);
+    printf(".");
+    fflush(stdout);
+
+    memset((void*)img_reconstructed, '\0',
+           (int)img_width*(int)img_height*img_depth*sizeof(unsigned char));
     conv_feed_backwards(img_reconstructed, &convnet, 0);
+    printf(".");
+    fflush(stdout);
 
     /* difference between source image and reconstructed image */
     for (i = 0; i < (int)img_width*(int)img_height*img_depth; i++)
