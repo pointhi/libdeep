@@ -260,7 +260,7 @@ static int deepconvnet_set_inputs_conv(deeplearn * learner,
 
     /* NOTE: can this be done with memcpy ? */
     COUNTDOWN(i, learner->net->no_of_inputs)
-        deeplearn_set_input(learner, i, conv_get_output(conv,i));
+        deeplearn_set_input(learner, i, conv_get_output(conv, i));
 
     return 0;
 }
@@ -537,7 +537,7 @@ int deepconvnet_plot_history(deepconvnet * convnet,
  * @param random_seed Random number generator seed
  * @returns zero on success
  */
-int deepconvnet_training(deepconvnet * convnet, unsigned int * random_seed)
+int deepconvnet_training(deepconvnet * convnet)
 {
     if (convnet->learner->training_complete != 0)
         return 1;
@@ -550,8 +550,9 @@ int deepconvnet_training(deepconvnet * convnet, unsigned int * random_seed)
 
     /* pick an image at random */
     int training_images = convnet->no_of_images*8/10;
+    unsigned int * random_seed = &convnet->learner->net->random_seed;
     int index0 =
-        rand_num(&convnet->learner->net->random_seed)%training_images;
+        rand_num(random_seed)%training_images;
     int index = convnet->training_set_index[index0];
     unsigned char * img = convnet->images[index];
     int samples = 20;

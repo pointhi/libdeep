@@ -94,7 +94,7 @@ static void facerec_training()
     sprintf(convnet.history_plot_title, "%s", TITLE);
 
     ctr = 99999;
-    while (deepconvnet_training(&convnet, &random_seed) == 0) {
+    while (deepconvnet_training(&convnet) == 0) {
         if (convnet.current_layer == 0) {
             if (ctr > 10000) {
                 deepconvnet_plot_features(&convnet, 0,
@@ -106,7 +106,7 @@ static void facerec_training()
         }
     }
 
-    if (deepconvnet_training(&convnet, &random_seed) < 0) {
+    if (deepconvnet_training(&convnet) < 0) {
         printf("Training error\n");
         return;
     }
