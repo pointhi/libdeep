@@ -229,16 +229,14 @@ int deepconvnet_save(FILE * fp, deepconvnet * convnet)
  * @brief Loads a deep convnet object from file
  * @param fp File pointer
  * @param convnet Deep convnet object
- * @param random_seed Random number generator seed
  * @return zero value on success
  */
-int deepconvnet_load(FILE * fp, deepconvnet * convnet,
-                     unsigned int * random_seed)
+int deepconvnet_load(FILE * fp, deepconvnet * convnet)
 {
     if (conv_load(fp, convnet->convolution) != 0)
         return -1;
 
-    if (deeplearn_load(fp, convnet->learner, random_seed) != 0)
+    if (deeplearn_load(fp, convnet->learner) != 0)
         return -2;
 
     return 0;
@@ -330,15 +328,15 @@ static void deepconvnet_update(deepconvnet * convnet)
  *        for convolution network training
  * @param layer_itterations The number of training itterations per layer
  *        for the convolution network
- * @param random_seed Random number generator seed
  * @param class_number Desired class number
  * @return Zero on success
  */
 int deepconvnet_update_img(deepconvnet * convnet, unsigned char img[],
                            int samples, unsigned int layer_itterations,
-                           unsigned int * random_seed,
                            int class_number)
 {
+    unsigned int * random_seed = &convnet->learner->net->random_seed;
+
     if (convnet->convolution->current_layer <
         convnet->convolution->no_of_layers) {
         conv_learn(img, convnet->convolution, samples,
@@ -534,7 +532,6 @@ int deepconvnet_plot_history(deepconvnet * convnet,
 /**
  * @brief Performs training
  * @param convnet Deep convnet object
- * @param random_seed Random number generator seed
  * @returns zero on success
  */
 int deepconvnet_training(deepconvnet * convnet)
@@ -559,7 +556,6 @@ int deepconvnet_training(deepconvnet * convnet)
 
     if (deepconvnet_update_img(convnet, img, samples,
                                convnet->layer_itterations,
-                               random_seed,
                                convnet->classification_number[index]) != 0)
         return -2;
 

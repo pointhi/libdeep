@@ -779,11 +779,9 @@ int deeplearn_save(FILE * fp, deeplearn * learner)
  * @brief Loads a deep learner object from file
  * @param fp File pointer
  * @param learner Deep learner object
- * @param random_seed Random number generator seed
  * @return zero value on success
  */
-int deeplearn_load(FILE * fp, deeplearn * learner,
-                   unsigned int * random_seed)
+int deeplearn_load(FILE * fp, deeplearn * learner)
 {
     /* no training/test data yet */
     learner->data = 0;
@@ -821,7 +819,7 @@ int deeplearn_load(FILE * fp, deeplearn * learner,
 
     learner->net = (bp*)malloc(sizeof(bp));
 
-    if (bp_load(fp, learner->net, random_seed) != 0)
+    if (bp_load(fp, learner->net) != 0)
         return -7;
 
     learner->autocoder = (ac**)malloc(sizeof(ac*)*learner->net->hidden_layers);

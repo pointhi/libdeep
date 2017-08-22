@@ -134,8 +134,7 @@ float deeplearn_get_output(deeplearn * learner, int index);
 int deeplearn_get_class(deeplearn * learner);
 void deeplearn_set_class(deeplearn * learner, int class);
 int deeplearn_save(FILE * fp, deeplearn * learner);
-int deeplearn_load(FILE * fp, deeplearn * learner,
-                   unsigned int * random_seed);
+int deeplearn_load(FILE * fp, deeplearn * learner);
 int deeplearn_compare(deeplearn * learner1,
                       deeplearn * learner2);
 int deeplearn_plot_history(deeplearn * learner,

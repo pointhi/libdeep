@@ -817,6 +817,9 @@ int bp_save(FILE * fp, bp * net)
     if (FLOATWRITE(net->dropout_percent) == 0)
         return -9;
 
+    if (UINTWRITE(net->random_seed) == 0)
+        return -10;
+
     COUNTUP(l, net->hidden_layers) {
         COUNTUP(i, HIDDENS_IN_LAYER(net,l))
             bp_neuron_save(fp,net->hiddens[l][i]);
@@ -832,17 +835,16 @@ int bp_save(FILE * fp, bp * net)
 * @brief Load a network from file
 * @brief fp File pointer
 * @param net Backprop neural net object
-* @param random_seed Random number generator seed
 * @returns zero on success
 */
-int bp_load(FILE * fp, bp * net,
-            unsigned int * random_seed)
+int bp_load(FILE * fp, bp * net)
 {
     int no_of_inputs=0, no_of_hiddens=0, no_of_outputs=0;
     int hidden_layers=0;
     float learning_rate=0, noise=0, backprop_error_average=0;
     float dropout_percent=0;
     unsigned int itterations=0;
+    unsigned int random_seed=0;
 
     if (UINTREAD(itterations) == 0)
         return -1;
@@ -871,21 +873,24 @@ int bp_load(FILE * fp, bp * net,
     if (FLOATREAD(dropout_percent) == 0)
         return -9;
 
+    if (UINTREAD(random_seed) == 0)
+        return -10;
+
     if (bp_init(net, no_of_inputs, no_of_hiddens,
                 hidden_layers, no_of_outputs,
-                random_seed) != 0)
-        return -10;
+                &random_seed) != 0)
+        return -11;
 
     COUNTUP(l, net->hidden_layers) {
         COUNTUP(i, HIDDENS_IN_LAYER(net,l)) {
             if (bp_neuron_load(fp,net->hiddens[l][i]) != 0)
-                return -11;
+                return -12;
         }
     }
 
     COUNTUP(i, net->no_of_outputs) {
         if (bp_neuron_load(fp,net->outputs[i]) != 0)
-            return -12;
+            return -13;
     }
 
     net->learning_rate = learning_rate;

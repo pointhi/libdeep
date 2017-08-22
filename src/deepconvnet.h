@@ -97,11 +97,10 @@ int deepconvnet_init(int no_of_convolutions,
                      unsigned int * random_seed);
 void deepconvnet_free(deepconvnet * convnet);
 int deepconvnet_save(FILE * fp, deepconvnet * convnet);
-int deepconvnet_load(FILE * fp, deepconvnet * convnet,
-                     unsigned int * random_seed);
+int deepconvnet_load(FILE * fp, deepconvnet * convnet);
 int deepconvnet_update_img(deepconvnet * convnet, unsigned char img[],
                            int samples, unsigned int layer_itterations,
-                           unsigned int * random_seed, int class_number);
+                           int class_number);
 int deepconvnet_test_img(deepconvnet * convnet, unsigned char img[]);
 void deepconvnet_set_learning_rate(deepconvnet * convnet, float rate);
 void deepconvnet_set_dropouts(deepconvnet * convnet, float dropout_percent);

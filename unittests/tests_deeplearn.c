@@ -172,7 +172,7 @@ static void test_deeplearn_update()
     /* load into the second learner */
     fp = fopen(filename,"rb");
     assert(fp!=0);
-    deeplearn_load(fp, &learner2, &random_seed);
+    deeplearn_load(fp, &learner2);
     fclose(fp);
 
     /* compare the two */
@@ -229,7 +229,7 @@ static void test_deeplearn_save_load()
     /* load into the second learner */
     fp = fopen(filename,"rb");
     assert(fp!=0);
-    deeplearn_load(fp, &learner2, &random_seed);
+    deeplearn_load(fp, &learner2);
     fclose(fp);
 
     /* compare the two */

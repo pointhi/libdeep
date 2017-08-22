@@ -81,8 +81,7 @@ float bp_get_hidden(bp * net, int layer, int index);
 float bp_get_output(bp * net, int index);
 void bp_update(bp * net, int current_hidden_layer);
 int bp_save(FILE * fp, bp * net);
-int bp_load(FILE * fp, bp * net,
-            unsigned int * random_seed);
+int bp_load(FILE * fp, bp * net);
 int bp_compare(bp * net1, bp * net2);
 int bp_inputs_from_image_patch(bp * net,
                                unsigned char img[],
