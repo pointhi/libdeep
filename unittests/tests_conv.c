@@ -186,12 +186,81 @@ static void test_conv_learn()
     printf("Ok\n");
 }
 
+static void test_reconstruction_from_features()
+{
+    unsigned char * img, * img_reconstructed;
+    unsigned int img_width = 0;
+    unsigned int img_height = 0;
+    int img_depth = 3;
+    unsigned int bitsperpixel = 0;
+
+    deeplearn_conv convnet;
+    int i;
+    int no_of_layers = 3;
+    int final_image_width, final_image_height;
+    int no_of_features = 5*5;
+    int feature_width = 6;
+    unsigned int random_seed = 123;
+    int layer_itterations = 30;
+    int percent_similarity, diff = 0;
+
+    printf("test_reconstruction_from_features...");
+
+    assert(deeplearn_read_png_file((char*)"Lenna.png",
+                                   &img_width, &img_height,
+                                   &bitsperpixel, &img) == 0);
+
+    img_depth = (int)bitsperpixel/8;
+    final_image_width = (int)img_width/16;
+    final_image_height = (int)img_height/16;
+
+    img_reconstructed =
+        (unsigned char *)malloc(img_width*img_height*img_depth*
+                                sizeof(unsigned char));
+    if (!img_reconstructed)
+        return;
+
+    assert(conv_init(no_of_layers,
+                     (int)img_width, (int)img_height, img_depth,
+                     no_of_features, feature_width,
+                     final_image_width, final_image_height,
+                     &convnet) == 0);
+
+    for (i = 0; i < layer_itterations; i++) {
+        conv_learn(img, &convnet, 500, layer_itterations, &random_seed);
+        printf(".");
+        fflush(stdout);
+    }
+
+    conv_feed_forward(img, &convnet, 1);
+    conv_feed_backwards(img_reconstructed, &convnet, 0);
+
+    /* difference between source image and reconstructed image */
+    for (i = 0; i < (int)img_width*(int)img_height*img_depth; i++)
+        diff += abs(img[i] - img_reconstructed[i]);
+
+    percent_similarity =
+        100 - ((diff / ((int)img_width*(int)img_height*img_depth))*100/255);
+
+    if (percent_similarity < 70)
+        printf("\nPercent similarity: %d%%\n", percent_similarity);
+
+    assert(percent_similarity >= 70);
+
+    conv_free(&convnet);
+    free(img);
+    free(img_reconstructed);
+
+    printf("Ok\n");
+}
+
 int run_tests_conv()
 {
     printf("\nRunning convolution tests\n");
 
     test_conv_init();
     test_conv_learn();
+    test_reconstruction_from_features();
 
     printf("All convolution tests completed\n");
     return 0;

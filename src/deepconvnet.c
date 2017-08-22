@@ -252,7 +252,8 @@ int deepconvnet_load(FILE * fp, deepconvnet * convnet,
  * @param conv Convolution object
  * @return zero on success
  */
-static int deepconvnet_set_inputs_conv(deeplearn * learner, deeplearn_conv * conv)
+static int deepconvnet_set_inputs_conv(deeplearn * learner,
+                                       deeplearn_conv * conv)
 {
     if (learner->net->no_of_inputs != conv->no_of_outputs)
         return -1;
@@ -375,7 +376,8 @@ int deepconvnet_update_img(deepconvnet * convnet, unsigned char img[],
  */
 int deepconvnet_test_img(deepconvnet * convnet, unsigned char img[])
 {
-    conv_feed_forward(img, convnet->convolution, convnet->convolution->no_of_layers);
+    conv_feed_forward(img, convnet->convolution,
+                      convnet->convolution->no_of_layers);
 
     if (deepconvnet_set_inputs_conv(convnet->learner,
                                     convnet->convolution) != 0)
@@ -554,8 +556,9 @@ int deepconvnet_training(deepconvnet * convnet, unsigned int * random_seed)
     unsigned char * img = convnet->images[index];
     int samples = 20;
 
-    if (deepconvnet_update_img(convnet, img,
-                               samples, convnet->layer_itterations, random_seed,
+    if (deepconvnet_update_img(convnet, img, samples,
+                               convnet->layer_itterations,
+                               random_seed,
                                convnet->classification_number[index]) != 0)
         return -2;
 
@@ -582,7 +585,8 @@ float deepconvnet_get_performance(deepconvnet * convnet)
     COUNTUP(i, test_images) {
         int index = convnet->test_set_index[i];
         unsigned char * img = convnet->images[index];
-        conv_feed_forward(img, convnet->convolution, convnet->convolution->no_of_layers);
+        conv_feed_forward(img, convnet->convolution,
+                          convnet->convolution->no_of_layers-1);
 
         if (deepconvnet_set_inputs_conv(convnet->learner,
                                         convnet->convolution) != 0)
