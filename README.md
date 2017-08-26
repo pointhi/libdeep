@@ -81,6 +81,7 @@ Examples
 There are also some example programs within the examples directory. Reading the examples is the best way to learn how to use this library within your own code. Examples are:
 
  * Simple face recognition
+ * Automatic feature learning and image reconstruction from features
  * Determining whether a cancer is malignant or benign
  * Assessing wine quality from ingredients
  * Predicting concrete quality from ingredients
