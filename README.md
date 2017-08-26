@@ -76,7 +76,7 @@ And you can change the *SOURCEFILE* value to whatever file you're interested in.
 Examples
 ========
 
-<img src="https://github.com/bashrc/libdeep/blob/master/examples/facerec/libdeep_facerec.png?raw=true" width=300/>
+<img src="https://github.com/bashrc/libdeep/blob/master/img/learned_features.jpg?raw=true" width=640/>
 
 There are also some example programs within the examples directory. Reading the examples is the best way to learn how to use this library within your own code. Examples are:
 
@@ -84,6 +84,8 @@ There are also some example programs within the examples directory. Reading the 
  * Determining whether a cancer is malignant or benign
  * Assessing wine quality from ingredients
  * Predicting concrete quality from ingredients
+
+<img src="https://github.com/bashrc/libdeep/blob/master/examples/facerec/libdeep_facerec.png?raw=true" width=300/>
 
 Using trained neural nets in your system
 ========================================

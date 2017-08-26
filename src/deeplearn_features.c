@@ -94,6 +94,85 @@ int draw_features(unsigned char img[],
 }
 
 /**
+ * @brief Draws the given feature set within the given image
+ * @param img The image to be displayed
+ * @param img_width Width of the image
+ * @param img_height Height of the image
+ * @param img_depth Depth of the image
+ * @param prev_feature_width Width of each feature in the previous layer
+ * @param prev_no_of_features The number of features in the set in the
+ *        previous layer
+ * @param prev_feature Array storing the features in the previous layer
+ * @param feature_depth Depth of the features
+ * @param feature_width Width of each feature
+ * @param no_of_features The number of features in the set
+ * @param feature Array storing the features
+ * @returns zero on success
+ */
+int draw_features_secondary(unsigned char img[],
+                            int img_width, int img_height, int img_depth,
+                            int prev_feature_width,
+                            int prev_no_of_features, float prev_feature[],
+                            int feature_depth, int feature_width,
+                            int no_of_features, float feature[])
+{
+    int grid_dimension = (int)sqrt(no_of_features);
+
+    if (grid_dimension*grid_dimension != no_of_features) {
+        printf("Features cannot be displayed as a grid\n");
+        return 1;
+    }
+
+    /* clear the image */
+    memset((void*)img, '\0',
+           img_width*img_height*img_depth*sizeof(unsigned char));
+
+    int feature_index = 0;
+    COUNTUP(gx, grid_dimension) {
+        int tx = gx * img_width / grid_dimension;
+        int bx = (gx+1) * img_width / grid_dimension;
+        COUNTUP(gy, grid_dimension) {
+            int ty = gy * img_height / grid_dimension;
+            int by = (gy+1) * img_height / grid_dimension;
+
+            /* get the feature from the array */
+            float * curr_feature =
+                &feature[feature_index*feature_width*feature_width*
+                         prev_no_of_features*feature_depth];
+
+            FOR(yy, ty+1, by-1) {
+                int prev_y = (yy - ty) * prev_feature_width / (by - ty);
+                int y = (yy - ty) * feature_width / (by - ty);
+                FOR(xx, tx+1, bx-1) {
+                    int prev_x = (xx - tx) * prev_feature_width / (bx - tx);
+                    int x = (xx - tx) * feature_width / (bx - tx);
+                    /* pixel index within the image */
+                    int n0 = ((yy*img_width) + xx) * prev_no_of_features * img_depth;
+                    /* pixel index within the feature at the current layer */
+                    int n1 = ((y*feature_width) + x) * feature_depth;
+                    COUNTDOWN(f, prev_no_of_features) {
+                        /* pixel index within the feature at the previous layer */
+                        int prev_n1 =
+                            ((prev_y*prev_feature_width) + prev_x) * feature_depth;
+
+                        if (feature_depth == 1) {
+                            COUNTDOWN(d, img_depth)
+                                img[n0+d] = (unsigned char)(curr_feature[n1]*255);
+                        }
+                        else {
+                            COUNTDOWN(d, img_depth)
+                                img[n0+d] = (unsigned char)(curr_feature[n1+d]*255);
+                        }
+                    }
+                }
+            }
+            feature_index++;
+        }
+    }
+    return 0;
+}
+
+/**
  * @brief Learns a set of features from a given mono input layer
  *        If the initial layer is an image it should be converted to floats
  *        in the range 0.0 -> 1.0.
