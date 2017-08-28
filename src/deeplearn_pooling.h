@@ -41,19 +41,19 @@
 #include "backprop.h"
 
 int pooling_update(int depth,
-                   int layer0_across,
-                   int layer0_down,
-                   float layer0[],
-                   int layer1_across,
-                   int layer1_down,
-                   float layer1[]);
+                   int unpooled_across,
+                   int unpooled_down,
+                   float unpooled[],
+                   int pooled_across,
+                   int pooled_down,
+                   float pooled[]);
 
 int unpooling_update(int depth,
-                     int layer0_across,
-                     int layer0_down,
-                     float layer0[],
-                     int layer1_across,
-                     int layer1_down,
-                     float layer1[]);
+                     int pooled_layer_across,
+                     int pooled_layer_down,
+                     float pooled_layer[],
+                     int unpooled_layer_across,
+                     int unpooled_layer_down,
+                     float unpooled_layer[]);
 
 #endif
