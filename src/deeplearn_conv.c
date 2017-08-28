@@ -441,11 +441,10 @@ void convolve_image(float img[],
                         ((pooled_layer_y*layer_width) + pooled_layer_x) *
                         no_of_features + f;
                     COUNTDOWN(d, img_depth) {
+                        float v = AF(match[d]);
                         /* max pooling */
-                        if (AF(match[d]) >
-                            layer[(layer_unit_index*img_depth) + d])
-                            layer[(layer_unit_index*img_depth) + d] =
-                                AF(match[d]);
+                        if (v > layer[(layer_unit_index*img_depth) + d])
+                            layer[(layer_unit_index*img_depth) + d] = v;
                     }
                 }
             }
