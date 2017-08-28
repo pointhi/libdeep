@@ -384,9 +384,10 @@ void convolve_image(float img[],
     int unpooled_layer_width = layer_width;
 
     if (pooling_factor > 1) {
+        /* if we are pooling then clear the values within the layer
+           which will be updated, so that maximums can be calculated */
         unpooled_layer_width = layer_width*pooling_factor;
-        FLOATCLEAR(layer,
-                   layer_width*layer_width*no_of_features*img_depth);
+        FLOATCLEAR(layer, layer_width*layer_width*no_of_features*img_depth);
     }
 
     /* for each unit in the output layer */
@@ -472,9 +473,10 @@ void convolve_image_mono(float img[],
     int unpooled_layer_width = layer_width;
 
     if (pooling_factor > 1) {
+        /* if we are pooling then clear the values within the layer
+           which will be updated, so that maximums can be calculated */
         unpooled_layer_width = layer_width*pooling_factor;
-        FLOATCLEAR(layer,
-                   layer_width*layer_width*no_of_features);
+        FLOATCLEAR(layer, layer_width*layer_width*no_of_features);
     }
 
     /* for each unit in the output layer */
