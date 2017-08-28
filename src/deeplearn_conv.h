@@ -122,10 +122,6 @@ int conv_draw_features(unsigned char img[],
                        int img_width, int img_height, int img_depth,
                        int layer,
                        deeplearn_conv * conv);
-int image_resize(unsigned char img[],
-                 int image_width, int image_height, int image_depth,
-                 unsigned char result[],
-                 int result_width, int result_height, int result_depth);
 void convolve_image_mono(float img[],
                          int img_width, int img_height,
                          int feature_width, int no_of_features,

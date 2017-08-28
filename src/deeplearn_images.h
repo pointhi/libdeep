@@ -79,5 +79,9 @@ void deeplearn_float_to_img(float float_img[],
                             int img_height,
                             unsigned char img[],
                             int img_depth_bits);
+int image_resize(unsigned char img[],
+                 int image_width, int image_height, int image_depth,
+                 unsigned char result[],
+                 int result_width, int result_height, int result_depth);
 
 #endif
