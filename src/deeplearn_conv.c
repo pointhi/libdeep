@@ -76,8 +76,10 @@ int conv_init(int no_of_layers,
             conv->layer[l].height =
                 image_height -
                 ((image_height-final_image_height)*l/no_of_layers);
-        else
+        else {
+            conv->layer[l].width /= POOLING_FACTOR;
             conv->layer[l].height = conv->layer[l].width;
+        }
 
         /* make feature width proportional to width of the layer */
         conv->layer[l].feature_width =
@@ -401,6 +403,7 @@ int conv_load(FILE * fp, deeplearn_conv * conv)
  *        the previous layer
  * @param feature_width Width if each image patch
  * @param no_of_features The number of features in the set
+ * @param pooling_factor Pooling factor
  * @param feature Array containing the learned features, having values in
  *        the range 0.0 -> 1.0
  * @param layer The output layer
@@ -410,27 +413,38 @@ int conv_load(FILE * fp, deeplearn_conv * conv)
 void convolve_image(float img[],
                     int img_width, int img_height, int img_depth,
                     int feature_width, int no_of_features,
+                    int pooling_factor,
                     float feature[],
                     float layer[], int layer_width)
 {
     if (img_depth == 1) {
         convolve_image_mono(img, img_width, img_height,
                             feature_width, no_of_features,
+                            pooling_factor,
                             feature, layer, layer_width);
         return;
     }
 
     int half_feature_width = feature_width/2;
+    int unpooled_layer_width = layer_width;
+
+    if (pooling_factor > 1) {
+        unpooled_layer_width = layer_width*pooling_factor;
+        FLOATCLEAR(layer,
+                   layer_width*layer_width*no_of_features*img_depth);
+    }
 
     /* for each unit in the output layer */
-    COUNTDOWN(layer_y, layer_width) {
-        int y_img = layer_y * img_height / layer_width;
+    COUNTDOWN(layer_y, unpooled_layer_width) {
+        int pooled_layer_y = layer_y/pooling_factor;
+        int y_img = layer_y * img_height / unpooled_layer_width;
         int ty = y_img - half_feature_width;
         int by = ty + feature_width;
         if (ty < 0) ty = 0;
         if (by >= img_height) by = img_height-1;
-        COUNTDOWN(layer_x, layer_width) {
-            int x_img = layer_x * img_width / layer_width;
+        COUNTDOWN(layer_x, unpooled_layer_width) {
+            int pooled_layer_x = layer_x/pooling_factor;
+            int x_img = layer_x * img_width / unpooled_layer_width;
             int tx = x_img - half_feature_width;
             int bx = tx + feature_width;
             if (tx < 0) tx = 0;
@@ -457,10 +471,20 @@ void convolve_image(float img[],
                     }
                 }
 
-                int layer_unit_index =
-                    ((layer_y*layer_width) + layer_x)*no_of_features + f;
-                COUNTDOWN(d, img_depth) {
-                    layer[(layer_unit_index*img_depth) + d] = AF(match[d]);
+                if (pooling_factor <= 1) {
+                    int layer_unit_index =
+                        ((layer_y*unpooled_layer_width) + layer_x)*no_of_features + f;
+                    COUNTDOWN(d, img_depth)
+                        layer[(layer_unit_index*img_depth) + d] = AF(match[d]);
+                }
+                else {
+                    int layer_unit_index =
+                        ((pooled_layer_y*layer_width) + pooled_layer_x)*no_of_features + f;
+                    COUNTDOWN(d, img_depth) {
+                        /* max pooling */
+                        if (AF(match[d]) > layer[(layer_unit_index*img_depth) + d])
+                            layer[(layer_unit_index*img_depth) + d] = AF(match[d]);
+                    }
                 }
             }
         }
@@ -485,21 +509,29 @@ void convolve_image(float img[],
 void convolve_image_mono(float img[],
                          int img_width, int img_height,
                          int feature_width, int no_of_features,
+                         int pooling_factor,
                          float feature[],
                          float layer[], int layer_width)
 {
     int half_feature_width = feature_width/2;
-    /* float feature_pixels =
-       1.0f / (float)(feature_width*feature_width); */
+    int unpooled_layer_width = layer_width;
+
+    if (pooling_factor > 1) {
+        unpooled_layer_width = layer_width*pooling_factor;
+        FLOATCLEAR(layer,
+                   layer_width*layer_width*no_of_features);
+    }
 
     /* for each unit in the output layer */
-    COUNTDOWN(layer_y, layer_width) {
+    COUNTDOWN(layer_y, unpooled_layer_width) {
+        int pooled_layer_y = layer_y/pooling_factor;
         int y_img = layer_y * img_height / layer_width;
         int ty = y_img - half_feature_width;
         int by = ty + feature_width;
         if (ty < 0) ty = 0;
         if (by >= img_height) by = img_height-1;
-        COUNTDOWN(layer_x, layer_width) {
+        COUNTDOWN(layer_x, unpooled_layer_width) {
+            int pooled_layer_x = layer_x/pooling_factor;
             int x_img = layer_x * img_width / layer_width;
             int tx = x_img - half_feature_width;
             int bx = tx + feature_width;
@@ -526,9 +558,19 @@ void convolve_image_mono(float img[],
                     }
                 }
 
-                int layer_unit_index =
-                    ((layer_y*layer_width) + layer_x)*no_of_features + f;
-                layer[layer_unit_index] = AF(match);
+                if (pooling_factor <= 1) {
+                    int layer_unit_index =
+                        ((layer_y*layer_width) + layer_x)*no_of_features + f;
+                    layer[layer_unit_index] = AF(match);
+                }
+                else {
+                    int layer_unit_index =
+                        ((pooled_layer_y*layer_width) +
+                         pooled_layer_x)*no_of_features + f;
+                    /* max pooling */
+                    if (AF(match) > layer[layer_unit_index])
+                        layer[layer_unit_index] = AF(match);
+                }
             }
         }
     }
@@ -543,6 +585,7 @@ void convolve_image_mono(float img[],
  *        the previous layer
  * @param feature_width Width if each image patch
  * @param no_of_features The number of features in the set
+ * @param pooling_factor The pooling factor
  * @param feature Array containing the learned features, having values in
  *        the range 0.0 -> 1.0
  * @param layer The output layer to begin from
@@ -552,6 +595,7 @@ void convolve_image_mono(float img[],
 void deconvolve_image_mono(float img[],
                            int img_width, int img_height,
                            int feature_width, int no_of_features,
+                           int pooling_factor,
                            float feature[],
                            float layer[], int layer_width)
 {
@@ -671,6 +715,7 @@ void deconvolve_image_mono(float img[],
  *        the previous layer
  * @param feature_width Width if each image patch
  * @param no_of_features The number of features in the set
+ * @param pooling_factor The pooling factor
  * @param feature Array containing the learned features, having values in
  *        the range 0.0 -> 1.0
  * @param layer The output layer to start from
@@ -680,12 +725,14 @@ void deconvolve_image_mono(float img[],
 void deconvolve_image(float img[],
                       int img_width, int img_height, int img_depth,
                       int feature_width, int no_of_features,
+                      int pooling_factor,
                       float feature[],
                       float layer[], int layer_width)
 {
     if (img_depth == 1) {
         convolve_image_mono(img, img_width, img_height,
                             feature_width, no_of_features,
+                            pooling_factor,
                             feature, layer, layer_width);
         return;
     }
@@ -834,6 +881,7 @@ void conv_feed_forward(unsigned char * img,
                        conv->layer[l].depth,
                        conv->layer[l].feature_width,
                        conv->layer[l].no_of_features,
+                       POOLING_FACTOR,
                        conv->layer[l].feature,
                        next_layer, next_layer_width);
     }
@@ -861,6 +909,7 @@ void conv_feed_backwards(unsigned char img[], deeplearn_conv * conv, int layer)
                          conv->layer[l].depth,
                          conv->layer[l].feature_width,
                          conv->layer[l].no_of_features,
+                         POOLING_FACTOR,
                          conv->layer[l].feature,
                          next_layer, next_layer_width);
     }

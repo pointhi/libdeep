@@ -109,11 +109,13 @@ int conv_load(FILE * fp, deeplearn_conv * conv);
 void convolve_image(float img[],
                     int img_width, int img_height, int img_depth,
                     int feature_width, int no_of_features,
+                    int pooling_factor,
                     float feature[],
                     float layer[], int layer_width);
 void deconvolve_image(float img[],
                       int img_width, int img_height, int img_depth,
                       int feature_width, int no_of_features,
+                      int pooling_factor,
                       float feature[],
                       float layer[], int layer_width);
 
@@ -128,6 +130,7 @@ int image_resize(unsigned char img[],
 void convolve_image_mono(float img[],
                          int img_width, int img_height,
                          int feature_width, int no_of_features,
+                         int pooling_factor,
                          float feature[],
                          float layer[], int layer_width);
 float conv_get_output(deeplearn_conv * conv, int index);

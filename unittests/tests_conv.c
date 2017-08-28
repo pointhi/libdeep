@@ -249,10 +249,10 @@ static void test_reconstruction_from_features()
     percent_similarity =
         100 - ((diff / ((int)img_width*(int)img_height*img_depth))*100/255);
 
-    if (percent_similarity < 70)
+    if (percent_similarity < 65)
         printf("\nPercent similarity: %d%%\n", percent_similarity);
 
-    assert(percent_similarity >= 70);
+    assert(percent_similarity >= 65);
 
     conv_free(&convnet);
     free(img);
