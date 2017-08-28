@@ -392,14 +392,14 @@ void convolve_image(float img[],
 
     /* for each unit in the output layer */
     COUNTDOWN(layer_y, unpooled_layer_width) {
-        int pooled_layer_y = layer_y/pooling_factor;
+        int pooled_layer_y = layer_y / pooling_factor;
         int y_img = layer_y * img_height / unpooled_layer_width;
         int ty = y_img - half_feature_width;
         int by = ty + feature_width;
         if (ty < 0) ty = 0;
         if (by >= img_height) by = img_height-1;
         COUNTDOWN(layer_x, unpooled_layer_width) {
-            int pooled_layer_x = layer_x/pooling_factor;
+            int pooled_layer_x = layer_x / pooling_factor;
             int x_img = layer_x * img_width / unpooled_layer_width;
             int tx = x_img - half_feature_width;
             int bx = tx + feature_width;
@@ -486,14 +486,14 @@ void convolve_image_mono(float img[],
 
     /* for each unit in the output layer */
     COUNTDOWN(layer_y, unpooled_layer_width) {
-        int pooled_layer_y = layer_y/pooling_factor;
+        int pooled_layer_y = layer_y / pooling_factor;
         int y_img = layer_y * img_height / layer_width;
         int ty = y_img - half_feature_width;
         int by = ty + feature_width;
         if (ty < 0) ty = 0;
         if (by >= img_height) by = img_height-1;
         COUNTDOWN(layer_x, unpooled_layer_width) {
-            int pooled_layer_x = layer_x/pooling_factor;
+            int pooled_layer_x = layer_x / pooling_factor;
             int x_img = layer_x * img_width / layer_width;
             int tx = x_img - half_feature_width;
             int bx = tx + feature_width;

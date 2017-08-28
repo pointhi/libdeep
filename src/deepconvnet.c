@@ -582,14 +582,8 @@ float deepconvnet_get_performance(deepconvnet * convnet)
     COUNTUP(i, test_images) {
         int index = convnet->test_set_index[i];
         unsigned char * img = convnet->images[index];
-        conv_feed_forward(img, convnet->convolution,
-                          convnet->convolution->no_of_layers-1);
 
-        if (deepconvnet_set_inputs_conv(convnet->learner,
-                                        convnet->convolution) != 0)
-            return -2;
-
-        deeplearn_feed_forward(convnet->learner);
+        deepconvnet_test_img(convnet, img);
 
         if (deeplearn_get_class(convnet->learner) ==
             convnet->classification_number[index])
