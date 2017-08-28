@@ -354,7 +354,7 @@ int deepconvnet_update_img(deepconvnet * convnet, unsigned char img[],
 
     if (convnet->learner->training_complete == 0) {
         if (deeplearn_training_last_layer(convnet->learner))
-            deepconvnet_set_class(convnet, class_number);
+            deeplearn_set_class(convnet->learner, class_number);
 
         deeplearn_update(convnet->learner);
         deepconvnet_update(convnet);
