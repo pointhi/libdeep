@@ -41,7 +41,6 @@
 #include "encoding.h"
 #include "backprop.h"
 #include "deeplearn_features.h"
-#include "deeplearn_pooling.h"
 #include "deeplearn_conv.h"
 #include "deeplearn_images.h"
 

@@ -41,7 +41,6 @@
 #include "backprop.h"
 #include "autocoder.h"
 #include "deeplearn_features.h"
-#include "deeplearn_pooling.h"
 
 #define PREPROCESS_MAX_LAYERS 100
 #define POOLING_FACTOR        2

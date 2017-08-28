@@ -37,7 +37,6 @@
 #include "tests_images.h"
 #include "tests_encoding.h"
 #include "tests_features.h"
-#include "tests_pooling.h"
 #include "tests_conv.h"
 #include "tests_deepconvnet.h"
 #include "tests_autocoder.h"
@@ -53,7 +52,6 @@ int main(int argc, char* argv[])
     run_tests_deeplearn();
     run_tests_data();
     run_tests_encoding();
-    run_tests_pooling();
     run_tests_features();
     run_tests_conv();
     run_tests_deepconvnet();
