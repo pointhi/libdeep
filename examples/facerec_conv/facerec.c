@@ -36,8 +36,8 @@
 #define TITLE "Face Recognition"
 
 /* the dimensions of each face image */
-int image_width = 32;
-int image_height = 32;
+int image_width = 64;
+int image_height = 64;
 
 deepconvnet convnet;
 
