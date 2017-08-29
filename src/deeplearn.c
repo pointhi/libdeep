@@ -690,11 +690,17 @@ int deeplearn_get_class(deeplearn * learner)
  */
 void deeplearn_set_class(deeplearn * learner, int class)
 {
+    const float variance = 0.01f;
+    float low = 0.5f - variance;
+    float high = 0.5f + (variance*learner->net->no_of_outputs);
+
+    if (high > 0.8f) high = 0.8f;
+
     COUNTDOWN(i, learner->net->no_of_outputs) {
         if (i != class)
-            bp_set_output(learner->net, i, 0.25f);
+            bp_set_output(learner->net, i, low);
         else
-            bp_set_output(learner->net, i, 0.75f);
+            bp_set_output(learner->net, i, high);
     }
 }
 
