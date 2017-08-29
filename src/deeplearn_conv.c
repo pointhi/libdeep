@@ -557,7 +557,6 @@ void convolve_image_mono(float img[],
  *        the previous layer
  * @param feature_width Width if each image patch
  * @param no_of_features The number of features in the set
- * @param pooling_factor The pooling factor
  * @param feature Array containing the learned features, having values in
  *        the range 0.0 -> 1.0
  * @param layer The output layer to begin from
@@ -567,7 +566,6 @@ void convolve_image_mono(float img[],
 void deconvolve_image_mono(float img[],
                            int img_width, int img_height,
                            int feature_width, int no_of_features,
-                           int pooling_factor,
                            float feature[],
                            float layer[], int layer_width)
 {
@@ -687,7 +685,6 @@ void deconvolve_image_mono(float img[],
  *        the previous layer
  * @param feature_width Width if each image patch
  * @param no_of_features The number of features in the set
- * @param pooling_factor The pooling factor
  * @param feature Array containing the learned features, having values in
  *        the range 0.0 -> 1.0
  * @param layer The output layer to start from
@@ -697,15 +694,13 @@ void deconvolve_image_mono(float img[],
 void deconvolve_image(float img[],
                       int img_width, int img_height, int img_depth,
                       int feature_width, int no_of_features,
-                      int pooling_factor,
                       float feature[],
                       float layer[], int layer_width)
 {
     if (img_depth == 1) {
-        convolve_image_mono(img, img_width, img_height,
-                            feature_width, no_of_features,
-                            pooling_factor,
-                            feature, layer, layer_width);
+        deconvolve_image_mono(img, img_width, img_height,
+                              feature_width, no_of_features,
+                              feature, layer, layer_width);
         return;
     }
 
@@ -870,10 +865,6 @@ void conv_feed_backwards(unsigned char img[], deeplearn_conv * conv, int layer)
     for (int l = layer; l >= 0; l--) {
         float * next_layer = conv->outputs;
         int next_layer_width = conv->outputs_width;
-        int pooling_factor = 1;
-
-        if (l > 0)
-            pooling_factor = conv->layer[l-1].pooling_factor;
 
         if (l < conv->no_of_layers-1) {
             next_layer = conv->layer[l+1].layer;
@@ -885,7 +876,6 @@ void conv_feed_backwards(unsigned char img[], deeplearn_conv * conv, int layer)
                          conv->layer[l].depth,
                          conv->layer[l].feature_width,
                          conv->layer[l].no_of_features,
-                         pooling_factor,
                          conv->layer[l].feature,
                          next_layer, next_layer_width);
     }
