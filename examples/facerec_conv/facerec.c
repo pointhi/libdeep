@@ -56,7 +56,7 @@ static void facerec_training()
     int no_of_outputs = 5*5;
     int output_classes = 25;
     int feature_width = 8;
-    float error_threshold[] = { 3.0, 1.0, 4.5 };
+    float error_threshold[] = { 5.0, 1.0, 4.5 };
     unsigned int ctr, random_seed = 34217;
     float performance;
     unsigned int layer_itterations = 5000;
@@ -105,6 +105,10 @@ static void facerec_training()
             ctr++;
         }
     }
+
+    deepconvnet_plot_features(&convnet, 0,
+                              "features0.png",
+                              640, 640);
 
     if (deepconvnet_training(&convnet) < 0) {
         printf("Training error\n");
