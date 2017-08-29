@@ -81,7 +81,7 @@ int conv_init(int no_of_layers,
         else {
             if (conv->layer[l].width / POOLING_FACTOR > final_image_width) {
                 conv->layer[l].width /= POOLING_FACTOR;
-                conv->layer[l].pooling_factor = POOLING_FACTOR;
+                conv->layer[l-1].pooling_factor = POOLING_FACTOR;
             }
             conv->layer[l].height = conv->layer[l].width;
         }
@@ -870,6 +870,10 @@ void conv_feed_backwards(unsigned char img[], deeplearn_conv * conv, int layer)
     for (int l = layer; l >= 0; l--) {
         float * next_layer = conv->outputs;
         int next_layer_width = conv->outputs_width;
+        int pooling_factor = 1;
+
+        if (l > 0)
+            pooling_factor = conv->layer[l-1].pooling_factor;
 
         if (l < conv->no_of_layers-1) {
             next_layer = conv->layer[l+1].layer;
@@ -881,7 +885,7 @@ void conv_feed_backwards(unsigned char img[], deeplearn_conv * conv, int layer)
                          conv->layer[l].depth,
                          conv->layer[l].feature_width,
                          conv->layer[l].no_of_features,
-                         conv->layer[l].pooling_factor,
+                         pooling_factor,
                          conv->layer[l].feature,
                          next_layer, next_layer_width);
     }
