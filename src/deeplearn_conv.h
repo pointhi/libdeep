@@ -54,6 +54,7 @@ typedef struct {
     int no_of_features, feature_width;
     float * feature;
     unsigned int ctr;
+    int pooling_factor;
 } deeplearn_conv_layer;
 
 typedef struct {

@@ -71,13 +71,18 @@ int conv_init(int no_of_layers,
             image_width -
             ((image_width-final_image_width)*l/no_of_layers);
 
+        conv->layer[l].pooling_factor = 1;
+
         /* After the initial layer, width and height are the same */
         if (l == 0)
             conv->layer[l].height =
                 image_height -
                 ((image_height-final_image_height)*l/no_of_layers);
         else {
-            conv->layer[l].width /= POOLING_FACTOR;
+            if (conv->layer[l].width / POOLING_FACTOR > final_image_width) {
+                conv->layer[l].width /= POOLING_FACTOR;
+                conv->layer[l].pooling_factor = POOLING_FACTOR;
+            }
             conv->layer[l].height = conv->layer[l].width;
         }
 
@@ -125,6 +130,11 @@ int conv_init(int no_of_layers,
                    conv->layer[l].depth);
     }
 
+    if (conv->layer[no_of_layers-1].width < final_image_width) {
+        printf("%d %d\n", conv->layer[no_of_layers-1].width, final_image_width);
+        return 3;
+    }
+
     conv->outputs_width = final_image_width;
 
     /* for convenience this is the size of the outputs array */
@@ -135,7 +145,7 @@ int conv_init(int no_of_layers,
     /* allocate array of output values */
     FLOATALLOC(conv->outputs, conv->no_of_outputs);
     if (!conv->outputs)
-        return 3;
+        return 4;
 
     /* clear the outputs */
     FLOATCLEAR(conv->outputs, conv->no_of_outputs);
@@ -843,7 +853,7 @@ void conv_feed_forward(unsigned char * img,
                        conv->layer[l].depth,
                        conv->layer[l].feature_width,
                        conv->layer[l].no_of_features,
-                       POOLING_FACTOR,
+                       conv->layer[l].pooling_factor,
                        conv->layer[l].feature,
                        next_layer, next_layer_width);
     }
@@ -871,7 +881,7 @@ void conv_feed_backwards(unsigned char img[], deeplearn_conv * conv, int layer)
                          conv->layer[l].depth,
                          conv->layer[l].feature_width,
                          conv->layer[l].no_of_features,
-                         POOLING_FACTOR,
+                         conv->layer[l].pooling_factor,
                          conv->layer[l].feature,
                          next_layer, next_layer_width);
     }
