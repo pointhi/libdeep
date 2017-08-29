@@ -89,7 +89,7 @@ static void facerec_training()
 
     deepconvnet_set_dropouts(&convnet, 0.0f);
 
-    convnet.history_plot_interval = 200;
+    convnet.history_plot_interval = 800;
 
     sprintf(convnet.history_plot_title, "%s", TITLE);
 

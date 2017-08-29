@@ -256,7 +256,6 @@ static int deepconvnet_set_inputs_conv(deeplearn * learner,
     if (learner->net->no_of_inputs != conv->no_of_outputs)
         return -1;
 
-    /* NOTE: can this be done with memcpy ? */
     COUNTDOWN(i, learner->net->no_of_inputs)
         deeplearn_set_input(learner, i, conv_get_output(conv, i));
 
@@ -360,7 +359,6 @@ int deepconvnet_update_img(deepconvnet * convnet, unsigned char img[],
         deepconvnet_update(convnet);
     }
     else {
-        /* feed forward only */
         deeplearn_feed_forward(convnet->learner);
     }
     return 0;
@@ -381,7 +379,6 @@ int deepconvnet_test_img(deepconvnet * convnet, unsigned char img[])
                                     convnet->convolution) != 0)
         return -2;
 
-    /* feed forward only */
     deeplearn_feed_forward(convnet->learner);
 
     return 0;
@@ -583,7 +580,10 @@ float deepconvnet_get_performance(deepconvnet * convnet)
         int index = convnet->test_set_index[i];
         unsigned char * img = convnet->images[index];
 
-        deepconvnet_test_img(convnet, img);
+        if (deepconvnet_test_img(convnet, img) != 0) {
+            printf("deepconvnet_test_img failed\n");
+            break;
+        }
 
         if (deeplearn_get_class(convnet->learner) ==
             convnet->classification_number[index])
