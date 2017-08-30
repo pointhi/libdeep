@@ -10,6 +10,13 @@ ARCH_BUILD_DIR=${HOME}/abs/${APP}
 CURR_DIR=$(shell pwd)
 SOURCEFILE?=backprop.c
 
+DATE_FMT = %Y-%m-%d
+ifdef SOURCE_DATE_EPOCH
+	BUILD_DATE ?= $(shell date -u -d "@$(SOURCE_DATE_EPOCH)" "+$(DATE_FMT)"  2>/dev/null || date -u -r "$(SOURCE_DATE_EPOCH)" "+$(DATE_FMT)" 2>/dev/null || date -u "+$(DATE_FMT)")
+else
+	BUILD_DATE ?= $(shell date "+$(DATE_FMT)")
+endif
+
 ifeq ($(shell if [ -d /usr/lib64 ]; then echo "found"; fi;), "found")
 LIBDIR = lib64
 endif

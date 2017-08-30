@@ -51,12 +51,12 @@ static void facerec_training()
 {
     int no_of_convolutions = 3;
     int no_of_deep_layers = 2;
-    int max_features_per_convolution = 8*8;
+    int max_features_per_convolution = 5*5;
     int final_image_width = 4;
     int no_of_outputs = 5*5;
     int output_classes = 25;
-    int feature_width = 8;
-    float error_threshold[] = { 10.0, 7.0, 4.5 };
+    int feature_width = 6;
+    float error_threshold[] = { 6.0, 5.0, 4.0 };
     unsigned int ctr, random_seed = 34217;
     float performance;
     unsigned int layer_itterations = 5000;
