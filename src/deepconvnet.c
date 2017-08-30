@@ -566,8 +566,7 @@ int deepconvnet_training(deepconvnet * convnet)
  */
 float deepconvnet_get_performance(deepconvnet * convnet)
 {
-    float error_percent, total_error = 0, performance = 0;
-    int hits = 0;
+    float error_percent, total_error = 0;
     int test_images = convnet->no_of_images*2/10;
 
     if (convnet->no_of_images == 0)
@@ -595,14 +594,13 @@ float deepconvnet_get_performance(deepconvnet * convnet)
                 (desired - deeplearn_get_output(convnet->learner,i)) /
                 (NEURON_HIGH - NEURON_LOW);
             total_error += error_percent*error_percent;
-            hits++;
         }
     }
 
-    if (hits > 0)
-        performance = 100.0f - (float)sqrt(total_error / hits) * 100;
-
-    return performance;
+    return
+        100.0f -
+        ((float)sqrt(total_error /
+                     (convnet->learner->net->no_of_outputs*test_images)) * 100);
 }
 
 /**
