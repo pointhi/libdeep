@@ -59,14 +59,12 @@ int main(int argc, char* argv[])
                            &random_seed);
 
     printf("Number of training examples: %d\n",learner.training_data_samples);
-    printf("Number of labeled training examples: %d\n",learner.training_data_labeled_samples);
+    printf("Number of labeled training examples: %d\n",
+           learner.training_data_labeled_samples);
     printf("Number of test examples: %d\n",learner.test_data_samples);
     printf("Number of Inputs: %d\n",learner.net->no_of_inputs);
 
-    /* set learning rate */
     deeplearn_set_learning_rate(&learner, 0.1f);
-
-    /* set percentage of dropouts */
     deeplearn_set_dropouts(&learner, 0.01f);
 
     learner.history_plot_interval = 50000;
@@ -78,7 +76,8 @@ int main(int argc, char* argv[])
 
     printf("Training Completed\n");
 
-    printf("Test data set performance is %.1f%%\n", deeplearndata_get_performance(&learner));
+    printf("Test data set performance is %.1f%%\n",
+           deeplearndata_get_performance(&learner));
 
     deeplearn_export(&learner, "export_iris_classifier.c");
     deeplearn_export(&learner, "export_iris_classifier_sketch.c");

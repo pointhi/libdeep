@@ -722,15 +722,11 @@ int deeplearndata_read_csv(char * filename,
 }
 
 /**
-* @brief Performs a single training step
-* @param learner Deep learner object
-* @returns 1=pretraining,2=final training,0=training complete,-1=no training data
-*/
-int deeplearndata_training(deeplearn * learner)
+ * @brief Update the training history graph
+ * @param learner Deep learner object
+ */
+static void deeplearndata_update_training_history(deeplearn * learner)
 {
-    if (learner->training_data_samples == 0)
-        return -1;
-
     /* plot a graph showing training progress */
     if (learner->training_ctr > learner->history_plot_interval) {
         if (strlen(learner->history_plot_filename) > 0)
@@ -741,6 +737,19 @@ int deeplearndata_training(deeplearn * learner)
         learner->training_ctr = 0;
     }
     learner->training_ctr++;
+}
+
+/**
+* @brief Performs a single training step
+* @param learner Deep learner object
+* @returns 1=pretraining,2=final training,0=training complete,-1=no training data
+*/
+int deeplearndata_training(deeplearn * learner)
+{
+    if (learner->training_data_samples == 0)
+        return -1;
+
+    deeplearndata_update_training_history(learner);
 
     if ((learner->net->hidden_layers > 1) &&
         (learner->current_hidden_layer < learner->net->hidden_layers)) {
