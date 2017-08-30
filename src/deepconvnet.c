@@ -577,12 +577,11 @@ float deepconvnet_get_performance(deepconvnet * convnet)
 
     COUNTUP(i, test_images) {
         int index = convnet->test_set_index[i];
-        unsigned char * img = convnet->images[index];
 
         deeplearn_set_class(convnet->learner,
                             convnet->classification_number[index]);
 
-        if (deepconvnet_test_img(convnet, img) != 0) {
+        if (deepconvnet_test_img(convnet, convnet->images[index]) != 0) {
             printf("deepconvnet_test_img failed\n");
             break;
         }
