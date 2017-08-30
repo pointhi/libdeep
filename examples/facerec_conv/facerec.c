@@ -36,8 +36,8 @@
 #define TITLE "Face Recognition"
 
 /* the dimensions of each face image */
-int image_width = 64;
-int image_height = 64;
+int image_width = 32;
+int image_height = 32;
 
 deepconvnet convnet;
 
@@ -56,7 +56,7 @@ static void facerec_training()
     int no_of_outputs = 5*5;
     int output_classes = 25;
     int feature_width = 8;
-    float error_threshold[] = { 5.0, 1.0, 4.5 };
+    float error_threshold[] = { 10.0, 7.0, 4.5 };
     unsigned int ctr, random_seed = 34217;
     float performance;
     unsigned int layer_itterations = 5000;

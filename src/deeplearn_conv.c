@@ -522,9 +522,7 @@ void convolve_image_mono(float img[],
                     /* position within the feature */
                     int n1 = (yy-ty) * feature_width;
                     FOR(xx, tx, bx) {
-                        match +=
-                            (img[n0] - curr_feature[n1])*
-                            (img[n0] - curr_feature[n1]);
+                        match += (img[n0] - curr_feature[n1]);
                         n0++;
                         n1++;
                     }
