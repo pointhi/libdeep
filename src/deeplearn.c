@@ -703,9 +703,9 @@ void deeplearn_set_class(deeplearn * learner, int class)
 {
     COUNTDOWN(i, learner->net->no_of_outputs) {
         if (i != class)
-            bp_set_output(learner->net, i, 0.49f);
+            bp_set_output(learner->net, i, NEURON_LOW);
         else
-            bp_set_output(learner->net, i, 0.51f);
+            bp_set_output(learner->net, i, NEURON_HIGH);
     }
 }
 

@@ -44,6 +44,9 @@
 #define AUTOCODER_UNKNOWN      -9999
 #define AUTOCODER_DROPPED_OUT  -9999
 
+#define NEURON_HIGH             0.51
+#define NEURON_LOW              0.49
+
 #define AF_SIGMOID              0
 #define AF_TANH                 1
 #define AF_LINEAR               2

@@ -591,28 +591,13 @@ float deepconvnet_get_performance(deepconvnet * convnet)
         COUNTUP(i, convnet->learner->net->no_of_outputs) {
             float desired =
                 deeplearn_get_desired(convnet->learner,i);
-            if (desired > 0) {
-                error_percent =
-                    (desired - deeplearn_get_output(convnet->learner,i)) /
-                    desired;
-                total_error += error_percent*error_percent;
-                hits++;
-            }
+            error_percent =
+                (desired - deeplearn_get_output(convnet->learner,i)) /
+                (NEURON_HIGH - NEURON_LOW);
+            total_error += error_percent*error_percent;
+            hits++;
         }
-
-        /*
-        if (deeplearn_get_class(convnet->learner) ==
-            convnet->classification_number[index])
-            performance += 100.0f;
-
-        ctr++;
-        */
     }
-
-    /*
-    if (ctr > 0)
-        performance /= ctr;
-    */
 
     if (hits > 0)
         performance = 100.0f - (float)sqrt(total_error / hits) * 100;
