@@ -8,6 +8,7 @@ PREFIX?=/usr/local
 LIBDIR=lib
 ARCH_BUILD_DIR=${HOME}/abs/${APP}
 CURR_DIR=$(shell pwd)
+SELF_DIR=$(shell basename $(CURR_DIR))
 SOURCEFILE?=backprop.c
 
 DATE_FMT = %Y-%m-%d
@@ -32,7 +33,7 @@ graph:
 	egypt ${SOURCEFILE}.*.expand | xdot -
 	rm *.expand
 source:
-	tar -cvf ../${APP}_${VERSION}.orig.tar ../${APP}-${VERSION} --exclude-vcs
+	tar -cvf ../${APP}_${VERSION}.orig.tar --exclude-vcs ../$(SELF_DIR)
 	gzip -f9n ../${APP}_${VERSION}.orig.tar
 arch:
 	rm -f ${APP} *.xz *.sig
@@ -40,7 +41,7 @@ arch:
 		mkdir -p ${ARCH_BUILD_DIR};\
 	fi
 	rm -rf ${ARCH_BUILD_DIR}/*
-	tar cvf ${ARCH_BUILD_DIR}/${APP}-${VERSION}.tar --exclude .git .
+	tar cvf ${ARCH_BUILD_DIR}/${APP}-${VERSION}.tar --exclude-vcs .
 	gzip -f9n ${ARCH_BUILD_DIR}/${APP}-${VERSION}.tar
 	cp PKGBUILD ${ARCH_BUILD_DIR}
 	gpg -ba ${ARCH_BUILD_DIR}/${APP}-${VERSION}.tar.gz
