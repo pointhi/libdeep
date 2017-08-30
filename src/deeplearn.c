@@ -665,6 +665,17 @@ float deeplearn_get_output(deeplearn * learner, int index)
 }
 
 /**
+ * @brief Returns the desired output value
+ * @param learner Deep learner object
+ * @param index Index number of the output unit
+ * @return Desired value of the output unit to in the range 0.0 to 1.0
+ */
+float deeplearn_get_desired(deeplearn * learner, int index)
+{
+    return bp_get_desired(learner->net, index);
+}
+
+/**
  * @brief Gets the output class as an integer value
  * @param learner Deep learner object
  * @return output class
@@ -690,17 +701,11 @@ int deeplearn_get_class(deeplearn * learner)
  */
 void deeplearn_set_class(deeplearn * learner, int class)
 {
-    const float variance = 0.01f;
-    float low = 0.5f - variance;
-    float high = 0.5f + (variance*learner->net->no_of_outputs);
-
-    if (high > 0.8f) high = 0.8f;
-
     COUNTDOWN(i, learner->net->no_of_outputs) {
         if (i != class)
-            bp_set_output(learner->net, i, low);
+            bp_set_output(learner->net, i, 0.49f);
         else
-            bp_set_output(learner->net, i, high);
+            bp_set_output(learner->net, i, 0.51f);
     }
 }
 

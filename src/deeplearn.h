@@ -131,6 +131,7 @@ void deeplearn_set_output(deeplearn * learner, int index, float value);
 void deeplearn_set_outputs(deeplearn * learner, deeplearndata * sample);
 void deeplearn_get_outputs(deeplearn * learner, float * outputs);
 float deeplearn_get_output(deeplearn * learner, int index);
+float deeplearn_get_desired(deeplearn * learner, int index);
 int deeplearn_get_class(deeplearn * learner);
 void deeplearn_set_class(deeplearn * learner, int class);
 int deeplearn_save(FILE * fp, deeplearn * learner);

@@ -566,8 +566,8 @@ int deepconvnet_training(deepconvnet * convnet)
  */
 float deepconvnet_get_performance(deepconvnet * convnet)
 {
-    float performance = 0;
-    int ctr = 0;
+    float error_percent, total_error = 0, performance = 0;
+    int hits = 0;
     int test_images = convnet->no_of_images*2/10;
 
     if (convnet->no_of_images == 0)
@@ -580,20 +580,42 @@ float deepconvnet_get_performance(deepconvnet * convnet)
         int index = convnet->test_set_index[i];
         unsigned char * img = convnet->images[index];
 
+        deeplearn_set_class(convnet->learner,
+                            convnet->classification_number[index]);
+
         if (deepconvnet_test_img(convnet, img) != 0) {
             printf("deepconvnet_test_img failed\n");
             break;
         }
 
+        COUNTUP(i, convnet->learner->net->no_of_outputs) {
+            float desired =
+                deeplearn_get_desired(convnet->learner,i);
+            if (desired > 0) {
+                error_percent =
+                    (desired - deeplearn_get_output(convnet->learner,i)) /
+                    desired;
+                total_error += error_percent*error_percent;
+                hits++;
+            }
+        }
+
+        /*
         if (deeplearn_get_class(convnet->learner) ==
             convnet->classification_number[index])
             performance += 100.0f;
 
         ctr++;
+        */
     }
 
+    /*
     if (ctr > 0)
         performance /= ctr;
+    */
+
+    if (hits > 0)
+        performance = 100.0f - (float)sqrt(total_error / hits) * 100;
 
     return performance;
 }

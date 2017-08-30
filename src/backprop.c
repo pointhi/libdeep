@@ -728,6 +728,17 @@ float bp_get_output(bp * net, int index)
 }
 
 /**
+* @brief Gets the desired value of one of the output units
+* @param net Backprop neural net object
+* @param index Index of the unit within the output layer
+* @return Desired value in the range 0.0 to 1.0
+*/
+float bp_get_desired(bp * net, int index)
+{
+    return net->outputs[index]->desired_value;
+}
+
+/**
 * @brief Exclusion flags indicate that a unit has temporarily dropped out.
 *        This clears the all the exclusion flags
 * @param net Backprop neural net object
