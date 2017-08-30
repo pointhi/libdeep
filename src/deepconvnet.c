@@ -588,10 +588,9 @@ float deepconvnet_get_performance(deepconvnet * convnet)
         }
 
         COUNTUP(i, convnet->learner->net->no_of_outputs) {
-            float desired =
-                deeplearn_get_desired(convnet->learner,i);
             error_percent =
-                (desired - deeplearn_get_output(convnet->learner,i)) /
+                (deeplearn_get_desired(convnet->learner,i) -
+                 deeplearn_get_output(convnet->learner,i)) /
                 (NEURON_HIGH - NEURON_LOW);
             total_error += error_percent*error_percent;
         }
