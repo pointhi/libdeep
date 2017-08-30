@@ -575,7 +575,7 @@ float deepconvnet_get_performance(deepconvnet * convnet)
     if (convnet->classification_number == NULL)
         return -2;
 
-    COUNTUP(i, test_images) {
+    COUNTDOWN(i, test_images) {
         int index = convnet->test_set_index[i];
 
         deeplearn_set_class(convnet->learner,
@@ -586,7 +586,7 @@ float deepconvnet_get_performance(deepconvnet * convnet)
             break;
         }
 
-        COUNTUP(i, convnet->learner->net->no_of_outputs) {
+        COUNTDOWN(i, convnet->learner->net->no_of_outputs) {
             error_percent =
                 (deeplearn_get_desired(convnet->learner,i) -
                  deeplearn_get_output(convnet->learner,i)) /
