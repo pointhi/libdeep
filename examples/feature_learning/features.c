@@ -33,23 +33,26 @@
 
 static void learn_features_from_image()
 {
-    unsigned char * img, * img_features;
+    unsigned char * img, * img2, * img_features;
     unsigned int img_width = 0;
     unsigned int img_height = 0;
     int img_depth = 3;
     unsigned int bitsperpixel = 0;
 
     deeplearn_conv convnet;
-    int i;
+    int i, layer;
     int no_of_layers = 3;
     int final_image_width, final_image_height;
     int no_of_features = 8*8;
     int feature_width = 8;
     unsigned int random_seed = 123;
-    int layer_itterations = 30;
+    int layer_itterations = 5;
 
     /* load image from file */
     assert(deeplearn_read_png_file((char*)"../../unittests/Lenna.png",
+                                   &img_width, &img_height,
+                                   &bitsperpixel, &img2)==0);
+    assert(deeplearn_read_png_file((char*)"../../unittests/monalisa.png",
                                    &img_width, &img_height,
                                    &bitsperpixel, &img)==0);
 
@@ -71,16 +74,19 @@ static void learn_features_from_image()
                      final_image_width, final_image_height,
                      &convnet) == 0);
 
-    for (i = 0; i < layer_itterations; i++) {
-        conv_learn(img, &convnet, 500, layer_itterations, &random_seed);
-        printf(".");
-        fflush(stdout);
-        if ((i > 0) && (i % layer_itterations == 0))
-            printf("\n");
+    for (layer = 0; layer < 1; layer++) {
+        convnet.current_layer = layer;
+        for (i = 0; i < layer_itterations; i++) {
+            conv_learn(img, &convnet, 500, layer_itterations, &random_seed);
+            printf(".");
+            fflush(stdout);
+            if ((i > 0) && (i % layer_itterations == 0))
+                printf("\n");
+        }
     }
     printf("\n");
 
-    printf("Learning completed\n");
+    printf("Plotting features\n");
 
     conv_draw_features(img_features, (int)img_width, (int)img_height,
                        img_depth, 0, &convnet);
@@ -89,15 +95,27 @@ static void learn_features_from_image()
                              img_width, img_height,
                              bitsperpixel, img_features);
 
+    printf("Plotting Reconstruction 1\n");
+
     conv_feed_forward(img, &convnet, 1);
     conv_feed_backwards(img, &convnet, 0);
 
-    deeplearn_write_png_file("reconstruction.png",
+    deeplearn_write_png_file("reconstruction1.png",
                              img_width, img_height,
                              bitsperpixel, img);
 
+    printf("Plotting Reconstruction 2\n");
+
+    conv_feed_forward(img2, &convnet, 1);
+    conv_feed_backwards(img2, &convnet, 0);
+
+    deeplearn_write_png_file("reconstruction2.png",
+                             img_width, img_height,
+                             bitsperpixel, img2);
+
     conv_free(&convnet);
     free(img);
+    free(img2);
     free(img_features);
 }
 
