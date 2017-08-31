@@ -78,6 +78,10 @@ typedef struct {
     /* current layer for which features are being learned */
     int current_layer;
 
+    /* a training flag which can be toggled to enable
+       adding noise to the input layer */
+    unsigned char training;
+
     /* training itterations elapsed */
     unsigned int itterations;
 
