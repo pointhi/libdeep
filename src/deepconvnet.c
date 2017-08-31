@@ -316,6 +316,7 @@ static void deepconvnet_update(deepconvnet * convnet)
     deepconvnet_update_current_layer(convnet);
     deepconvnet_update_history(convnet);
     deepconvnet_update_training_plot(convnet);
+    convnet->convolution->training = (convnet->learner->training_complete==0);
     convnet->training_complete = convnet->learner->training_complete;
 }
 
