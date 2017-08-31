@@ -63,6 +63,11 @@ typedef struct {
     /* array storing layers */
     deeplearn_conv_layer layer[PREPROCESS_MAX_LAYERS];
 
+    /* the amount of noise to add to inputs during training
+       in the range 0.0 -> 1.0 */
+    float noise;
+    unsigned int random_seed;
+
     /* the outputs at the end of the process */
     int outputs_width;
     int no_of_outputs;

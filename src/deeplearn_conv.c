@@ -52,6 +52,9 @@ int conv_init(int no_of_layers,
     conv->current_layer = 0;
     conv->learning_rate = 0.1f;
 
+    conv->noise = 0.1f;
+    conv->random_seed = 672593;
+
     conv->itterations = 0;
     conv->history_ctr = 0;
     conv->history_index = 0;
@@ -827,10 +830,30 @@ void deconvolve_image(float img[],
 void conv_feed_forward(unsigned char * img,
                        deeplearn_conv * conv, int layer)
 {
-    /* convert the input image to floats */
-    COUNTDOWN(i,
-              conv->layer[0].width*conv->layer[0].height*conv->layer[0].depth)
-        conv->layer[0].layer[i] = (float)img[i]/255.0f;
+    /* if training is done */
+    if (conv->current_layer >= conv->no_of_layers) {
+        /* convert the input image to floats */
+        COUNTDOWN(i,
+                  conv->layer[0].width*conv->layer[0].height*conv->layer[0].depth) {
+            conv->layer[0].layer[i] = (float)img[i]/255.0f;
+        }
+    }
+    else {
+        /* if we are still training add noise to the inputs */
+        COUNTDOWN(i,
+                  conv->layer[0].width*conv->layer[0].height*conv->layer[0].depth) {
+            conv->layer[0].layer[i] =
+                ((float)img[i]/255.0f) +
+                (conv->noise *
+                 (((rand_num(&conv->random_seed)%200000)/100000.0f)-1.0f));
+
+            /* limit within range 0.0 -> 1.0 */
+            if (conv->layer[0].layer[i] < 0)
+                conv->layer[0].layer[i] = 0;
+            else if (conv->layer[0].layer[i] > 1)
+                conv->layer[0].layer[i] = 1;
+        }
+    }
 
     COUNTUP(l, layer) {
         float * next_layer = conv->outputs;
