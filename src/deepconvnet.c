@@ -344,6 +344,9 @@ int deepconvnet_update_img(deepconvnet * convnet, unsigned char img[],
         return 0;
     }
 
+    convnet->convolution->training =
+        (convnet->learner->training_complete==0);
+
     conv_feed_forward(img, convnet->convolution,
                       convnet->convolution->no_of_layers);
 
