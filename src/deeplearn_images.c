@@ -431,3 +431,39 @@ int image_resize(unsigned char img[],
     }
     return 0;
 }
+
+/**
+ * @brief Scales and translates an image within the existing resolution.
+ *        This can be used to generate synthetic training images
+ * @param img Image array
+ * @param image_width Width of the image
+ * @param image_height Height of the image
+ * @param image_depth Depth of the image
+ * @param scale scaling factor where 1.0 is 100% of original
+ * @param centre_x x centre of scaling in pixels
+ * @param centre_y y centre of scaling in pixels
+ * @param result returned scaled image
+ */
+void image_synth(unsigned char img[],
+                 int image_width, int image_height, int image_depth,
+                 float scale, int centre_x, int centre_y,
+                 unsigned char result[])
+{
+    COUNTDOWN(y, image_height) {
+        int scaled_y = centre_y + (int)(scale*(y - centre_y));
+        if ((scaled_y >= 0) && (scaled_y < image_height)) {
+            int n = y*image_width*image_depth;
+            COUNTDOWN(x, image_width) {
+                int scaled_x = centre_x + (int)(scale*(x - centre_x));
+                if ((scaled_x >= 0) && (scaled_x < image_width)) {
+                    COUNTDOWN(d, image_depth) {
+                        result[n + d] =
+                            img[((scaled_y*image_height) + scaled_x)*
+                                image_depth + d];
+                    }
+                }
+                n += image_depth;
+            }
+        }
+    }
+}
