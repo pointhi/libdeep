@@ -87,6 +87,7 @@ int image_resize(unsigned char img[],
 void image_synth(unsigned char img[],
                  int image_width, int image_height, int image_depth,
                  float scale, int centre_x, int centre_y,
+                 int result_width, int result_height, int result_depth,
                  unsigned char result[]);
 
 #endif

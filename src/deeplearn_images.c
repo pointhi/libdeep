@@ -115,11 +115,10 @@ int deeplearn_write_png_file(char * filename,
     if (bitsperpixel == 8) {
         UCHARALLOC(image, width*height*3);
         if (image) {
-            COUNTDOWN(i, width*height) {
-                image[i*3] = buffer[i];
-                image[i*3+1] = buffer[i];
-                image[i*3+2] = buffer[i];
-            }
+            COUNTDOWN(i, width*height)
+                COUNTDOWN(d, 3)
+                    image[i*3+d] = buffer[i];
+
             error = lodepng_encode24_file(filename, image, width, height);
             free(image);
         }
@@ -228,9 +227,9 @@ void deeplearn_downsample_colour(unsigned char img[],
             /* index within the original image */
             int n2 = ((yy*width) + xx)*3;
             /* update downsampled image */
-            downsampled[n] = img[n2];
-            downsampled[n+1] = img[n2+1];
-            downsampled[n+2] = img[n2+2];
+            COUNTDOWN(d, 3) {
+                downsampled[n+d] = img[n2+d];
+            }
             n+=3;
         }
     }
@@ -363,17 +362,19 @@ int deeplearn_load_training_images(char * images_directory,
                                 ((rand_num(&random_seed)%100000)/200000.0f);
 
                             /* spare room for translation */
-                            x_spare = 1 + (int)((1.0f - scale)*width);
-                            y_spare = 1 + (int)((1.0f - scale)*height);
+                            x_spare = 1 + (int)((1.0f - scale)*im_width);
+                            y_spare = 1 + (int)((1.0f - scale)*im_height);
 
                             /* new centre */
-                            centre_x = (width/2) - (x_spare/2) +
+                            centre_x = (int)(im_width/2) - (x_spare/2) +
                                 ((int)rand_num(&random_seed)%x_spare);
-                            centre_y = (height/2) - (y_spare/2) +
+                            centre_y = (int)(im_height/2) - (y_spare/2) +
                                 ((int)rand_num(&random_seed)%y_spare);
 
-                            image_synth(downsampled, width, height, 1,
-                                        scale, centre_x, centre_y, img2);
+                            image_synth(img, (int)im_width, (int)im_height,
+                                        (int)(im_bitsperpixel/8),
+                                        scale, centre_x, centre_y,
+                                        width, height, 1, img2);
                             (*images)[no_of_images] = img2;
                         }
 
@@ -488,36 +489,53 @@ int image_resize(unsigned char img[],
 }
 
 /**
- * @brief Scales and translates an image within the existing resolution.
+ * @brief Scales and translates an image.
  *        This can be used to generate synthetic training images
  * @param img Image array
  * @param image_width Width of the image
  * @param image_height Height of the image
  * @param image_depth Depth of the image
  * @param scale scaling factor where 1.0 is 100% of original
- * @param centre_x x centre of scaling in pixels
- * @param centre_y y centre of scaling in pixels
+ * @param centre_x x centre of scaling in pixels in input image
+ * @param centre_y y centre of scaling in pixels in input image
+ * @param result_width Width of the scaled image
+ * @param result_height Height of the scaled image
+ * @param result_depth Depth of the scaled image
  * @param result returned scaled image
  */
 void image_synth(unsigned char img[],
                  int image_width, int image_height, int image_depth,
                  float scale, int centre_x, int centre_y,
+                 int result_width, int result_height, int result_depth,
                  unsigned char result[])
 {
-    COUNTDOWN(y, image_height) {
-        int scaled_y = centre_y + (int)(scale*(y - centre_y));
+    COUNTDOWN(y, result_height) {
+        int y_original = y * image_height / result_height;
+        int scaled_y = centre_y + (int)(scale*(y_original - centre_y));
         if ((scaled_y >= 0) && (scaled_y < image_height)) {
-            int n = y*image_width*image_depth;
-            COUNTDOWN(x, image_width) {
-                int scaled_x = centre_x + (int)(scale*(x - centre_x));
+            int n = y*result_width*result_depth;
+            COUNTDOWN(x, result_width) {
+                int x_original = x * image_width / result_width;
+                int scaled_x = centre_x + (int)(scale*(x_original - centre_x));
                 if ((scaled_x >= 0) && (scaled_x < image_width)) {
-                    COUNTDOWN(d, image_depth) {
-                        result[n + d] =
-                            img[((scaled_y*image_width) + scaled_x)*
-                                image_depth + d];
+                    if (result_depth == image_depth) {
+                        COUNTDOWN(d, result_depth) {
+                            result[n + d] =
+                                img[((scaled_y*image_width) + scaled_x)*
+                                    image_depth + d];
+                        }
+                    }
+                    else {
+                        int sum = 0;
+                        COUNTDOWN(d, image_depth) {
+                            sum +=
+                                img[((scaled_y*image_width) + scaled_x)*
+                                    image_depth + d];
+                        }
+                        result[n] = (unsigned char)(sum/image_depth);
                     }
                 }
-                n += image_depth;
+                n += result_depth;
             }
         }
     }
