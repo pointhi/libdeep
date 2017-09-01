@@ -607,7 +607,7 @@ int autocoder_plot_weight_matrix(ac * net,
     unsigned char * img;
 
     /* allocate memory for the image */
-    img = (unsigned char*)malloc(image_width*image_height*3);
+    UCHARALLOC(img, image_width*image_height*3);
     if (!img)
         return -1;
 

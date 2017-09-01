@@ -821,8 +821,8 @@ int deeplearn_load(FILE * fp, deeplearn * learner)
 
     learner->field_length = 0;
     if (learner->no_of_input_fields > 0) {
-        learner->field_length =
-            (int*)malloc(learner->no_of_input_fields*sizeof(int));
+        INTALLOC(learner->field_length,
+                 learner->no_of_input_fields);
         if (INTREADARRAY(learner->field_length,
                          learner->no_of_input_fields) == 0)
             return -6;

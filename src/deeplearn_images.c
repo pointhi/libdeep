@@ -113,7 +113,7 @@ int deeplearn_write_png_file(char * filename,
         error = lodepng_encode24_file(filename, image, width, height);
 
     if (bitsperpixel == 8) {
-        image = (unsigned char*)malloc(width*height*3*sizeof(unsigned char));
+        UCHARALLOC(image, width*height*3);
         if (image) {
             COUNTDOWN(i, width*height) {
                 image[i*3] = buffer[i];
@@ -415,8 +415,11 @@ void bp_plot_images(unsigned char **images,
                     char * filename)
 {
     /* allocate memory for the image */
-    unsigned char * img =
-        (unsigned char*)malloc(image_width*image_height*no_of_images*3);
+    unsigned char * img;
+
+    UCHARALLOC(img, image_width*image_height*no_of_images*3);
+    if (!img)
+        return;
 
     COUNTDOWN(i, no_of_images) {
         COUNTDOWN(y, image_height) {

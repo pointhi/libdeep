@@ -577,6 +577,7 @@ void deconvolve_image_mono(float img[],
     UINTALLOC(updates_per_pixel, img_width*img_height);
     if (!updates_per_pixel)
         return;
+
     UINTCLEAR(updates_per_pixel, img_width*img_height);
 
     /* clear the input image */
@@ -712,6 +713,7 @@ void deconvolve_image(float img[],
     UINTALLOC(updates_per_pixel, img_width*img_height);
     if (!updates_per_pixel)
         return;
+
     UINTCLEAR(updates_per_pixel, img_width*img_height);
 
     /* clear the input image */
@@ -972,7 +974,6 @@ float conv_learn(unsigned char * img,
         return 0;
 
     FLOATALLOC(feature_score, conv->layer[layer].no_of_features);
-
     if (!feature_score)
         return -1;
 

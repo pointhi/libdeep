@@ -67,21 +67,24 @@ int deeplearndata_add(deeplearndata ** datalist,
 
     data->inputs_text = 0;
     if (inputs_text != 0) {
-        data->inputs_text =
-            (char**)malloc(no_of_input_fields*sizeof(char*));
+        CHARPTRALLOC(data->inputs_text, no_of_input_fields);
+        if (!data->inputs_text)
+            return -3;
+
         COUNTUP(i, no_of_input_fields) {
             data->inputs_text[i] = 0;
             if (inputs_text[i] != 0) {
                 /* copy the string */
-                data->inputs_text[i] =
-                    (char*)malloc((strlen(inputs_text[i])+1)*sizeof(char));
+                CHARALLOC(data->inputs_text[i], strlen(inputs_text[i])+1);
+                if (!data->inputs_text[i])
+                    return -4;
                 strcpy(data->inputs_text[i], inputs_text[i]);
             }
         }
     }
     FLOATALLOC(data->outputs, no_of_outputs);
     if (!data->outputs)
-        return -3;
+        return -5;
 
     /* copy the data */
     memcpy((void*)data->inputs, inputs, no_of_input_fields*sizeof(float));
@@ -612,9 +615,10 @@ int deeplearndata_read_csv(char * filename,
                                 inputs_text[input_index] = 0;
                                 if (is_text != 0) {
                                     /* allocate some memory for the string */
-                                    inputs_text[input_index] =
-                                        (char*)malloc((strlen(valuestr)+1)*
-                                                      sizeof(char));
+                                    CHARALLOC(inputs_text[input_index],
+                                              strlen(valuestr)+1);
+                                    if (!inputs_text[input_index])
+                                        return -2;
                                     /* copy it */
                                     strcpy(inputs_text[input_index],
                                            (char*)valuestr);
@@ -650,7 +654,7 @@ int deeplearndata_read_csv(char * filename,
                                           output_range_min,
                                           output_range_max) != 0) {
                         fclose(fp);
-                        return -2;
+                        return -3;
                     }
 
                     /* free memory for any text strings */
@@ -685,7 +689,9 @@ int deeplearndata_read_csv(char * filename,
 
     /* set the input fields */
     learner->no_of_input_fields = no_of_input_fields;
-    learner->field_length = (int*)malloc(no_of_input_fields*sizeof(int));
+    INTALLOC(learner->field_length, no_of_input_fields);
+    if (!learner->field_length)
+        return -4;
     COUNTDOWN(i, no_of_input_fields) {
         learner->field_length[i] = field_length[i];
         if (field_length[i] > 0) {
@@ -716,7 +722,7 @@ int deeplearndata_read_csv(char * filename,
 
     /* create training and test data sets */
     if (deeplearndata_create_datasets(learner, 20) != 0)
-        return -3;
+        return -5;
 
     return samples_loaded;
 }
@@ -793,6 +799,8 @@ float deeplearndata_get_performance(deeplearn * learner)
     float * outputs;
 
     FLOATALLOC(outputs, learner->net->no_of_outputs);
+    if (!outputs)
+        return -1;
 
     COUNTUP(index, learner->test_data_samples) {
         deeplearndata * sample = deeplearndata_get_test(learner, index);

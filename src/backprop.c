@@ -92,8 +92,7 @@ int bp_init(bp * net,
     /* create hiddens */
     COUNTUP(l, hidden_layers) {
         COUNTUP(i, HIDDENS_IN_LAYER(net,l)) {
-            net->hiddens[l][i] =
-                (bp_neuron*)malloc(sizeof(bp_neuron));
+            net->hiddens[l][i] = (bp_neuron*)malloc(sizeof(bp_neuron));
             if (!net->hiddens[l][i])
                 return -7;
 
@@ -515,8 +514,7 @@ int bp_plot_weights(bp * net,
     unsigned char * img;
 
     /* allocate memory for the image */
-    img = (unsigned char*)malloc(image_width*image_height*3*
-                                 sizeof(unsigned char));
+    UCHARALLOC(img, image_width*image_height*3);
     if (!img)
         return -1;
 
@@ -1022,9 +1020,7 @@ int bp_classifications_to_numbers(int no_of_instances,
     char ** unique_classification;
 
     /* allocate memory for a list of unique descriptions (labels) */
-    unique_classification =
-        (char**)malloc(no_of_instances * sizeof(char*));
-
+    CHARPTRALLOC(unique_classification, no_of_instances);
     if (!unique_classification)
         return -1;
 
@@ -1044,9 +1040,8 @@ int bp_classifications_to_numbers(int no_of_instances,
         /* if this instance has a description which has not been used before */
         if (j == unique_ctr) {
             /* store the description */
-            unique_classification[unique_ctr] =
-                (char*)malloc((1+strlen(instance_classification[i]))*
-                              sizeof(char));
+            CHARALLOC(unique_classification[unique_ctr],
+                      1+strlen(instance_classification[i]));
             if (!unique_classification[unique_ctr])
                 return -2;
 

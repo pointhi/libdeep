@@ -633,9 +633,7 @@ int deepconvnet_create_training_test_sets(deepconvnet * convnet)
        for training and test sets */
     int training_images = convnet->no_of_images*8/10;
 
-    convnet->training_set_index =
-        (int*)malloc((training_images+1)*sizeof(int));
-
+    INTALLOC(convnet->training_set_index, training_images+1);
     if (!convnet->training_set_index)
         return -1;
 
@@ -653,9 +651,11 @@ int deepconvnet_create_training_test_sets(deepconvnet * convnet)
             convnet->training_set_index[i++] = index;
     }
     int test_images = 0;
-    convnet->test_set_index =
-        (int*)malloc((convnet->no_of_images - training_images+1)*sizeof(int));
+
+    INTALLOC(convnet->test_set_index,
+             convnet->no_of_images - training_images + 1);
     if (!convnet->test_set_index) return -2;
+
     for (i = 0; i < convnet->no_of_images; i++) {
         for (j = 0; j < training_images; j++) {
             if (convnet->training_set_index[j] == i)
@@ -755,7 +755,7 @@ int deepconvnet_plot_features(deepconvnet * convnet,
     unsigned char * img;
 
     /* allocate memory for the image */
-    img = (unsigned char*)malloc(img_width*img_height*3*sizeof(unsigned char));
+    UCHARALLOC(img, img_width*img_height*3);
     if (!img)
         return -1;
 
