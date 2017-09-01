@@ -458,7 +458,7 @@ void image_synth(unsigned char img[],
                 if ((scaled_x >= 0) && (scaled_x < image_width)) {
                     COUNTDOWN(d, image_depth) {
                         result[n + d] =
-                            img[((scaled_y*image_height) + scaled_x)*
+                            img[((scaled_y*image_width) + scaled_x)*
                                 image_depth + d];
                     }
                 }
