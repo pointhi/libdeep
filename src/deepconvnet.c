@@ -689,6 +689,8 @@ int deepconvnet_create_training_test_sets(deepconvnet * convnet)
  *        data set is a single integer value
  * @param error_threshold Training error thresholds for each hidden layer
  * @param random_seed Random number seed
+ * @param extra_synthetic_images The number of extra synthetic images
+ *        to generate for each loaded image
  * @return zero on success
  */
 int deepconvnet_read_images(char * directory,
@@ -704,7 +706,8 @@ int deepconvnet_read_images(char * directory,
                             int no_of_outputs,
                             int output_classes,
                             float error_threshold[],
-                            unsigned int * random_seed)
+                            unsigned int * random_seed,
+                            int extra_synthetic_images)
 {
     if (deepconvnet_init(no_of_convolutions,
                          no_of_deep_layers,
@@ -724,7 +727,8 @@ int deepconvnet_read_images(char * directory,
         deeplearn_load_training_images(directory, &convnet->images,
                                        &convnet->classifications,
                                        &convnet->classification_number,
-                                       image_width, image_height);
+                                       image_width, image_height,
+                                       extra_synthetic_images);
     if (convnet->no_of_images <= 0)
         return -2;
 

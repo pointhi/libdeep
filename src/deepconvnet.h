@@ -116,7 +116,8 @@ int deepconvnet_read_images(char * directory,
                             int no_of_outputs,
                             int output_classes,
                             float error_threshold[],
-                            unsigned int * random_seed);
+                            unsigned int * random_seed,
+                            int extra_synthetic_images);
 int deepconvnet_training(deepconvnet * convnet);
 int deepconvnet_plot_history(deepconvnet * convnet,
                              int image_width, int image_height);

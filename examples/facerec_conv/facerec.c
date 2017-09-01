@@ -60,6 +60,7 @@ static void facerec_training()
     unsigned int ctr, random_seed = 34217;
     float performance;
     unsigned int layer_itterations = 5000;
+    int extra_synthetic_images = 5;
 
     if (deepconvnet_read_images("../facerec/images",
                                 &convnet,
@@ -73,7 +74,8 @@ static void facerec_training()
                                 no_of_outputs,
                                 output_classes,
                                 error_threshold,
-                                &random_seed) != 0) {
+                                &random_seed,
+                                extra_synthetic_images) != 0) {
         return;
     }
 

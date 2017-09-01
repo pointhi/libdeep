@@ -71,6 +71,11 @@
 #define FLOATALLOC(m, size) m = (float*)malloc((size)*sizeof(float))
 #define FLOATCLEAR(m, size) memset((void*)m, '\0', size*sizeof(float))
 
+#define CHARALLOC(m, size) m = (char*)malloc((size)*sizeof(char))
+#define UCHARALLOC(m, size) m = (unsigned char*)malloc((size)*sizeof(unsigned char))
+#define UCHARPTRALLOC(m, size) m = (unsigned char**)malloc((size)*sizeof(unsigned char*))
+#define CHARPTRALLOC(m, size) m = (char**)malloc((size)*sizeof(char*))
+#define INTALLOC(m, size) m = (int*)malloc((size)*sizeof(int))
 #define UINTALLOC(m, size) m = (unsigned int*)malloc((size)*sizeof(unsigned int))
 #define UINTCLEAR(m, size) memset((void*)m, '\0', size*sizeof(unsigned int))
 

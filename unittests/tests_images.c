@@ -123,12 +123,18 @@ static void test_load_training_images()
     char ** classifications=NULL;
     int * numbers;
     int im;
-    int no_of_images = 3;
     int no_of_images2;
     int width=40,height=40;
     char commandstr[256],str[256];
+    int extra_synthetic_images = 5;
+    int no_of_images = 3;
 
     printf("test_load_training_images...");
+
+    /* delete directory with images if necessary */
+    sprintf(commandstr,"rm -rf %sdeeplearn_test_images",
+            DEEPLEARN_TEMP_DIRECTORY);
+    system(commandstr);
 
     /* create a directory for the images */
     sprintf(commandstr,"mkdir %sdeeplearn_test_images",
@@ -151,8 +157,12 @@ static void test_load_training_images()
                                        &images,
                                        &classifications,
                                        &numbers,
-                                       width, height);
-    assert(no_of_images == no_of_images2);
+                                       width, height,
+                                       extra_synthetic_images);
+    if (no_of_images+(no_of_images*extra_synthetic_images) != no_of_images2) {
+        printf("\n%d != %d\n", (no_of_images*extra_synthetic_images), no_of_images2);
+    }
+    assert(no_of_images+(no_of_images*extra_synthetic_images) == no_of_images2);
     assert(images!=NULL);
 
     /* free memory */

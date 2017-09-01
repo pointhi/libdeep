@@ -228,7 +228,7 @@ int main(int argc, char* argv[])
     no_of_images =
         deeplearn_load_training_images("images", &images, &classifications,
                                        &class_number,
-                                       image_width, image_height);
+                                       image_width, image_height, 5);
 
     printf("No of images: %d\n", no_of_images);
 

@@ -246,40 +246,51 @@ void deeplearn_downsample_colour(unsigned char img[],
  * @param classification_number Class number of each image
  * @param width Standardised width of the images in pixels
  * @param height Standardised height of the images in pixels
+ * @param extra_synthetic_images The number of extra synthetic images
+ *        to generate for each loaded image
  * @return The number of images loaded
  */
 int deeplearn_load_training_images(char * images_directory,
                                    unsigned char *** images,
                                    char *** classifications,
                                    int ** classification_number,
-                                   int width, int height)
+                                   int width, int height,
+                                   int extra_synthetic_images)
 {
-    int ctr,no_of_images = 0;
+    int ctr, no_of_images = 0;
     struct dirent **namelist;
-    int n,len;
-    unsigned int im_width=0,im_height=0;
+    int n, len, centre_x, centre_y, x_spare, y_spare;
+    unsigned int im_width=0, im_height=0;
     unsigned int im_bitsperpixel=0;
-    unsigned char * img, * downsampled;
+    unsigned char * img, * img2, * downsampled;
     char * extension = "png";
     char filename[512];
     char * classification;
+    unsigned int random_seed = 763528;
+    float scale;
 
     /* how many images are there? */
     no_of_images = number_of_images(images_directory, extension);
     if (no_of_images == 0)
         return 0;
 
+    /* add the total number of synthetic images */
+    no_of_images += (extra_synthetic_images*no_of_images);
+
     /* allocate an array for the images */
-    *images =
-        (unsigned char**)malloc(no_of_images*
-                                sizeof(unsigned char*));
+    UCHARPTRALLOC(*images, no_of_images);
+    if (!images)
+        return -1;
 
     /* allocate memory for the classifications */
-    *classifications = (char**)malloc(no_of_images*
-                                      sizeof(char*));
+    CHARPTRALLOC(*classifications, no_of_images);
+    if (!classifications)
+        return -2;
 
     /* allocate memory for the class number assigned to each image */
-    *classification_number = (int*)malloc(no_of_images * sizeof(int));
+    INTALLOC(*classification_number, no_of_images);
+    if (!classification_number)
+        return -3;
 
     /* get image filenames */
     no_of_images = 0;
@@ -300,14 +311,17 @@ int deeplearn_load_training_images(char * images_directory,
                     (filename[len-2]==extension[1]) &&
                     (filename[len-1]==extension[2])) {
 
+                    downsampled = NULL;
+
                     /* obtain an image from the filename */
                     if (deeplearn_read_png_file(filename,
                                                 &im_width, &im_height,
                                                 &im_bitsperpixel, &img) == 0) {
                         /* create a fixed size image */
-                        downsampled =
-                            (unsigned char*)malloc(width*height*
-                                                   sizeof(unsigned char));
+                        UCHARALLOC(downsampled, width*height);
+                        if (!downsampled)
+                            return -4;
+
                         deeplearn_downsample_colour_to_mono(img, (int)im_width,
                                                             (int)im_height,
                                                             downsampled,
@@ -323,9 +337,9 @@ int deeplearn_load_training_images(char * images_directory,
                     }
 
                     /* allocate memory for the classification */
-                    classification =
-                        (char*)malloc(256*
-                                      sizeof(char));
+                    CHARALLOC(classification, 256);
+                    if (!classification)
+                        return -5;
 
                     /* get the name of the classification */
                     bp_get_classification_from_filename(filename,
@@ -333,6 +347,44 @@ int deeplearn_load_training_images(char * images_directory,
                     (*classifications)[no_of_images] = classification;
 
                     no_of_images++;
+
+                    /* create some synthetic images for the
+                       same classification */
+                    if (downsampled == NULL)
+                        continue;
+
+                    COUNTDOWN(s, extra_synthetic_images) {
+                        UCHARALLOC(img2, width*height);
+                        if (!img2)
+                            return -6;
+                        if (img2 != NULL) {
+                            /* scaling factor 0.5 -> 1.0 */
+                            scale = 0.5f +
+                                ((rand_num(&random_seed)%100000)/200000.0f);
+
+                            /* spare room for translation */
+                            x_spare = 1 + (int)((1.0f - scale)*width);
+                            y_spare = 1 + (int)((1.0f - scale)*height);
+
+                            /* new centre */
+                            centre_x = (width/2) - (x_spare/2) +
+                                ((int)rand_num(&random_seed)%x_spare);
+                            centre_y = (height/2) - (y_spare/2) +
+                                ((int)rand_num(&random_seed)%y_spare);
+
+                            image_synth(downsampled, width, height, 1,
+                                        scale, centre_x, centre_y, img2);
+                            (*images)[no_of_images] = img2;
+                        }
+
+                        CHARALLOC(classification, 256);
+                        if (!classification)
+                            return -7;
+
+                        (*classifications)[no_of_images] = classification;
+
+                        no_of_images++;
+                    }
                 }
             }
             free(namelist[ctr]);

@@ -58,7 +58,8 @@ int deeplearn_load_training_images(char * images_directory,
                                    unsigned char *** images,
                                    char *** classifications,
                                    int ** classification_number,
-                                   int width, int height);
+                                   int width, int height,
+                                   int extra_synthetic_images);
 void bp_plot_images(unsigned char **images,
                     int no_of_images,
                     int image_width, int image_height,
