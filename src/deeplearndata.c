@@ -557,121 +557,124 @@ int deeplearndata_read_csv(char * filename,
 
     while (!feof(fp)) {
         retval = fgets(line,1999,fp);
-        if (retval) {
-            if (strlen(line)>0) {
-                if ((line[0]!='"') && (line[0]!='#')) {
-                    field_number = 0;
-                    input_index = 0;
-                    ctr = 0;
-                    COUNTUP(i, strlen(line)) {
-                        if ((line[i]==',') || (line[i]==';') ||
-                            (i==strlen(line)-1)) {
-                            if (i==strlen(line)-1) {
-                                if (ctr < DEEPLEARN_MAX_FIELD_LENGTH_CHARS-1)
-                                    valuestr[ctr++]=line[i];
-                            }
-                            valuestr[ctr]=0;
-                            ctr=0;
+        if (!retval)
+            continue;
 
-                            /* get the value from the string */
-                            value = 0;
-                            is_text = 0;
-                            if ((valuestr[0]!='?') && (valuestr[0]!=10)) {
-                                /* positive numbers*/
-                                if (((valuestr[0]>='0') &&
-                                     (valuestr[0]<='9')) ||
-                                    /* negative numbers*/
-                                    ((valuestr[0]=='-') &&
-                                     (valuestr[1]>='0') &&
-                                     (valuestr[1]<='9'))) {
-                                    value = atof(valuestr);
-                                }
-                                else {
-                                    is_text = 1;
-                                }
-                            }
+        if (strlen(line)==0)
+            continue;
 
-                            for (j = 0; j < no_of_outputs; j++) {
-                                if (field_number == output_field_index[j]) {
-                                    if (j < DEEPLEARN_MAX_CSV_OUTPUTS-1) {
-                                        if (output_classes <= 0) {
-                                            outputs[j] = value;
-                                        }
-                                        else {
-                                            /* for a class number */
-                                            COUNTUP(k, network_outputs) {
-                                                if (k != (int)value)
-                                                    outputs[k] = 0.25f;
-                                                else
-                                                    outputs[k] = 0.75f;
-                                            }
-                                        }
-                                        break;
-                                    }
-                                }
-                            }
-                            if ((j == no_of_outputs) &&
-                                (input_index < DEEPLEARN_MAX_CSV_INPUTS-1)) {
-                                inputs_text[input_index] = 0;
-                                if (is_text != 0) {
-                                    /* allocate some memory for the string */
-                                    CHARALLOC(inputs_text[input_index],
-                                              strlen(valuestr)+1);
-                                    if (!inputs_text[input_index])
-                                        return -2;
-                                    /* copy it */
-                                    strcpy(inputs_text[input_index],
-                                           (char*)valuestr);
-                                }
-                                inputs[input_index++] = value;
-                            }
+        if ((line[0]=='"') || (line[0]=='#'))
+            continue;
 
-                            field_number++;
-                            data_set_index++;
-                        }
-                        else {
-                            /* update the value string */
-                            if (ctr < DEEPLEARN_MAX_FIELD_LENGTH_CHARS-1)
-                                valuestr[ctr++] = line[i];
-                        }
-                    }
-
-                    if (fields_per_example == 0)
-                        fields_per_example = field_number;
-
-                    if (samples_loaded == 0)
-                        no_of_input_fields = input_index;
-
-                    /* add a data sample */
-                    if (deeplearndata_add(&data,
-                                          &data_samples,
-                                          inputs, inputs_text,
-                                          outputs,
-                                          no_of_input_fields,
-                                          network_outputs,
-                                          input_range_min,
-                                          input_range_max,
-                                          output_range_min,
-                                          output_range_max) != 0) {
-                        fclose(fp);
-                        return -3;
-                    }
-
-                    /* free memory for any text strings */
-                    COUNTUP(i, no_of_input_fields) {
-                        if (inputs_text[i] != 0) {
-                            free(inputs_text[i]);
-                            inputs_text[i] = 0;
-                        }
-                    }
-
-                    COUNTDOWN(i, network_outputs)
-                        outputs[i] = DEEPLEARN_UNKNOWN_VALUE;
-
-                    samples_loaded++;
+        field_number = 0;
+        input_index = 0;
+        ctr = 0;
+        COUNTUP(i, strlen(line)) {
+            if ((line[i]==',') || (line[i]==';') ||
+                (i==strlen(line)-1)) {
+                if (i==strlen(line)-1) {
+                    if (ctr < DEEPLEARN_MAX_FIELD_LENGTH_CHARS-1)
+                        valuestr[ctr++]=line[i];
                 }
+                valuestr[ctr]=0;
+                ctr=0;
+
+                /* get the value from the string */
+                value = 0;
+                is_text = 0;
+                if ((valuestr[0]!='?') && (valuestr[0]!=10)) {
+                    /* positive numbers*/
+                    if (((valuestr[0]>='0') &&
+                         (valuestr[0]<='9')) ||
+                        /* negative numbers*/
+                        ((valuestr[0]=='-') &&
+                         (valuestr[1]>='0') &&
+                         (valuestr[1]<='9'))) {
+                        value = atof(valuestr);
+                    }
+                    else {
+                        is_text = 1;
+                    }
+                }
+
+                for (j = 0; j < no_of_outputs; j++) {
+                    if (field_number == output_field_index[j]) {
+                        if (j < DEEPLEARN_MAX_CSV_OUTPUTS-1) {
+                            if (output_classes <= 0) {
+                                outputs[j] = value;
+                            }
+                            else {
+                                /* for a class number */
+                                COUNTUP(k, network_outputs) {
+                                    if (k != (int)value)
+                                        outputs[k] = 0.25f;
+                                    else
+                                        outputs[k] = 0.75f;
+                                }
+                            }
+                            break;
+                        }
+                    }
+                }
+                if ((j == no_of_outputs) &&
+                    (input_index < DEEPLEARN_MAX_CSV_INPUTS-1)) {
+                    inputs_text[input_index] = 0;
+                    if (is_text != 0) {
+                        /* allocate some memory for the string */
+                        CHARALLOC(inputs_text[input_index],
+                                  strlen(valuestr)+1);
+                        if (!inputs_text[input_index])
+                            return -2;
+                        /* copy it */
+                        strcpy(inputs_text[input_index],
+                               (char*)valuestr);
+                    }
+                    inputs[input_index++] = value;
+                }
+
+                field_number++;
+                data_set_index++;
+            }
+            else {
+                /* update the value string */
+                if (ctr < DEEPLEARN_MAX_FIELD_LENGTH_CHARS-1)
+                    valuestr[ctr++] = line[i];
             }
         }
+
+        if (fields_per_example == 0)
+            fields_per_example = field_number;
+
+        if (samples_loaded == 0)
+            no_of_input_fields = input_index;
+
+        /* add a data sample */
+        if (deeplearndata_add(&data,
+                              &data_samples,
+                              inputs, inputs_text,
+                              outputs,
+                              no_of_input_fields,
+                              network_outputs,
+                              input_range_min,
+                              input_range_max,
+                              output_range_min,
+                              output_range_max) != 0) {
+            fclose(fp);
+            return -3;
+        }
+
+        /* free memory for any text strings */
+        COUNTUP(i, no_of_input_fields) {
+            if (inputs_text[i] != 0) {
+                free(inputs_text[i]);
+                inputs_text[i] = 0;
+            }
+        }
+
+        COUNTDOWN(i, network_outputs)
+            outputs[i] = DEEPLEARN_UNKNOWN_VALUE;
+
+        samples_loaded++;
     }
 
     fclose(fp);

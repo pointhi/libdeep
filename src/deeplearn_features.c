@@ -67,7 +67,8 @@ int draw_features(unsigned char img[],
 
             /* get the feature from the array */
             float * curr_feature =
-                &feature[feature_index*feature_width*feature_width*feature_depth];
+                &feature[feature_index*
+                         feature_width*feature_width*feature_depth];
 
             FOR(yy, ty+1, by-1) {
                 int y = (yy - ty) * feature_width / (by - ty);
