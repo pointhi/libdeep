@@ -133,6 +133,24 @@ int deeplearn_write_png_file(char * filename,
 }
 
 /**
+ * @brief Returns true if the given string ends with the given extension
+ * @param str The string to be tested
+ * @param extension The extension to check for
+ * @returns True if the string ends with the extension
+ */
+int string_ends_with_extension(char str[], char extension[])
+{
+    char * dot;
+
+    dot = strrchr(str, '.');
+    if (dot)
+        if (!strcmp(++dot, extension))
+            return (1==1);
+
+    return (1==0);
+}
+
+/**
  * @brief Returns the number of images within the given directory having
  *        a given extension
  * @param images_directory The directory to search within
@@ -155,11 +173,8 @@ static int number_of_images(char * images_directory,
             /* is the filename long enough? */
             len = strlen(namelist[ctr]->d_name);
             if (len > 4) {
-                /* is this a png image? */
-                if ((namelist[ctr]->d_name[len-4]=='.') &&
-                    (namelist[ctr]->d_name[len-3]==extension[0]) &&
-                    (namelist[ctr]->d_name[len-2]==extension[1]) &&
-                    (namelist[ctr]->d_name[len-1]==extension[2]))
+                if (string_ends_with_extension(namelist[ctr]->d_name,
+                                               extension))
                     no_of_images++;
             }
             free(namelist[ctr]);
@@ -305,11 +320,7 @@ int deeplearn_load_training_images(char * images_directory,
                         images_directory,namelist[ctr]->d_name);
                 len = strlen(filename);
                 /* is this a png image? */
-                if ((filename[len-4]=='.') &&
-                    (filename[len-3]==extension[0]) &&
-                    (filename[len-2]==extension[1]) &&
-                    (filename[len-1]==extension[2])) {
-
+                if (string_ends_with_extension(filename, extension)) {
                     downsampled = NULL;
 
                     /* obtain an image from the filename */
