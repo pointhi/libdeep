@@ -1829,10 +1829,9 @@ int deeplearn_export(deeplearn * learner, char * filename)
 {
     int length = strlen(filename);
 
-    if (length > 3) {
+    if (length > 3)
         if (string_ends_with_extension(filename, "py"))
             return deeplearn_export_python(learner, filename);
-    }
 
     if ((strstr(filename,"sketch") != NULL) ||
         (strstr(filename,"arduino") != NULL))

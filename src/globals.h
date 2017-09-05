@@ -99,4 +99,7 @@
 #define UINTREAD(m) READVAR(m, unsigned int)
 #define BYTEREAD(m) READVAR(m, unsigned char)
 
+/* truncate a value in the range 0.0 -> 1.0 */
+#define TRUNCATE(x) ((x) > 0 ? ((x) < 1 ? (x) : 1) : 0)
+
 #endif

@@ -67,8 +67,7 @@ void bp_neuron_copy(bp_neuron * source,
 {
     /* check that the source and destination have the same
        number of inputs */
-    if (source->no_of_inputs !=
-        dest->no_of_inputs) {
+    if (source->no_of_inputs != dest->no_of_inputs) {
         printf("Warning: neurons have different numbers of inputs\n");
         return;
     }

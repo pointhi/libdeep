@@ -28,10 +28,21 @@
 
 #include "tests_features.h"
 
+void test_truncate_value()
+{
+    printf("test_truncate_value...");
+    assert(TRUNCATE(0.5f) == 0.5f);
+    assert(TRUNCATE(1.5f) == 1);
+    assert(TRUNCATE(-1.5f) == 0);
+    printf("Ok\n");
+}
+
 
 int run_tests_features()
 {
     printf("\nRunning feature learning tests\n");
+
+    test_truncate_value();
 
     printf("All feature learning tests completed\n");
     return 0;
