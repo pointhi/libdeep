@@ -44,6 +44,7 @@
 
 #include "lodepng.h"
 #include "backprop.h"
+#include "utils.h"
 
 int deeplearn_read_png_file(char * filename,
                             unsigned int * width,
@@ -89,6 +90,5 @@ void image_synth(unsigned char img[],
                  float scale, int centre_x, int centre_y,
                  int result_width, int result_height, int result_depth,
                  unsigned char result[]);
-int string_ends_with_extension(char str[], char extension[]);
 
 #endif

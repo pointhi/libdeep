@@ -1830,9 +1830,7 @@ int deeplearn_export(deeplearn * learner, char * filename)
     int length = strlen(filename);
 
     if (length > 3) {
-        if ((filename[length-3] == '.') &&
-            (filename[length-2] == 'p') &&
-            (filename[length-1] == 'y'))
+        if (string_ends_with_extension(filename, "py"))
             return deeplearn_export_python(learner, filename);
     }
 

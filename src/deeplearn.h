@@ -37,6 +37,7 @@
 #include "backprop.h"
 #include "autocoder.h"
 #include "encoding.h"
+#include "utils.h"
 #include "deeplearn_conv.h"
 
 /* Enumerate different flavors of C which can be exported

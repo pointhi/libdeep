@@ -133,24 +133,6 @@ int deeplearn_write_png_file(char * filename,
 }
 
 /**
- * @brief Returns true if the given string ends with the given extension
- * @param str The string to be tested
- * @param extension The extension to check for
- * @returns True if the string ends with the extension
- */
-int string_ends_with_extension(char str[], char extension[])
-{
-    char * dot;
-
-    dot = strrchr(str, '.');
-    if (dot)
-        if (!strcmp(++dot, extension))
-            return (1==1);
-
-    return (1==0);
-}
-
-/**
  * @brief Returns the number of images within the given directory having
  *        a given extension
  * @param images_directory The directory to search within

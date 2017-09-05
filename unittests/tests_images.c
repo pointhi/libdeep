@@ -116,19 +116,6 @@ static void test_load_image()
     printf("Ok\n");
 }
 
-static void test_string_ends_with_extension()
-{
-    printf("test_string_ends_with_extension...");
-
-    assert(string_ends_with_extension("test.png", "png"));
-    assert(string_ends_with_extension("test.wibble.png", "png"));
-    assert(!string_ends_with_extension("testpng", "png"));
-    assert(!string_ends_with_extension("test.png", "jpg"));
-    assert(!string_ends_with_extension("test.png.wibble", "png"));
-
-    printf("Ok\n");
-}
-
 static void test_load_training_images()
 {
     char filename[256];
@@ -199,7 +186,6 @@ int run_tests_images()
 {
     printf("\nRunning images tests\n");
 
-    test_string_ends_with_extension();
     test_save_image();
     test_load_image();
     test_load_training_images();

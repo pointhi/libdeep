@@ -28,6 +28,19 @@
 
 #include "tests_deeplearn.h"
 
+static void test_string_ends_with_extension()
+{
+    printf("test_string_ends_with_extension...");
+
+    assert(string_ends_with_extension("test.png", "png"));
+    assert(string_ends_with_extension("test.wibble.png", "png"));
+    assert(!string_ends_with_extension("testpng", "png"));
+    assert(!string_ends_with_extension("test.png", "jpg"));
+    assert(!string_ends_with_extension("test.png.wibble", "png"));
+
+    printf("Ok\n");
+}
+
 static void test_deeplearn_init()
 {
     deeplearn learner;
@@ -500,6 +513,7 @@ int run_tests_deeplearn()
 {
     printf("\nRunning deeplearn tests\n");
 
+    test_string_ends_with_extension();
     test_deeplearn_init();
     test_deeplearn_save_load();
     test_deeplearn_update();
