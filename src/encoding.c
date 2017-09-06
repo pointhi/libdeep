@@ -59,9 +59,9 @@ int enc_text_to_binary(char * text,
         /* set the bits for this character */
         COUNTUP(bit, CHAR_BITS) {
             if (text[c] & (1<<bit))
-                inputs[pos++]->value = 0.75f; /* input high */
+                inputs[pos++]->value = NEURON_HIGH; /* input high */
             else
-                inputs[pos++]->value = 0.25f; /* input low */
+                inputs[pos++]->value = NEURON_LOW; /* input low */
         }
     }
 
@@ -72,7 +72,7 @@ int enc_text_to_binary(char * text,
                 i = max_field_length_chars;
                 break;
             }
-            inputs[pos++]->value = 0.5f;
+            inputs[pos++]->value = NEURON_UNKNOWN;
         }
     }
     return pos;

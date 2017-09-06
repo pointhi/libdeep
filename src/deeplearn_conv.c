@@ -1064,10 +1064,11 @@ int bp_inputs_from_convnet(bp * net, deeplearn_conv * conv)
     if(net->no_of_inputs != conv->no_of_outputs)
         return 1;
 
-    /* set the inputs */
-    /* set the input value within the range 0.25 to 0.75 */
+    /* set the input values within the range NEURON_LOW to NEURON_HIGH */
     COUNTDOWN(i, conv->no_of_outputs)
-        bp_set_input(net, i, 0.25f + (conv->outputs[i]*0.5f/255.0f));
+        bp_set_input(net, i,
+                     NEURON_LOW +
+                     (conv->outputs[i]*NEURON_RANGE/255.0f));
 
     return 0;
 }

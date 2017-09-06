@@ -461,8 +461,8 @@ static void test_backprop_autocoder()
     for (itt = 0; itt < 100; itt++) {
         /* set the inputs */
         for (i = 0; i < no_of_inputs; i++) {
-            bp_set_input(&autocoder,i,0.25f + (i*0.5f/(float)no_of_inputs));
-            bp_set_output(&autocoder,i,0.75f - (i*0.5f/(float)no_of_inputs));
+            bp_set_input(&autocoder,i,NEURON_LOW + (i*NEURON_RANGE/(float)no_of_inputs));
+            bp_set_output(&autocoder,i,NEURON_HIGH - (i*NEURON_RANGE/(float)no_of_inputs));
         }
         /* update */
         bp_update(&autocoder,0);
@@ -478,7 +478,7 @@ static void test_backprop_autocoder()
             tot += fabs((&autocoder)->hiddens[0][i]->last_weight_change[j]);
         }
         /* total weight change */
-        assert(tot > 0.00001f);
+        assert(tot > 0.000001f);
     }
 
     bp_free(&autocoder);

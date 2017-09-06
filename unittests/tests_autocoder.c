@@ -120,7 +120,7 @@ static void test_autocoder_update()
 
     /* set some inputs */
     for (int i = 0; i < no_of_inputs; i++) {
-        autocoder_set_input(&autocoder, i, 0.25f + ((i/(float)no_of_inputs)*0.5f));
+        autocoder_set_input(&autocoder, i, NEURON_LOW + ((i/(float)no_of_inputs)*NEURON_RANGE));
     }
 
     /* some initial updates, because sometimes error initially increases */

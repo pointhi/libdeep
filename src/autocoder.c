@@ -212,11 +212,11 @@ void autocoder_backprop(ac * autocoder)
 
     /* backprop from outputs to hiddens */
     autocoder->backprop_error = 0;
-    float errorPercent = 0;
+    float error_percent = 0;
     COUNTDOWN(i, autocoder->no_of_inputs) {
         float backprop_error = autocoder->inputs[i] - autocoder->outputs[i];
         autocoder->backprop_error += fabs(backprop_error);
-        errorPercent += fabs(backprop_error);
+        error_percent += fabs(backprop_error);
         float afact = autocoder->outputs[i] * (1.0f - autocoder->outputs[i]);
         float bperr = backprop_error * afact;
         float * w = &autocoder->weights[i];
@@ -231,14 +231,14 @@ void autocoder_backprop(ac * autocoder)
         }
     }
 
-    /* error percentage assuming an encoding range
-       of 0.25 -> 0.75 */
-    errorPercent = errorPercent * 100 / (0.6f*autocoder->no_of_inputs);
+    /* convert summed error to an overall percentage */
+    error_percent = error_percent * 100 /
+        ((NEURON_HIGH-NEURON_LOW)*autocoder->no_of_inputs);
 
     /* update the running average */
     if (autocoder->backprop_error_average == AUTOCODER_UNKNOWN) {
         autocoder->backprop_error_average = autocoder->backprop_error;
-        autocoder->backprop_error_percent = errorPercent;
+        autocoder->backprop_error_percent = error_percent;
     }
     else {
         autocoder->backprop_error_average =
@@ -246,7 +246,7 @@ void autocoder_backprop(ac * autocoder)
             (autocoder->backprop_error*0.001f);
         autocoder->backprop_error_percent =
             (autocoder->backprop_error_percent*0.999f) +
-            (errorPercent*0.001f);
+            (error_percent*0.001f);
     }
 
     /* increment the number of training itterations */
@@ -492,7 +492,8 @@ void autocoder_normalise_inputs(ac * autocoder)
 
     COUNTUP(i, autocoder->no_of_inputs) {
         autocoder->inputs[i] =
-            0.25f + (((autocoder->inputs[i] - min)/range)*0.5f);
+            NEURON_LOW +
+            (((autocoder->inputs[i] - min)/range)*NEURON_RANGE);
     }
 }
 

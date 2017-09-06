@@ -597,7 +597,7 @@ float deepconvnet_get_performance(deepconvnet * convnet)
             error_percent =
                 (deeplearn_get_desired(convnet->learner,i) -
                  deeplearn_get_output(convnet->learner,i)) /
-                (NEURON_HIGH - NEURON_LOW);
+                NEURON_RANGE;
 
             if (deeplearn_get_desired(convnet->learner,i) < 0.5f) {
                 total_error_negative += error_percent*error_percent;

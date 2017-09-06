@@ -492,7 +492,7 @@ void deeplearn_set_input_text(deeplearn * learner, char * text)
 /**
  * @brief Sets inputs from the given data sample.
  *        The sample can contain arbitrary floating point values, so these
- *        need to be normalised into a 0.25-0.75 range
+ *        need to be normalised into a NEURON_LOW -> NEURON_HIGH range
  * @param learner Deep learner object
  */
 void deeplearn_set_inputs(deeplearn * learner, deeplearndata * sample)
@@ -515,7 +515,8 @@ void deeplearn_set_inputs(deeplearn * learner, deeplearndata * sample)
             range = learner->input_range_max[i] - learner->input_range_min[i];
             if (range > 0) {
                 normalised =
-                    (((value - learner->input_range_min[i])/range)*0.5) + 0.25;
+                    (((value - learner->input_range_min[i])/range)*
+                     NEURON_RANGE) + NEURON_LOW;
                 deeplearn_set_input(learner, pos, normalised);
             }
             pos++;
@@ -618,7 +619,7 @@ void deeplearn_set_output(deeplearn * learner, int index, float value)
 /**
  * @brief Sets outputs from the given data sample.
  *        The sample can contain arbitrary floating point values, so these
- *        need to be normalised into a 0.25-0.75 range
+ *        need to be normalised into a NEURON_LOW -> NEURON_HIGH range
  * @param learner Deep learner object
  * @param sample The data sample from which to obtain the output values
  */
@@ -630,7 +631,8 @@ void deeplearn_set_outputs(deeplearn * learner, deeplearndata * sample)
             learner->output_range_max[i] - learner->output_range_min[i];
         if (range > 0) {
             float normalised =
-                (((value - learner->output_range_min[i])/range)*0.5) + 0.25;
+                (((value - learner->output_range_min[i])/range)*
+                 NEURON_RANGE) + NEURON_LOW;
             deeplearn_set_output(learner, i, normalised);
         }
     }
@@ -649,7 +651,8 @@ void deeplearn_get_outputs(deeplearn * learner, float * outputs)
             learner->output_range_max[i] - learner->output_range_min[i];
         if (range > 0)
             outputs[i] =
-                (((value - 0.25f)/0.5f)*range) + learner->output_range_min[i];
+                (((value - NEURON_LOW)/NEURON_RANGE)*range) +
+                learner->output_range_min[i];
     }
 }
 
@@ -1308,10 +1311,10 @@ static int deeplearn_export_c_base(deeplearn * learner, int export_type,
         fprintf(fp, "    for (bit = 0; bit < %d; bit++, pos++) {\n",
                 (int)CHAR_BITS);
         fprintf(fp, "%s", "      if (text[i] & (1<<bit)) {\n");
-        fprintf(fp, "%s", "        inputs[pos] = 0.75f;\n");
+        fprintf(fp,       "        inputs[pos] = %.2f;\n", NEURON_HIGH);
         fprintf(fp, "%s", "      }\n");
         fprintf(fp, "%s", "      else {\n");
-        fprintf(fp, "%s", "        inputs[pos] = 0.25f;\n");
+        fprintf(fp,       "        inputs[pos] = %.2f;\n", NEURON_LOW);
         fprintf(fp, "%s", "      }\n");
         fprintf(fp, "%s", "    }\n");
         fprintf(fp, "%s", "  }\n");
@@ -1324,7 +1327,7 @@ static int deeplearn_export_c_base(deeplearn * learner, int export_type,
         fprintf(fp, "%s", "        i = max_field_length_chars;\n");
         fprintf(fp, "%s", "        break;\n");
         fprintf(fp, "%s", "      }\n");
-        fprintf(fp, "%s", "      inputs[pos++] = 0.5f;\n");
+        fprintf(fp,       "      inputs[pos++] = %.1f;\n", NEURON_UNKNOWN);
         fprintf(fp, "%s", "    }\n");
         fprintf(fp, "%s", "    i++;\n");
         fprintf(fp, "%s", "  }\n");
@@ -1372,35 +1375,43 @@ static int deeplearn_export_c_base(deeplearn * learner, int export_type,
     }
 
     if (learner->no_of_input_fields == 0) {
-        fprintf(fp, "%s",
-                "  /* Normalise inputs into a 0.25 - 0.75 range */\n");
+        fprintf(fp,
+                "  /* Normalise inputs into a %.2f - %.2f range */\n",
+                NEURON_LOW, NEURON_HIGH);
         fprintf(fp, "%s", "  for (i = 0; i < no_of_inputs; i++) {\n");
-        fprintf(fp, "%s", "    network_inputs[i] = 0.25f + ((inputs[i] - " \
-                "input_range_min[i])*0.5f/(input_range_max[i] - " \
-                "input_range_min[i]));\n");
-        fprintf(fp, "%s",
-                "    if (network_inputs[i] < 0.25f) " \
-                "network_inputs[i] = 0.25f;\n");
-        fprintf(fp, "%s",
-                "    if (network_inputs[i] > 0.75f) " \
-                "network_inputs[i] = 0.75f;\n");
+        fprintf(fp, "    network_inputs[i] = %.2f + ((inputs[i] - " \
+                "input_range_min[i])*%.2f/(input_range_max[i] - " \
+                "input_range_min[i]));\n",
+                NEURON_LOW, NEURON_HIGH-NEURON_LOW);
+        fprintf(fp,
+                "    if (network_inputs[i] < %.2f) " \
+                "network_inputs[i] = %.2f;\n",
+                NEURON_LOW, NEURON_LOW);
+        fprintf(fp,
+                "    if (network_inputs[i] > %.2f) " \
+                "network_inputs[i] = %.2f;\n",
+                NEURON_HIGH, NEURON_HIGH);
         fprintf(fp, "%s", "  }\n\n");
     }
     else {
         fprintf(fp, "%s", "  pos = 0;\n");
         fprintf(fp, "%s", "  for (i = 0; i < no_of_input_fields; i++) {\n");
         fprintf(fp, "%s", "    if (field_length[i] == 0) {\n");
-        fprintf(fp, "%s",
+        fprintf(fp,
                 "      /* Normalise numeric inputs into a " \
-                "0.25 - 0.75 range */\n");
-        fprintf(fp, "%s", "      network_inputs[pos] = 0.25f + " \
-                "((inputs[i] - input_range_min[i])*0.5f/" \
-                "(input_range_max[i] - input_range_min[i]));\n");
-        fprintf(fp, "%s",
-                "      if (network_inputs[pos] < 0.25f) " \
-                "network_inputs[pos] = 0.25f;\n");
-        fprintf(fp, "%s", "      if (network_inputs[pos] > 0.75f) " \
-                "network_inputs[pos] = 0.75f;\n");
+                "%.2f - %.2f range */\n",
+                NEURON_LOW, NEURON_HIGH);
+        fprintf(fp, "      network_inputs[pos] = %.2f + " \
+                "((inputs[i] - input_range_min[i])*%.2f/" \
+                "(input_range_max[i] - input_range_min[i]));\n",
+                NEURON_LOW, NEURON_RANGE);
+        fprintf(fp,
+                "      if (network_inputs[pos] < %.2f) " \
+                "network_inputs[pos] = %.2f;\n",
+                NEURON_LOW, NEURON_LOW);
+        fprintf(fp, "      if (network_inputs[pos] > %.2f) " \
+                "network_inputs[pos] = %.2f;\n",
+                NEURON_HIGH, NEURON_HIGH);
         fprintf(fp, "%s", "      pos++;\n");
         fprintf(fp, "%s", "    }\n");
         fprintf(fp, "%s", "    else {\n");
@@ -1461,11 +1472,13 @@ static int deeplearn_export_c_base(deeplearn * learner, int export_type,
     fprintf(fp, "%s", "  }\n\n");
 
     fprintf(fp, "%s", "  for (i = 0; i < no_of_outputs; i++) {\n");
-    fprintf(fp, "%s", "    /* Convert outputs from 0.25 - 0.75 " \
-            "back to their original range */\n");
-    fprintf(fp, "%s", "    outputs[i] = output_range_min[i] + " \
-            "((outputs[i]-0.25f)*(output_range_max[i] - " \
-            "output_range_min[i])/0.5f);\n");
+    fprintf(fp, "    /* Convert outputs from %.2f - %.2f " \
+            "back to their original range */\n",
+            NEURON_LOW, NEURON_HIGH);
+    fprintf(fp, "    outputs[i] = output_range_min[i] + " \
+            "((outputs[i]-%.2f)*(output_range_max[i] - " \
+            "output_range_min[i])/%.2f);\n",
+            NEURON_LOW, NEURON_RANGE);
 
     if (export_type == EXPORT_C99) {
         fprintf(fp, "%s", "    /* Send the outputs to stdout */\n");
@@ -1695,9 +1708,9 @@ static int deeplearn_export_python(deeplearn * learner, char * filename)
         fprintf(fp, "%s", "      # set the bits for this character\n");
         fprintf(fp,       "      for bit in range(%d):\n", (int)CHAR_BITS);
         fprintf(fp, "%s", "        if ord(text[i]) & (1 << bit):\n");
-        fprintf(fp, "%s", "          inputs.append(0.75)\n");
+        fprintf(fp,       "          inputs.append(%.2f)\n", NEURON_HIGH);
         fprintf(fp, "%s", "        else:\n");
-        fprintf(fp, "%s", "          inputs.append(0.25)\n");
+        fprintf(fp,       "          inputs.append(%.2f)\n", NEURON_LOW);
         fprintf(fp, "%s", "        pos = pos + 1\n\n");
 
         fprintf(fp, "%s",
@@ -1709,7 +1722,7 @@ static int deeplearn_export_python(deeplearn * learner, char * filename)
         fprintf(fp, "%s", "        if pos >= no_of_inputs:\n");
         fprintf(fp, "%s", "          i = max_field_length_chars\n");
         fprintf(fp, "%s", "          break\n");
-        fprintf(fp, "%s", "        inputs.append(0.5)\n");
+        fprintf(fp,       "        inputs.append(%.1f)\n", NEURON_UNKNOWN);
         fprintf(fp, "%s", "        pos = pos + 1\n");
         fprintf(fp, "%s", "      i = i + 1\n\n");
     }
@@ -1732,30 +1745,34 @@ static int deeplearn_export_python(deeplearn * learner, char * filename)
     fprintf(fp, "%s", "        return []\n\n");
 
     if (learner->no_of_input_fields == 0) {
-        fprintf(fp, "%s", "    # Normalise inputs into a 0.25 - 0.75 range\n");
+        fprintf(fp, "    # Normalise inputs into a %.2f - %.2f range\n",
+                NEURON_LOW, NEURON_HIGH);
         fprintf(fp, "%s", "    for i in range (this.no_of_inputs):\n");
-        fprintf(fp, "%s",
-                "      network_inputs.append(0.25 + ((float(inputs[i]) - " \
-                "this.input_range_min[i])*0.5/" \
-                "(this.input_range_max[i] - this.input_range_min[i])))\n");
-        fprintf(fp, "%s", "      if network_inputs[i] < 0.25:\n");
-        fprintf(fp, "%s", "        network_inputs[i] = 0.25\n");
-        fprintf(fp, "%s", "      if network_inputs[i] > 0.75:\n");
-        fprintf(fp, "%s", "        network_inputs[i] = 0.75\n");
+        fprintf(fp,
+                "      network_inputs.append(%.2f + ((float(inputs[i]) - " \
+                "this.input_range_min[i])*%.2f/" \
+                "(this.input_range_max[i] - this.input_range_min[i])))\n",
+                NEURON_LOW, NEURON_RANGE);
+        fprintf(fp,       "      if network_inputs[i] < %.2f:\n", NEURON_LOW);
+        fprintf(fp,       "        network_inputs[i] = %.2f\n", NEURON_LOW);
+        fprintf(fp,       "      if network_inputs[i] > %.2f:\n", NEURON_HIGH);
+        fprintf(fp,       "        network_inputs[i] = %.2f\n", NEURON_HIGH);
     }
     else {
         fprintf(fp, "%s", "    for i in range(this.no_of_input_fields):\n");
         fprintf(fp, "%s", "      if this.field_length[i] == 0:\n");
-        fprintf(fp, "%s",
+        fprintf(fp,
                 "        # Normalise numeric inputs into a " \
-                "0.25 - 0.75 range\n");
-        fprintf(fp, "%s", "        network_inputs.append(0.25 + " \
-                "((float(inputs[i]) - this.input_range_min[i])*0.5/" \
-                "(this.input_range_max[i] - this.input_range_min[i])))\n");
-        fprintf(fp, "%s", "        if network_inputs[pos] < 0.25:\n");
-        fprintf(fp, "%s", "          network_inputs[pos] = 0.25\n");
-        fprintf(fp, "%s", "        if network_inputs[pos] > 0.75:\n");
-        fprintf(fp, "%s", "          network_inputs[pos] = 0.75\n\n");
+                "%.2f - %.2f range\n",
+                NEURON_LOW, NEURON_HIGH);
+        fprintf(fp,       "        network_inputs.append(%.2f + " \
+                "((float(inputs[i]) - this.input_range_min[i])*%.2f/" \
+                "(this.input_range_max[i] - this.input_range_min[i])))\n",
+                NEURON_LOW, NEURON_RANGE);
+        fprintf(fp,       "        if network_inputs[pos] < %.2f:\n", NEURON_LOW);
+        fprintf(fp,       "          network_inputs[pos] = %.2f\n", NEURON_LOW);
+        fprintf(fp,       "        if network_inputs[pos] > %.2f:\n", NEURON_HIGH);
+        fprintf(fp,       "          network_inputs[pos] = %.2f\n\n", NEURON_HIGH);
         fprintf(fp, "%s", "        pos = pos + 1\n");
         fprintf(fp, "%s", "      else:\n");
         fprintf(fp, "%s", "        # text value\n");
@@ -1799,13 +1816,15 @@ static int deeplearn_export_python(deeplearn * learner, char * filename)
             "this.output_layer_weights[i*%d+j]*prev_hiddens[j]\n",
             HIDDENS_IN_LAYER(learner->net,learner->net->hidden_layers-1));
     fprintf(fp, "%s", "      outputs.append(this.af(adder))\n\n");
-    fprintf(fp, "%s",
-            "    # Convert outputs from 0.25 - 0.75 " \
-            "back to their original range\n");
+    fprintf(fp,
+            "    # Convert outputs from %.2f - %.2f " \
+            "back to their original range\n",
+            NEURON_LOW, NEURON_HIGH);
     fprintf(fp, "%s", "    for i in range(this.no_of_outputs):\n");
-    fprintf(fp, "%s", "      outputs[i] = this.output_range_min[i] + " \
-            "((outputs[i]-0.25)*(this.output_range_max[i] - " \
-            "this.output_range_min[i])/0.5)\n\n");
+    fprintf(fp,       "      outputs[i] = this.output_range_min[i] + " \
+            "((outputs[i]-%.2f)*(this.output_range_max[i] - " \
+            "this.output_range_min[i])/%.2f)\n\n",
+            NEURON_LOW, NEURON_RANGE);
 
     fprintf(fp, "%s", "    # Return the output unit values as a list\n");
     fprintf(fp, "%s", "    return outputs\n\n\n");

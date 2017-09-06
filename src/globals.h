@@ -44,8 +44,10 @@
 #define AUTOCODER_UNKNOWN      -9999
 #define AUTOCODER_DROPPED_OUT  -9999
 
-#define NEURON_HIGH             0.51
-#define NEURON_LOW              0.49
+#define NEURON_HIGH             0.75
+#define NEURON_LOW              0.25
+#define NEURON_UNKNOWN          0.5
+#define NEURON_RANGE            (NEURON_HIGH - NEURON_LOW)
 
 #define AF_SIGMOID              0
 #define AF_TANH                 1
@@ -62,7 +64,7 @@
                                      (((adder)*0.5f)+0.5f) : 0.0f) : 1.0f)
 #endif
 
-#define PIXEL_TO_FLOAT(p)       (0.25f + ((p)/(2*255.0f)))
+#define PIXEL_TO_FLOAT(p) (NEURON_LOW + ((p)*NEURON_RANGE/255.0f))
 
 #define FOR(i, start, end) for (int (i) = (start); (i) < (end); (i)++)
 #define COUNTUP(i, end) for (int (i) = 0; (i) < (end); (i)++)

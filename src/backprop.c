@@ -253,9 +253,9 @@ void bp_backprop(bp * net, int current_hidden_layer)
         neuron_count++;
     }
 
-    /* error percentage assuming an encoding range
-       of 0.25 -> 0.75 */
-    errorPercent = errorPercent * 100 / (0.5f*net->no_of_outputs);
+    /* convert summed error to an overall percentage */
+    errorPercent = errorPercent * 100 /
+        (NEURON_RANGE*net->no_of_outputs);
 
     /* error on the output units */
     net->backprop_error = fabs(net->backprop_error_total / net->no_of_outputs);
@@ -325,7 +325,7 @@ void bp_reproject(bp * net, int layer, int neuron_index)
 
     /* set the neuron active */
     n = net->hiddens[layer][neuron_index];
-    n->value_reprojected = 0.75f;
+    n->value_reprojected = NEURON_HIGH;
 
     bp_neuron_reproject(n);
     if (layer > 0) {
@@ -406,7 +406,8 @@ void bp_normalise_inputs(bp * net)
     if (range > 0.00001f) {
         COUNTDOWN(i, net->no_of_inputs)
             net->inputs[i]->value =
-                0.25f + ((net->inputs[i]->value-min)*0.5f/range);
+            NEURON_LOW +
+            ((net->inputs[i]->value-min)*NEURON_RANGE/range);
     }
 }
 
@@ -455,8 +456,10 @@ int bp_inputs_from_image_patch(bp * net,
             /* array index within the image */
             idx = (py*image_width) + px;
 
-            /* set the input value within the range 0.25 to 0.75 */
-            bp_set_input(net, i, 0.25f + (img[idx]*0.5f/255.0f));
+            /* set the input value within the range */
+            bp_set_input(net, i,
+                         NEURON_LOW +
+                         (img[idx]*NEURON_RANGE/255.0f));
             i++;
         }
     }
@@ -482,10 +485,10 @@ int bp_inputs_from_image(bp * net,
     if (net->no_of_inputs != image_width*image_height)
         return 1;
 
-    /* set the inputs */
-    /* set the input value within the range 0.25 to 0.75 */
+    /* set the input values within the range */
     COUNTDOWN(i, image_width*image_height)
-        bp_set_input(net, i, 0.25f + (img[i]*0.5f/255.0f));
+        bp_set_input(net, i,
+                     NEURON_LOW + (img[i]*NEURON_RANGE/255.0f));
 
     return 0;
 }

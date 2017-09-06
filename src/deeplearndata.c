@@ -619,9 +619,9 @@ int deeplearndata_read_csv(char * filename,
                     /* for a class number */
                     COUNTUP(k, network_outputs) {
                         if (k != (int)value)
-                            outputs[k] = 0.25f;
+                            outputs[k] = NEURON_LOW;
                         else
-                            outputs[k] = 0.75f;
+                            outputs[k] = NEURON_HIGH;
                     }
 
                     break;
@@ -708,8 +708,8 @@ int deeplearndata_read_csv(char * filename,
     COUNTDOWN(i, no_of_input_fields) {
         learner->field_length[i] = field_length[i];
         if (field_length[i] > 0) {
-            input_range_min[i] = 0.25f;
-            input_range_max[i] = 0.75f;
+            input_range_min[i] = NEURON_LOW;
+            input_range_max[i] = NEURON_HIGH;
         }
     }
 

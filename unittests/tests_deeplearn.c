@@ -112,7 +112,7 @@ static void test_deeplearn_update()
     for (itt = 0; itt < 10000; itt++) {
         for (i = 0; i < no_of_inputs; i++) {
             deeplearn_set_input(&learner,i,
-                                0.25f + (i*0.5f/(float)no_of_inputs));
+                                NEURON_LOW + (i*NEURON_RANGE/(float)no_of_inputs));
         }
         deeplearn_update(&learner);
 
