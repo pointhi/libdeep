@@ -801,8 +801,6 @@ int deeplearndata_training(deeplearn * learner)
 /**
 * @brief Returns the performance on the test data set as a percentage value
 * @param learner Deep learner object
-* @param data_set An array containing all the data
-* @param data_set_size The number of entries in the data set
 * @return Training or test performance on the given data, in the range 0 to 100%
 */
 float deeplearndata_get_performance(deeplearn * learner)

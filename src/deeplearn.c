@@ -1550,10 +1550,9 @@ static int deeplearn_export_python(deeplearn * learner, char * filename)
 
     fprintf(fp,"%s\n\n","class NeuralNet:");
 
-    if (learner->no_of_input_fields > 0) {
-        fprintf(fp, "  no_of_input_fields = %d\n",
-                learner->no_of_input_fields);
-    }
+    if (learner->no_of_input_fields > 0)
+        fprintf(fp, "  no_of_input_fields = %d\n", learner->no_of_input_fields);
+
     fprintf(fp, "  no_of_inputs = %d\n",
             learner->net->no_of_inputs);
     fprintf(fp, "  no_of_hiddens = %d\n",
