@@ -233,7 +233,7 @@ void autocoder_backprop(ac * autocoder)
 
     /* convert summed error to an overall percentage */
     error_percent = error_percent * 100 /
-        ((NEURON_HIGH-NEURON_LOW)*autocoder->no_of_inputs);
+        (NEURON_RANGE*autocoder->no_of_inputs);
 
     /* update the running average */
     if (autocoder->backprop_error_average == AUTOCODER_UNKNOWN) {

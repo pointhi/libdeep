@@ -1382,7 +1382,7 @@ static int deeplearn_export_c_base(deeplearn * learner, int export_type,
         fprintf(fp, "    network_inputs[i] = %.2f + ((inputs[i] - " \
                 "input_range_min[i])*%.2f/(input_range_max[i] - " \
                 "input_range_min[i]));\n",
-                NEURON_LOW, NEURON_HIGH-NEURON_LOW);
+                NEURON_LOW, NEURON_RANGE);
         fprintf(fp,
                 "    if (network_inputs[i] < %.2f) " \
                 "network_inputs[i] = %.2f;\n",
