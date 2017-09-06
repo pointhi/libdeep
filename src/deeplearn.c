@@ -643,7 +643,7 @@ void deeplearn_set_outputs(deeplearn * learner, deeplearndata * sample)
  * @param learner Deep learner object
  * @param outputs The returned output values
  */
-void deeplearn_get_outputs(deeplearn * learner, float * outputs)
+void deeplearn_get_outputs(deeplearn * learner, float outputs[])
 {
     COUNTDOWN(i, learner->net->no_of_outputs) {
         float value = deeplearn_get_output(learner, i);

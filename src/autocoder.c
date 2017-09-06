@@ -124,7 +124,7 @@ void autocoder_free(ac * autocoder)
  * @param encoded Array to store the encoded values
  * @param use_dropouts If non-zero then allow dropouts in the returned results
  */
-void autocoder_encode(ac * autocoder, float * encoded,
+void autocoder_encode(ac * autocoder, float encoded[],
                       unsigned char use_dropouts)
 {
     COUNTDOWN(h, autocoder->no_of_hiddens) {
@@ -162,7 +162,7 @@ void autocoder_encode(ac * autocoder, float * encoded,
  * @param autocoder Autocoder object
  * @param decoded Array to store the decoded output values
  */
-void autocoder_decode(ac * autocoder, float * decoded)
+void autocoder_decode(ac * autocoder, float decoded[])
 {
     COUNTDOWN(i, autocoder->no_of_inputs) {
         /* weighted sum of hidden inputs */

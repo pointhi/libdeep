@@ -85,9 +85,9 @@ int autocoder_init(ac * autocoder,
                    int no_of_hiddens,
                    unsigned int random_seed);
 void autocoder_free(ac * autocoder);
-void autocoder_encode(ac * autocoder, float * encoded,
+void autocoder_encode(ac * autocoder, float encoded[],
                       unsigned char use_dropouts);
-void autocoder_decode(ac * autocoder, float * decoded);
+void autocoder_decode(ac * autocoder, float decoded[]);
 void autocoder_feed_forward(ac * autocoder);
 void autocoder_backprop(ac * autocoder);
 void autocoder_learn(ac * autocoder);
