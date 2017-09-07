@@ -127,9 +127,13 @@ void autocoder_free(ac * autocoder)
 void autocoder_encode(ac * autocoder, float encoded[],
                       unsigned char use_dropouts)
 {
+    omp_set_num_threads(4);
+#pragma omp parallel for
     COUNTDOWN(h, autocoder->no_of_hiddens) {
+        unsigned int randseed = (unsigned int)h + autocoder->random_seed;
+
         if (use_dropouts != 0) {
-            if (rand_num(&autocoder->random_seed)%10000 <
+            if (rand_num(&randseed)%10000 <
                 autocoder->dropout_percent*100) {
                 autocoder->hiddens[h] = (int)AUTOCODER_DROPPED_OUT;
                 continue;
@@ -147,14 +151,17 @@ void autocoder_encode(ac * autocoder, float encoded[],
         }
 
         /* add some random noise */
-        if (autocoder->noise > 0)
+        if (autocoder->noise > 0) {
             adder = ((1.0f - autocoder->noise) * adder) +
                 (autocoder->noise *
-                 ((rand_num(&autocoder->random_seed)%10000)/10000.0f));
+                 ((rand_num(&randseed)%10000)/10000.0f));
+        }
 
         /* activation function */
         encoded[h] = AF(adder);
     }
+
+    rand_num(&autocoder->random_seed);
 }
 
 /**
@@ -164,6 +171,8 @@ void autocoder_encode(ac * autocoder, float encoded[],
  */
 void autocoder_decode(ac * autocoder, float decoded[])
 {
+    omp_set_num_threads(4);
+#pragma omp parallel for
     COUNTDOWN(i, autocoder->no_of_inputs) {
         /* weighted sum of hidden inputs */
         float adder = 0;
@@ -181,14 +190,18 @@ void autocoder_decode(ac * autocoder, float decoded[])
         }
 
         /* add some random noise */
-        if (autocoder->noise > 0)
+        if (autocoder->noise > 0) {
+            unsigned int randseed = (unsigned int)h + autocoder->random_seed;
             adder = ((1.0f - autocoder->noise) * adder) +
                 (autocoder->noise *
-                 ((rand_num(&autocoder->random_seed)%10000)/10000.0f));
+                 ((rand_num(&randseed)%10000)/10000.0f));
+        }
 
         /* activation function */
         decoded[i] = AF(adder);
     }
+
+    rand_num(&autocoder->random_seed);
 }
 
 /**
@@ -213,6 +226,8 @@ void autocoder_backprop(ac * autocoder)
     /* backprop from outputs to hiddens */
     autocoder->backprop_error = 0;
     float error_percent = 0;
+    omp_set_num_threads(4);
+#pragma omp parallel for
     COUNTDOWN(i, autocoder->no_of_inputs) {
         float backprop_error = autocoder->inputs[i] - autocoder->outputs[i];
         autocoder->backprop_error += fabs(backprop_error);
@@ -262,6 +277,8 @@ void autocoder_learn(ac * autocoder)
 {
     /* weights between outputs and hiddens */
     float e = autocoder->learning_rate / (1.0f + autocoder->no_of_hiddens);
+    omp_set_num_threads(4);
+#pragma omp parallel for
     COUNTDOWN(i, autocoder->no_of_inputs) {
         float afact = autocoder->outputs[i] * (1.0f - autocoder->outputs[i]);
         float backprop_error = autocoder->inputs[i] - autocoder->outputs[i];
@@ -281,6 +298,8 @@ void autocoder_learn(ac * autocoder)
 
     /* weights between hiddens and inputs */
     e = autocoder->learning_rate / (1.0f + autocoder->no_of_inputs);
+    omp_set_num_threads(4);
+#pragma omp parallel for
     COUNTDOWN(h, autocoder->no_of_hiddens) {
         if (autocoder->hiddens[h] == AUTOCODER_DROPPED_OUT)
             continue;

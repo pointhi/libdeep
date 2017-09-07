@@ -33,6 +33,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <limits.h>
+#include <omp.h>
 #include "globals.h"
 #include "deeplearn_random.h"
 #include "deeplearn_images.h"

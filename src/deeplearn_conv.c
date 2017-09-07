@@ -405,6 +405,8 @@ void convolve_image(float img[],
     }
 
     /* for each unit in the output layer */
+    omp_set_num_threads(4);
+#pragma omp parallel for
     COUNTDOWN(layer_y, unpooled_layer_width) {
         int pooled_layer_y = layer_y / pooling_factor;
         int y_img = layer_y * img_height / unpooled_layer_width;
@@ -499,6 +501,8 @@ void convolve_image_mono(float img[],
     }
 
     /* for each unit in the output layer */
+    omp_set_num_threads(4);
+#pragma omp parallel for
     COUNTDOWN(layer_y, unpooled_layer_width) {
         int pooled_layer_y = layer_y / pooling_factor;
         int y_img = layer_y * img_height / unpooled_layer_width;
@@ -584,6 +588,8 @@ void deconvolve_image_mono(float img[],
     FLOATCLEAR(img, img_width*img_height);
 
     /* for each unit in the output layer */
+    omp_set_num_threads(4);
+#pragma omp parallel for
     COUNTDOWN(layer_y, layer_width) {
         int y_img = layer_y * img_height / layer_width;
         int ty = y_img - half_feature_width;
@@ -720,6 +726,8 @@ void deconvolve_image(float img[],
     FLOATCLEAR(img, img_width*img_height*img_depth);
 
     /* for each unit in the output layer */
+    omp_set_num_threads(4);
+#pragma omp parallel for
     COUNTDOWN(layer_y, layer_width) {
         int y_img = layer_y * img_height / layer_width;
         int ty = y_img - half_feature_width;

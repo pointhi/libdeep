@@ -172,9 +172,12 @@ void bp_free(bp * net)
 */
 void bp_feed_forward(bp * net)
 {
+    omp_set_num_threads(4);
+
     /* for each hidden layer */
     COUNTUP(l, net->hidden_layers) {
         /* For each unit within the layer */
+#pragma omp parallel for
         COUNTDOWN(i, HIDDENS_IN_LAYER(net,l))
             bp_neuron_feedForward(net->hiddens[l][i],
                                   net->noise, &net->random_seed);
@@ -193,17 +196,21 @@ void bp_feed_forward(bp * net)
 */
 void bp_feed_forward_layers(bp * net, int layers)
 {
+    omp_set_num_threads(4);
+
     /* for each hidden layer */
     COUNTUP(l, layers) {
         /* if this layer is a hidden layer */
         if (l < net->hidden_layers) {
             /* For each unit within the layer */
+#pragma omp parallel for
             COUNTDOWN(i, HIDDENS_IN_LAYER(net,l))
                 bp_neuron_feedForward(net->hiddens[l][i],
                                       net->noise, &net->random_seed);
         }
         else {
             /* For each unit within the output layer */
+#pragma omp parallel for
             COUNTDOWN(i, net->no_of_outputs)
                 bp_neuron_feedForward(net->outputs[i],
                                       net->noise, &net->random_seed);
@@ -218,7 +225,6 @@ void bp_feed_forward_layers(bp * net, int layers)
 void bp_backprop(bp * net, int current_hidden_layer)
 {
     int neuron_count=0;
-    bp_neuron * n;
     int start_hidden_layer = current_hidden_layer-1;
     float errorPercent=0;
 
@@ -238,20 +244,21 @@ void bp_backprop(bp * net, int current_hidden_layer)
 
     /* now back-propogate the error from the output units */
     net->backprop_error_total = 0;
+
     /* for every output unit */
+    omp_set_num_threads(4);
+#pragma omp parallel for
     COUNTDOWN(i, net->no_of_outputs) {
-        /* get the neuron object */
-        n = net->outputs[i];
+        bp_neuron_backprop(net->outputs[i]);
+    }
 
-        /* backpropogate the error */
-        bp_neuron_backprop(n);
-
+    COUNTDOWN(i, net->no_of_outputs) {
         /* update the total error which is used to assess
             network performance */
-        net->backprop_error_total += n->backprop_error;
-        errorPercent += fabs(n->backprop_error);
-        neuron_count++;
+        net->backprop_error_total += net->outputs[i]->backprop_error;
+        errorPercent += fabs(net->outputs[i]->backprop_error);
     }
+    neuron_count += net->no_of_outputs;
 
     /* convert summed error to an overall percentage */
     errorPercent = errorPercent * 100 /
@@ -278,18 +285,17 @@ void bp_backprop(bp * net, int current_hidden_layer)
     /* back-propogate through the hidden layers */
     for (int l = net->hidden_layers-1; l >= start_hidden_layer; l--) {
         /* for every unit in the hidden layer */
+#pragma omp parallel for
         COUNTDOWN(i, HIDDENS_IN_LAYER(net,l)) {
-            /* get the neuron object */
-            n = net->hiddens[l][i];
+            bp_neuron_backprop(net->hiddens[l][i]);
+        }
 
-            /* backpropogate the error */
-            bp_neuron_backprop(n);
-
+        COUNTDOWN(i, HIDDENS_IN_LAYER(net,l)) {
             /* update the total error which is used to assess
                 network performance */
-            net->backprop_error_total += n->backprop_error;
-            neuron_count++;
+            net->backprop_error_total += net->hiddens[l][i]->backprop_error;
         }
+        neuron_count += HIDDENS_IN_LAYER(net,l);
     }
 
     /* overall average error */
@@ -362,15 +368,19 @@ void bp_learn(bp * net, int current_hidden_layer)
 {
     int start_hidden_layer = current_hidden_layer-1;
 
+    omp_set_num_threads(4);
+
     /* for each hidden layers */
     if (start_hidden_layer < 0)
         start_hidden_layer = 0;
 
     FOR(l, start_hidden_layer, net->hidden_layers) {
+#pragma omp parallel for
         COUNTDOWN(i, HIDDENS_IN_LAYER(net,l))
             bp_neuron_learn(net->hiddens[l][i],net->learning_rate);
     }
 
+#pragma omp parallel for
     COUNTDOWN(i, net->no_of_outputs)
         bp_neuron_learn(net->outputs[i],net->learning_rate);
 }
