@@ -56,7 +56,7 @@ static void facerec_training()
     int no_of_outputs = 5*5;
     int output_classes = 25;
     int feature_width = 5;
-    float error_threshold[] = { 2.0, 1.5, 1.5 };
+    float error_threshold[] = { 5.0, 5.0, 5.0 };
     unsigned int ctr, random_seed = 34217;
     float performance;
     unsigned int layer_itterations = 5000;
