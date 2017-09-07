@@ -172,12 +172,10 @@ void bp_free(bp * net)
 */
 void bp_feed_forward(bp * net)
 {
-    omp_set_num_threads(4);
-
     /* for each hidden layer */
     COUNTUP(l, net->hidden_layers) {
         /* For each unit within the layer */
-#pragma omp parallel for
+#pragma omp parallel for schedule(dynamic) num_threads(DEEPLEARN_THREADS)
         COUNTDOWN(i, HIDDENS_IN_LAYER(net,l))
             bp_neuron_feedForward(net->hiddens[l][i],
                                   net->noise, &net->random_seed);
@@ -196,21 +194,19 @@ void bp_feed_forward(bp * net)
 */
 void bp_feed_forward_layers(bp * net, int layers)
 {
-    omp_set_num_threads(4);
-
     /* for each hidden layer */
     COUNTUP(l, layers) {
         /* if this layer is a hidden layer */
         if (l < net->hidden_layers) {
             /* For each unit within the layer */
-#pragma omp parallel for
+#pragma omp parallel for schedule(dynamic) num_threads(DEEPLEARN_THREADS)
             COUNTDOWN(i, HIDDENS_IN_LAYER(net,l))
                 bp_neuron_feedForward(net->hiddens[l][i],
                                       net->noise, &net->random_seed);
         }
         else {
             /* For each unit within the output layer */
-#pragma omp parallel for
+#pragma omp parallel for schedule(dynamic) num_threads(DEEPLEARN_THREADS)
             COUNTDOWN(i, net->no_of_outputs)
                 bp_neuron_feedForward(net->outputs[i],
                                       net->noise, &net->random_seed);
@@ -246,8 +242,7 @@ void bp_backprop(bp * net, int current_hidden_layer)
     net->backprop_error_total = 0;
 
     /* for every output unit */
-    omp_set_num_threads(4);
-#pragma omp parallel for
+#pragma omp parallel for schedule(dynamic) num_threads(DEEPLEARN_THREADS)
     COUNTDOWN(i, net->no_of_outputs) {
         bp_neuron_backprop(net->outputs[i]);
     }
@@ -285,7 +280,7 @@ void bp_backprop(bp * net, int current_hidden_layer)
     /* back-propogate through the hidden layers */
     for (int l = net->hidden_layers-1; l >= start_hidden_layer; l--) {
         /* for every unit in the hidden layer */
-#pragma omp parallel for
+#pragma omp parallel for schedule(dynamic) num_threads(DEEPLEARN_THREADS)
         COUNTDOWN(i, HIDDENS_IN_LAYER(net,l)) {
             bp_neuron_backprop(net->hiddens[l][i]);
         }
@@ -368,19 +363,17 @@ void bp_learn(bp * net, int current_hidden_layer)
 {
     int start_hidden_layer = current_hidden_layer-1;
 
-    omp_set_num_threads(4);
-
     /* for each hidden layers */
     if (start_hidden_layer < 0)
         start_hidden_layer = 0;
 
     FOR(l, start_hidden_layer, net->hidden_layers) {
-#pragma omp parallel for
+#pragma omp parallel for schedule(dynamic) num_threads(DEEPLEARN_THREADS)
         COUNTDOWN(i, HIDDENS_IN_LAYER(net,l))
             bp_neuron_learn(net->hiddens[l][i],net->learning_rate);
     }
 
-#pragma omp parallel for
+#pragma omp parallel for schedule(dynamic) num_threads(DEEPLEARN_THREADS)
     COUNTDOWN(i, net->no_of_outputs)
         bp_neuron_learn(net->outputs[i],net->learning_rate);
 }
