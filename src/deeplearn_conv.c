@@ -644,8 +644,10 @@ void deconvolve_image_mono(float img[],
 
     /* normalise */
     float range = maxval - minval;
-    COUNTDOWN(i, img_width*img_height) {
-        img[i] = (img[i] - minval)/range;
+    if (range > 0) {
+        COUNTDOWN(i, img_width*img_height) {
+            img[i] = (img[i] - minval)/range;
+        }
     }
 
     /* fill horizontal gaps */

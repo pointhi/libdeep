@@ -560,6 +560,9 @@ int autocoder_plot_weights(ac * autocoder,
     if (autocoder->no_of_inputs != no_of_weights)
         return -1;
 
+    if ((img_x_range == 0) || (img_y_range == 0))
+        return -2;
+
     float min_weight = autocoder->weights[0];
     float max_weight = min_weight;
     int start_index = feature_index*no_of_weights;
@@ -572,7 +575,8 @@ int autocoder_plot_weights(ac * autocoder,
     }
 
     float weight_range = max_weight - min_weight;
-    if (weight_range <= 0.0f) return -2;
+    if (weight_range <= 0.0f)
+        return -3;
 
     /* for every pixel in the output image */
     FOR(y, img_ty, img_by) {
