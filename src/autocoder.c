@@ -143,10 +143,8 @@ void autocoder_encode(ac * autocoder, float encoded[],
         float adder = autocoder->bias[h];
         float * w = &autocoder->weights[h*autocoder->no_of_inputs];
         float * inp = &autocoder->inputs[0];
-        int i = autocoder->no_of_inputs-1;
-        while (i >= 0) {
+        COUNTDOWN(i, autocoder->no_of_inputs) {
             adder += w[i] * inp[i];
-            i--;
         }
 
         /* add some random noise */
@@ -174,22 +172,17 @@ void autocoder_decode(ac * autocoder, float decoded[])
     COUNTDOWN(i, autocoder->no_of_inputs) {
         /* weighted sum of hidden inputs */
         float adder = 0;
-        int h = autocoder->no_of_hiddens-1;
         float * w = &autocoder->weights[i];
         float * inp = &autocoder->hiddens[0];
         int step = autocoder->no_of_inputs;
-        int ctr = h*step;
-        while (h >= 0) {
+        COUNTDOWN(h, autocoder->no_of_hiddens) {
             if (inp[h] != AUTOCODER_DROPPED_OUT)
-                adder += w[ctr] * inp[h];
-
-            ctr -= step;
-            h--;
+                adder += w[h*step] * inp[h];
         }
 
         /* add some random noise */
         if (autocoder->noise > 0) {
-            unsigned int randseed = (unsigned int)h + autocoder->random_seed;
+            unsigned int randseed = (unsigned int)i + autocoder->random_seed;
             adder = ((1.0f - autocoder->noise) * adder) +
                 (autocoder->noise *
                  ((rand_num(&randseed)%10000)/10000.0f));
@@ -232,14 +225,10 @@ void autocoder_backprop(ac * autocoder)
         float afact = autocoder->outputs[i] * (1.0f - autocoder->outputs[i]);
         float bperr = backprop_error * afact;
         float * w = &autocoder->weights[i];
-        int h = autocoder->no_of_hiddens-1;
         int step = autocoder->no_of_inputs;
-        int ctr = h*step;
-        while (h >= 0) {
+        COUNTDOWN(h, autocoder->no_of_hiddens) {
             if (autocoder->hiddens[h] != AUTOCODER_DROPPED_OUT)
-                autocoder->bperr[h] += bperr * w[ctr];
-            h--;
-            ctr -= step;
+                autocoder->bperr[h] += bperr * w[h*step];
         }
     }
 
