@@ -56,15 +56,8 @@ int conv_init(int no_of_layers,
     conv->noise = 0.1f;
     conv->random_seed = 672593;
 
-    conv->itterations = 0;
-    conv->history_ctr = 0;
-    conv->history_index = 0;
-    conv->history_step = 1;
-
-    conv->history_plot_interval = 10;
-    sprintf(conv->history_plot_filename,"%s","feature_learning.png");
-    sprintf(conv->history_plot_title,"%s",
-            "Feature Learning Training History");
+    deeplearn_history_init(&conv->history, "feature_learning.png",
+                           "Feature Learning Training History");
 
     COUNTUP(l, no_of_layers) {
         conv->layer[l].ctr = (unsigned int)0;
@@ -159,7 +152,7 @@ int conv_init(int no_of_layers,
 
 /**
  * @brief Frees memory for a preprocessing pipeline
- * @param conv Preprocessing object
+ * @param conv Convolution instance
  */
 void conv_free(deeplearn_conv * conv)
 {
@@ -173,81 +166,16 @@ void conv_free(deeplearn_conv * conv)
 
 /**
  * @brief Uses gnuplot to plot the training error
- * @param conv Convolution object
- * @param filename Filename for the image to save as
- * @param title Title of the graph
+ * @param conv Convolution instance
  * @param img_width Width of the image in pixels
  * @param img_height Height of the image in pixels
  * @return zero on success
  */
 int conv_plot_history(deeplearn_conv * conv,
-                      char * filename, char * title,
                       int img_width, int img_height)
 {
-    int retval=0;
-    FILE * fp;
-    char data_filename[256];
-    char plot_filename[256];
-    char command_str[256];
-    float value;
-    float max_value = 0.01f;
-
-    sprintf(data_filename,"%s%s",DEEPLEARN_TEMP_DIRECTORY,
-            "libdeep_conv_data.dat");
-    sprintf(plot_filename,"%s%s",DEEPLEARN_TEMP_DIRECTORY,
-            "libdeep_conv_data.plot");
-
-    /* save the data */
-    fp = fopen(data_filename,"w");
-
-    if (!fp)
-        return -1;
-
-    COUNTUP(index, conv->history_index) {
-        value = conv->history[index];
-        fprintf(fp,"%d    %.10f\n",
-                index*conv->history_step,value);
-        /* record the maximum error value */
-        if (value > max_value)
-            max_value = value;
-    }
-    fclose(fp);
-
-    /* create a plot file */
-    fp = fopen(plot_filename,"w");
-
-    if (!fp)
-        return -1;
-
-    fprintf(fp,"%s","reset\n");
-    fprintf(fp,"set title \"%s\"\n",title);
-    fprintf(fp,"set xrange [0:%d]\n",
-            conv->history_index*conv->history_step);
-    fprintf(fp,"set yrange [0:%f]\n",max_value*102/100);
-    fprintf(fp,"%s","set lmargin 9\n");
-    fprintf(fp,"%s","set rmargin 2\n");
-    fprintf(fp,"%s","set xlabel \"Time Step\"\n");
-    fprintf(fp,"%s","set ylabel \"Feature Learning Error\"\n");
-
-    fprintf(fp,"%s","set grid\n");
-    fprintf(fp,"%s","set key right top\n");
-
-    fprintf(fp,"set terminal png size %d,%d\n",
-            img_width, img_height);
-    fprintf(fp,"set output \"%s\"\n", filename);
-    fprintf(fp,"plot \"%s\" using 1:2 notitle with lines\n",
-            data_filename);
-    fclose(fp);
-
-    /* run gnuplot using the created files */
-    sprintf(command_str,"gnuplot %s", plot_filename);
-    retval = system(command_str); /* I assume this is synchronous */
-
-    /* remove temporary files */
-    sprintf(command_str,"rm %s %s", data_filename,plot_filename);
-    retval = system(command_str);
-
-    return retval;
+    return deeplearn_history_plot(&conv->history,
+                                  img_width, img_height);
 }
 
 /**
@@ -282,22 +210,8 @@ int conv_save(FILE * fp, deeplearn_conv * conv)
         return -9;
     if (INTWRITE(conv->current_layer) == 0)
         return -10;
-    if (UINTWRITE(conv->itterations) == 0)
+    if (fwrite(&conv->history, sizeof(deeplearn_history), 1, fp) == 0)
         return -12;
-
-    /* save the history */
-    if (INTWRITE(conv->history_index) == 0)
-        return -13;
-
-    if (INTWRITE(conv->history_ctr) == 0)
-        return -14;
-
-    if (INTWRITE(conv->history_step) == 0)
-        return -15;
-
-    if (FLOATWRITEARRAY(conv->history,
-                        conv->history_index) == 0)
-        return -16;
 
     return 0;
 }
@@ -343,21 +257,8 @@ int conv_load(FILE * fp, deeplearn_conv * conv)
         return -9;
     if (INTREAD(conv->current_layer) == 0)
         return -10;
-    if (UINTREAD(conv->itterations) == 0)
+    if (fread(&conv->history, sizeof(deeplearn_history), 1, fp) == 0)
         return -12;
-
-    /* load the history */
-    if (INTREAD(conv->history_index) == 0)
-        return -13;
-
-    if (INTREAD(conv->history_ctr) == 0)
-        return -14;
-
-    if (INTREAD(conv->history_step) == 0)
-        return -15;
-
-    if (FLOATREADARRAY(conv->history, conv->history_index) == 0)
-        return -16;
 
     return 0;
 }
@@ -930,36 +831,6 @@ void conv_clear(deeplearn_conv * conv)
 }
 
 /**
- * @brief Update the history of scores during feature learning
- * @param conv Convolution instance
- * @param matching score Current score when matching features
- */
-static void conv_update_history(deeplearn_conv * conv,
-                                float matching_score)
-{
-    conv->itterations++;
-
-    if (conv->history_step == 0) return;
-
-    conv->history_ctr++;
-    if (conv->history_ctr >= conv->history_step) {
-
-        conv->history[conv->history_index] =
-            matching_score;
-        conv->history_index++;
-        conv->history_ctr = 0;
-
-        if (conv->history_index >= DEEPLEARN_HISTORY_SIZE) {
-            COUNTUP(i, conv->history_index)
-                conv->history[i/2] = conv->history[i];
-
-            conv->history_index /= 2;
-            conv->history_step *= 2;
-        }
-    }
-}
-
-/**
  * @brief Learn features
  * @param conv Convolution instance
  * @param samples The number of samples from the image or layer
@@ -1003,7 +874,7 @@ float conv_learn(unsigned char * img,
         return -2;
     }
 
-    conv_update_history(conv, matching_score);
+    deeplearn_history_update(&conv->history, matching_score);
 
     free(feature_score);
 
@@ -1097,5 +968,5 @@ float conv_get_output(deeplearn_conv * conv, int index)
  */
 float conv_get_error(deeplearn_conv * conv)
 {
-    return conv->history[conv->history_index];
+    return conv->history.history[conv->history.index];
 }

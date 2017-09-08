@@ -52,37 +52,6 @@ void deeplearn_set_error_threshold(deeplearn * learner, int index, float value)
 }
 
 /**
- * @brief Update the learning history
- * @param learner Deep learner object
- */
-static void deeplearn_update_history(deeplearn * learner)
-{
-    float error_value;
-
-    if (learner->history_step == 0) return;
-
-    learner->history_ctr++;
-    if (learner->history_ctr >= learner->history_step) {
-        error_value = learner->backprop_error;
-        if (error_value == DEEPLEARN_UNKNOWN_ERROR)
-            error_value = 0;
-
-        learner->history[learner->history_index] =
-            error_value;
-        learner->history_index++;
-        learner->history_ctr = 0;
-
-        if (learner->history_index >= DEEPLEARN_HISTORY_SIZE) {
-            COUNTUP(i, learner->history_index)
-                learner->history[i/2] = learner->history[i];
-
-            learner->history_index /= 2;
-            learner->history_step *= 2;
-        }
-    }
-}
-
-/**
  * @brief Initialise a deep learner
  * @param learner Deep learner object
  * @param no_of_inputs The number of input fields
@@ -125,10 +94,8 @@ int deeplearn_init(deeplearn * learner,
     learner->no_of_input_fields = 0;
     learner->field_length = 0;
 
-    learner->training_ctr = 0;
-    learner->history_plot_interval = 100000;
-    sprintf(learner->history_plot_filename,"%s","training.png");
-    sprintf(learner->history_plot_title,"%s","Training History");
+    deeplearn_history_init(&learner->history, "training.png",
+                           "Training History");
 
     FLOATALLOC(learner->input_range_min, no_of_inputs);
     if (!learner->input_range_min)
@@ -167,14 +134,6 @@ int deeplearn_init(deeplearn * learner,
     memcpy((void*)learner->error_threshold,
            (void*)error_threshold,
            (hidden_layers+1)*sizeof(float));
-
-    /* clear history */
-    learner->history_index = 0;
-    learner->history_ctr = 0;
-    learner->history_step = 1;
-
-    /* clear the number of training itterations */
-    learner->itterations = 0;
 
     /* set the current layer being trained */
     learner->current_hidden_layer = 0;
@@ -355,7 +314,7 @@ void deeplearn_update(deeplearn * learner)
     }
 
     /* record the history of error values */
-    deeplearn_update_history(learner);
+    deeplearn_history_update(&learner->history, learner->backprop_error);
 
     /* increment the number of itterations */
     if (learner->net->itterations < UINT_MAX)
@@ -383,7 +342,7 @@ void deeplearn_update_continuous(deeplearn * learner)
     learner->backprop_error /= learner->net->hidden_layers;
 
     /* record the history of error values */
-    deeplearn_update_history(learner);
+    deeplearn_history_update(&learner->history, learner->backprop_error);
 }
 
 /**
@@ -723,9 +682,6 @@ int deeplearn_save(FILE * fp, deeplearn * learner)
     if (INTWRITE(learner->training_complete) == 0)
         return -1;
 
-    if (UINTWRITE(learner->itterations) == 0)
-        return -2;
-
     if (INTWRITE(learner->current_hidden_layer) == 0)
         return -3;
 
@@ -772,19 +728,8 @@ int deeplearn_save(FILE * fp, deeplearn * learner)
                         learner->net->no_of_outputs) == 0)
         return -13;
 
-    /* save the history */
-    if (INTWRITE(learner->history_index) == 0)
+    if (fwrite(&learner->history, sizeof(deeplearn_history), 1, fp) == 0)
         return -14;
-
-    if (INTWRITE(learner->history_ctr) == 0)
-        return -15;
-
-    if (INTWRITE(learner->history_step) == 0)
-        return -16;
-
-    if (FLOATWRITEARRAY(learner->history,
-                        learner->history_index) == 0)
-        return -17;
 
     return 0;
 }
@@ -809,9 +754,6 @@ int deeplearn_load(FILE * fp, deeplearn * learner)
 
     if (INTREAD(learner->training_complete) == 0)
         return -1;
-
-    if (UINTREAD(learner->itterations) == 0)
-        return -2;
 
     if (INTREAD(learner->current_hidden_layer) == 0)
         return -3;
@@ -885,18 +827,8 @@ int deeplearn_load(FILE * fp, deeplearn * learner)
                        learner->net->no_of_outputs) == 0)
         return -22;
 
-    /* load the history */
-    if (INTREAD(learner->history_index) == 0)
-        return -11;
-
-    if (INTREAD(learner->history_ctr) == 0)
-        return -12;
-
-    if (INTREAD(learner->history_step) == 0)
-        return -13;
-
-    if (FLOATREADARRAY(learner->history, learner->history_index) == 0)
-        return -14;
+    if (fread(&learner->history, sizeof(deeplearn_history), 1, fp) == 0)
+        return -23;
 
     return 0;
 }
@@ -922,26 +854,26 @@ int deeplearn_compare(deeplearn * learner1,
 
     retval = bp_compare(learner1->net,learner2->net);
     if (retval < 1) return -3;
-    if (learner1->history_index !=
-        learner2->history_index)
+    if (learner1->history.index !=
+        learner2->history.index)
         return -5;
 
-    if (learner1->history_ctr !=
-        learner2->history_ctr)
+    if (learner1->history.ctr !=
+        learner2->history.ctr)
         return -6;
 
-    if (learner1->history_step !=
-        learner2->history_step)
+    if (learner1->history.step !=
+        learner2->history.step)
         return -7;
 
-    COUNTDOWN(i, learner1->history_index) {
-        if (learner1->history[i] !=
-            learner2->history[i])
+    COUNTDOWN(i, learner1->history.index) {
+        if (learner1->history.history[i] !=
+            learner2->history.history[i])
             return -8;
     }
 
-    if (learner1->itterations !=
-        learner2->itterations)
+    if (learner1->history.itterations !=
+        learner2->history.itterations)
         return -9;
 
     COUNTDOWN(i, learner1->net->hidden_layers+1) {
@@ -980,74 +912,15 @@ int deeplearn_compare(deeplearn * learner1,
 /**
  * @brief Uses gnuplot to plot the training error for the given learner
  * @param learner Deep learner object
- * @param filename Filename for the image to save as
- * @param title Title of the graph
  * @param image_width Width of the image in pixels
  * @param image_height Height of the image in pixels
  * @return zero on success
  */
 int deeplearn_plot_history(deeplearn * learner,
-                           char * filename, char * title,
                            int image_width, int image_height)
 {
-    int retval=0;
-    FILE * fp;
-    char data_filename[256];
-    char plot_filename[256];
-    char command_str[256];
-    float value;
-    float max_value = 0.01f;
-
-    sprintf(data_filename,"%s%s",DEEPLEARN_TEMP_DIRECTORY,
-            "libdeep_data.dat");
-    sprintf(plot_filename,"%s%s",DEEPLEARN_TEMP_DIRECTORY,
-            "libdeep_data.plot");
-
-    /* save the data */
-    fp = fopen(data_filename,"w");
-    if (!fp) return -1;
-    COUNTUP(index, learner->history_index) {
-        value = learner->history[index];
-        fprintf(fp,"%d    %.10f\n",
-                index*learner->history_step,value);
-        /* record the maximum error value */
-        if (value > max_value)
-            max_value = value;
-    }
-    fclose(fp);
-
-    /* create a plot file */
-    fp = fopen(plot_filename,"w");
-    if (!fp) return -1;
-    fprintf(fp,"%s","reset\n");
-    fprintf(fp,"set title \"%s\"\n",title);
-    fprintf(fp,"set xrange [0:%d]\n",
-            learner->history_index*learner->history_step);
-    fprintf(fp,"set yrange [0:%f]\n",max_value*102/100);
-    fprintf(fp,"%s","set lmargin 9\n");
-    fprintf(fp,"%s","set rmargin 2\n");
-    fprintf(fp,"%s","set xlabel \"Time Step\"\n");
-    fprintf(fp,"%s","set ylabel \"Training Error Percent\"\n");
-
-    fprintf(fp,"%s","set grid\n");
-    fprintf(fp,"%s","set key right top\n");
-
-    fprintf(fp,"set terminal png size %d,%d\n",
-            image_width, image_height);
-    fprintf(fp,"set output \"%s\"\n", filename);
-    fprintf(fp,"plot \"%s\" using 1:2 notitle with lines\n",
-            data_filename);
-    fclose(fp);
-
-    /* run gnuplot using the created files */
-    sprintf(command_str,"gnuplot %s", plot_filename);
-    retval = system(command_str); /* I assume this is synchronous */
-
-    /* remove temporary files */
-    sprintf(command_str,"rm %s %s", data_filename,plot_filename);
-    retval = system(command_str);
-
-    return retval;
+    return deeplearn_history_plot(&learner->history,
+                                  image_width, image_height);
 }
 
 /**

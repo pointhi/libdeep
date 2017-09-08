@@ -44,7 +44,7 @@ int main(int argc, char* argv[])
 {
     int no_of_outputs = 1;
     int output_field_index[] = { 1 };
-    float error_threshold_percent[] = { 3.0f, 3.0f, 3.5f, 3.0f };
+    float error_threshold_percent[] = { 1.0f, 1.0f, 1.5f, 6.0f };
     unsigned int random_seed = 123;
 
     /* load the data */
@@ -58,7 +58,8 @@ int main(int argc, char* argv[])
                            &random_seed);
 
     printf("Number of training examples: %d\n",learner.training_data_samples);
-    printf("Number of labeled training examples: %d\n",learner.training_data_labeled_samples);
+    printf("Number of labeled training examples: %d\n",
+           learner.training_data_labeled_samples);
     printf("Number of test examples: %d\n",learner.test_data_samples);
     printf("Number of Inputs: %d\n",learner.net->no_of_inputs);
 
@@ -68,16 +69,17 @@ int main(int argc, char* argv[])
     /* set percentage of dropouts */
     deeplearn_set_dropouts(&learner, 2.0f);
 
-    learner.history_plot_interval = 2000000;
+    learner.history.interval = 200000;
 
-    sprintf(learner.history_plot_title,"%s",TITLE);
+    sprintf(learner.history.title,"%s",TITLE);
 
     while (deeplearndata_training(&learner) != 0) {
     }
 
     printf("Training Completed\n");
 
-    printf("Test data set performance is %.1f%%\n", deeplearndata_get_performance(&learner));
+    printf("Test data set performance is %.1f%%\n",
+           deeplearndata_get_performance(&learner));
 
     deeplearn_export(&learner, "export_cancer_classifier.c");
     deeplearn_export(&learner, "export_cancer_classifier_sketch.c");

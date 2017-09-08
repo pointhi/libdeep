@@ -58,7 +58,8 @@ int main(int argc, char* argv[])
                            &random_seed);
 
     printf("Number of training examples: %d\n",learner.training_data_samples);
-    printf("Number of labeled training examples: %d\n",learner.training_data_labeled_samples);
+    printf("Number of labeled training examples: %d\n",
+           learner.training_data_labeled_samples);
     printf("Number of test examples: %d\n",learner.test_data_samples);
     printf("Number of Inputs: %d\n",learner.net->no_of_inputs);
 
@@ -68,16 +69,17 @@ int main(int argc, char* argv[])
     /* set percentage of dropouts */
     deeplearn_set_dropouts(&learner, 0.001f);
 
-    learner.history_plot_interval = 50000;
+    learner.history.interval = 50000;
 
-    sprintf(learner.history_plot_title,"%s",TITLE);
+    sprintf(learner.history.title,"%s",TITLE);
 
     while (deeplearndata_training(&learner) != 0) {
     }
 
     printf("Training Completed\n");
 
-    printf("Test data set performance is %.4f%%\n", deeplearndata_get_performance(&learner));
+    printf("Test data set performance is %.4f%%\n",
+           deeplearndata_get_performance(&learner));
 
     deeplearn_export(&learner, "export_xor.c");
     deeplearn_export(&learner, "export_xor_sketch.c");

@@ -11,4 +11,4 @@ debug:
 	gcc -Wall -ansi -pedantic -g -o facerec facerec.c -ldeep -lm -fopenmp
 
 clean:
-	rm -f *.o facerec
+	rm -f *.o facerec *.png *.plist

@@ -747,12 +747,8 @@ int deeplearndata_read_csv(char * filename,
 static void deeplearndata_update_training_history(deeplearn * learner)
 {
     /* plot a graph showing training progress */
-    if (learner->training_ctr > learner->history_plot_interval) {
-        if (strlen(learner->history_plot_filename) > 0)
-            deeplearn_plot_history(learner,
-                                   learner->history_plot_filename,
-                                   learner->history_plot_title,
-                                   1024, 480);
+    if (learner->training_ctr > learner->history.interval) {
+        deeplearn_plot_history(learner, 1024, 480);
         learner->training_ctr = 0;
     }
     learner->training_ctr++;

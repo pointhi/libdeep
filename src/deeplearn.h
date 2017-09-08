@@ -38,6 +38,7 @@
 #include "autocoder.h"
 #include "encoding.h"
 #include "utils.h"
+#include "deeplearn_history.h"
 #include "deeplearn_conv.h"
 
 /* Enumerate different flavors of C which can be exported
@@ -70,7 +71,6 @@ struct deepl {
     ac ** autocoder;
     int current_hidden_layer;
     float backprop_error;
-    unsigned int itterations;
     float * error_threshold;
     int training_complete;
     int no_of_input_fields;
@@ -102,12 +102,8 @@ struct deepl {
     float * output_range_max;
 
     unsigned int training_ctr;
-    unsigned int history_plot_interval;
-    char history_plot_filename[256];
-    char history_plot_title[256];
 
-    float history[DEEPLEARN_HISTORY_SIZE];
-    int history_index, history_ctr, history_step;
+    deeplearn_history history;
 };
 typedef struct deepl deeplearn;
 
@@ -140,7 +136,6 @@ int deeplearn_load(FILE * fp, deeplearn * learner);
 int deeplearn_compare(deeplearn * learner1,
                       deeplearn * learner2);
 int deeplearn_plot_history(deeplearn * learner,
-                           char * filename, char * title,
                            int image_width, int image_height);
 int deeplearn_inputs_from_image_patch(deeplearn * learner,
                                       unsigned char * img,

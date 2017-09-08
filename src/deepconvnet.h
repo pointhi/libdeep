@@ -65,15 +65,11 @@ typedef struct {
     int * classification_number;
 
     unsigned int training_ctr;
-    unsigned int history_plot_interval;
-    char history_plot_filename[256];
-    char history_plot_title[256];
 
     /* current backprop error */
     float backprop_error;
 
-    float history[DEEPLEARN_HISTORY_SIZE];
-    int history_index, history_ctr, history_step;
+    deeplearn_history history;
 
     /* array index numbers for training and test set */
     int * training_set_index;

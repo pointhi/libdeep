@@ -11,4 +11,4 @@ debug:
 	gcc -Wall -ansi -pedantic -g -o irisclassifier iris.c -ldeep -lm -fopenmp
 
 clean:
-	rm -f *.o irisclassifier
+	rm -f *.o export* *.plist *.png irisclassifier

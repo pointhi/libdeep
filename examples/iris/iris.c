@@ -44,7 +44,7 @@ int main(int argc, char* argv[])
 {
     int no_of_outputs = 1;
     int output_field_index[] = { 4 };
-    float error_threshold_percent[] = { 0.5f, 0.5f, 0.5f, 2.5f };
+    float error_threshold_percent[] = { 0.5f, 0.5f, 0.5f, 5.0f };
     unsigned int random_seed = 123;
     int classes = 3;
 
@@ -67,9 +67,9 @@ int main(int argc, char* argv[])
     deeplearn_set_learning_rate(&learner, 0.1f);
     deeplearn_set_dropouts(&learner, 0.01f);
 
-    learner.history_plot_interval = 50000;
+    learner.history.interval = 1000000;
 
-    sprintf(learner.history_plot_title,"%s",TITLE);
+    sprintf(learner.history.title,"%s",TITLE);
 
     while (deeplearndata_training(&learner) != 0) {
     }

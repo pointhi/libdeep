@@ -44,14 +44,14 @@ int main(int argc, char* argv[])
 {
     int no_of_outputs = 4;
     int output_field_index[] = { 7,8,9,10 };
-    float error_threshold_percent[] = { 0.5f, 0.5f, 0.5f, 2.0f };
+    float error_threshold_percent[] = { 0.6f, 4.5f };
     unsigned int random_seed = 123;
 
     /* load the data */
     printf("Loading data set\n");
     deeplearndata_read_csv(DATA_FILE,
                            &learner,
-                           4*4, 3,
+                           3*3, 1,
                            no_of_outputs,
                            output_field_index, 0,
                            error_threshold_percent,
@@ -63,14 +63,14 @@ int main(int argc, char* argv[])
     printf("Number of Inputs: %d\n",learner.net->no_of_inputs);
 
     /* set learning rate */
-    deeplearn_set_learning_rate(&learner, 0.2f);
+    deeplearn_set_learning_rate(&learner, 0.5f);
 
     /* set percentage of dropouts */
-    deeplearn_set_dropouts(&learner, 0.001f);
+    deeplearn_set_dropouts(&learner, 0.0001f);
 
-    learner.history_plot_interval = 900000;
+    learner.history.interval = 900000;
 
-    sprintf(learner.history_plot_title,"%s",TITLE);
+    sprintf(learner.history.title,"%s",TITLE);
 
     while (deeplearndata_training(&learner) != 0) {
     }

@@ -70,7 +70,6 @@ static void test_conv_learn()
     int downsampled_height=128;
     unsigned char downsampled[128*128];
     unsigned int layer_itterations = 5;
-    char filename[256];
 
     printf("test_conv_learn...");
 
@@ -176,9 +175,9 @@ static void test_conv_learn()
     assert(outputs_sum <= 1.0f);
 
     /* save a graph */
-    sprintf(filename,"%stemp_graph.png",DEEPLEARN_TEMP_DIRECTORY);
-    conv_plot_history(&conv, filename, "Feature Learning",
-                      1024, 480);
+    sprintf(&conv.history.filename[0],"%stemp_graph.png", DEEPLEARN_TEMP_DIRECTORY);
+    sprintf(&conv.history.title[0], "%s", "Feature Learning");
+    conv_plot_history(&conv, 1024, 480);
 
     free(img);
     conv_free(&conv);

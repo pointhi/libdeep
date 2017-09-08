@@ -41,6 +41,7 @@
 #include "backprop.h"
 #include "autocoder.h"
 #include "deeplearn_features.h"
+#include "deeplearn_history.h"
 
 #define PREPROCESS_MAX_LAYERS 100
 #define POOLING_FACTOR        2
@@ -82,16 +83,7 @@ typedef struct {
        adding noise to the input layer */
     unsigned char training;
 
-    /* training itterations elapsed */
-    unsigned int itterations;
-
-    /* training history */
-    unsigned int history_plot_interval;
-    char history_plot_filename[256];
-    char history_plot_title[256];
-
-    float history[DEEPLEARN_HISTORY_SIZE];
-    int history_index, history_ctr, history_step;
+    deeplearn_history history;
 } deeplearn_conv;
 
 int conv_init(int no_of_layers,
@@ -110,7 +102,6 @@ float conv_learn(unsigned char * img,
 void conv_free(deeplearn_conv * conv);
 
 int conv_plot_history(deeplearn_conv * conv,
-                      char * filename, char * title,
                       int img_width, int img_height);
 int conv_save(FILE * fp, deeplearn_conv * conv);
 int conv_load(FILE * fp, deeplearn_conv * conv);
