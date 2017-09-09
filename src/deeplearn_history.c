@@ -141,7 +141,7 @@ int deeplearn_history_plot(deeplearn_history * history,
     fprintf(fp,"%s","set lmargin 9\n");
     fprintf(fp,"%s","set rmargin 2\n");
     fprintf(fp,"%s","set xlabel \"Time Step\"\n");
-    fprintf(fp,"%s","set ylabel \"Training Error\"\n");
+    fprintf(fp,"%s","set ylabel \"Training Error %\"\n");
 
     fprintf(fp,"%s","set grid\n");
     fprintf(fp,"%s","set key right top\n");
