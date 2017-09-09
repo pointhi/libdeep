@@ -35,6 +35,7 @@
 #include <limits.h>
 #include <string.h>
 #include "globals.h"
+#include "phosphene.h"
 
 typedef struct {
     /* training itterations elapsed */
@@ -53,7 +54,9 @@ void deeplearn_history_init(deeplearn_history * history,
                             char filename[], char title[]);
 void deeplearn_history_update(deeplearn_history * history,
                               float matching_score);
-int deeplearn_history_plot(deeplearn_history * history,
-                           int img_width, int img_height);
+int deeplearn_history_gnuplot(deeplearn_history * history,
+                              int img_width, int img_height);
+int deeplearn_history_phosphene(deeplearn_history * history,
+                                int img_width, int img_height);
 
 #endif

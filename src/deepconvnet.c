@@ -276,7 +276,9 @@ static void deepconvnet_update_training_plot(deepconvnet * convnet)
     if (convnet->history.interval > 0) {
         if (convnet->training_ctr > convnet->history.interval) {
             if (strlen(convnet->history.filename) > 0)
-                deepconvnet_plot_history(convnet, 1024, 480);
+                deepconvnet_plot_history(convnet,
+                                         DEEPLEARN_PLOT_WIDTH,
+                                         DEEPLEARN_PLOT_HEIGHT);
 
             convnet->training_ctr = 0;
         }
@@ -439,8 +441,8 @@ void deepconvnet_set_dropouts(deepconvnet * convnet, float dropout_percent)
 int deepconvnet_plot_history(deepconvnet * convnet,
                              int image_width, int image_height)
 {
-    return deeplearn_history_plot(&convnet->history,
-                                  image_width, image_height);
+    return deeplearn_history_phosphene(&convnet->history,
+                                       image_width, image_height);
 }
 
 /**

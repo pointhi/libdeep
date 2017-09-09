@@ -32,6 +32,9 @@
 
 #define DEEPLEARN_THREADS                 4
 
+#define DEEPLEARN_PLOT_WIDTH              1024
+#define DEEPLEARN_PLOT_HEIGHT             1024
+
 #define DEEPLEARN_TEMP_DIRECTORY          "/tmp/"
 #define DEEPLEARN_HISTORY_SIZE            1024
 #define DEEPLEARN_UNKNOWN_ERROR           9999

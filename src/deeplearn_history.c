@@ -87,8 +87,8 @@ void deeplearn_history_update(deeplearn_history * history,
  * @param img_height Height of the image in pixels
  * @return zero on success
  */
-int deeplearn_history_plot(deeplearn_history * history,
-                           int img_width, int img_height)
+int deeplearn_history_gnuplot(deeplearn_history * history,
+                              int img_width, int img_height)
 {
     int retval=0;
     FILE * fp;
@@ -162,4 +162,54 @@ int deeplearn_history_plot(deeplearn_history * history,
     retval = system(command_str);
 
     return retval;
+}
+
+int deeplearn_history_phosphene(deeplearn_history * history,
+                                int img_width, int img_height)
+{
+    double value;
+    scope s;
+    unsigned int t, channel = 0;
+    double max_voltage = 0.01f;
+    unsigned int grid_horizontal = 20;
+    unsigned int grid_vertical = 16;
+    unsigned char * img;
+
+    COUNTUP(index, history->index) {
+        value = history->history[index];
+        if (value > max_voltage)
+            max_voltage = value;
+    }
+    max_voltage=max_voltage*102/100;
+    if (max_voltage < 1) max_voltage = 1;
+
+    UCHARALLOC(img, img_width*img_height*3);
+    if (!img)
+        return 1;
+
+    create_scope(&s, 1);
+    s.offset_ms = 0;
+    s.marker_position = 0;
+    s.time_ms = history->index;
+    s.horizontal_multiplier = (unsigned int)history->step;
+
+    for (t = 0; t < history->index; t++) {
+        scope_update(&s, channel,
+                     history->history[t],
+                     0.0f, max_voltage, t);
+    }
+
+    scope_draw_graph(&s, PHOSPHENE_DRAW_ALL, 3, 100,
+                     grid_horizontal, grid_vertical,
+                     img, img_width, img_height,
+                     PHOSPHENE_SHAPE_RECTANGULAR,
+                     history->title,
+                     "Training Error %", "Time Step", 25, 4);
+
+    phosphene_write_png_file(history->filename,
+                             img_width, img_height, 24, img);
+
+    free(img);
+
+    return 0;
 }

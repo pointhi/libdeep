@@ -748,7 +748,8 @@ static void deeplearndata_update_training_history(deeplearn * learner)
 {
     /* plot a graph showing training progress */
     if (learner->training_ctr > learner->history.interval) {
-        deeplearn_plot_history(learner, 1024, 480);
+        deeplearn_plot_history(learner,
+                               DEEPLEARN_PLOT_WIDTH, DEEPLEARN_PLOT_HEIGHT);
         learner->training_ctr = 0;
     }
     learner->training_ctr++;

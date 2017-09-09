@@ -919,8 +919,8 @@ int deeplearn_compare(deeplearn * learner1,
 int deeplearn_plot_history(deeplearn * learner,
                            int image_width, int image_height)
 {
-    return deeplearn_history_plot(&learner->history,
-                                  image_width, image_height);
+    return deeplearn_history_phosphene(&learner->history,
+                                       image_width, image_height);
 }
 
 /**
