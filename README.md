@@ -14,7 +14,7 @@ Installation
 On Debian based systems:
 
 ```bash
-sudo apt-get install build-essential gnuplot doxygen xdot
+sudo apt-get install build-essential doxygen xdot
 ```
 
 If you want to be able to visualize call graphs for development or debugging purposes then you will need to install the [egypt](http://www.gson.org/egypt) script.
@@ -22,7 +22,7 @@ If you want to be able to visualize call graphs for development or debugging pur
 On Arch based systems:
 
 ``` bash
-sudo pacman -S gcc gnuplot doxygen egypt xdot
+sudo pacman -S gcc doxygen egypt xdot
 ```
 
 To build from source:

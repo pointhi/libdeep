@@ -58,5 +58,7 @@ int deeplearn_history_gnuplot(deeplearn_history * history,
                               int img_width, int img_height);
 int deeplearn_history_phosphene(deeplearn_history * history,
                                 int img_width, int img_height);
+int deeplearn_history_plot(deeplearn_history * history,
+                           int img_width, int img_height);
 
 #endif

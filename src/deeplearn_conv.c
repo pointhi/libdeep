@@ -174,8 +174,8 @@ void conv_free(deeplearn_conv * conv)
 int conv_plot_history(deeplearn_conv * conv,
                       int img_width, int img_height)
 {
-    return deeplearn_history_phosphene(&conv->history,
-                                       img_width, img_height);
+    return deeplearn_history_plot(&conv->history,
+                                  img_width, img_height);
 }
 
 /**

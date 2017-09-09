@@ -164,6 +164,13 @@ int deeplearn_history_gnuplot(deeplearn_history * history,
     return retval;
 }
 
+/**
+ * @brief Uses phosphene to plot the training error
+ * @param history History instance
+ * @param img_width Width of the image in pixels
+ * @param img_height Height of the image in pixels
+ * @return zero on success
+ */
 int deeplearn_history_phosphene(deeplearn_history * history,
                                 int img_width, int img_height)
 {
@@ -212,4 +219,22 @@ int deeplearn_history_phosphene(deeplearn_history * history,
     free(img);
 
     return 0;
+}
+
+
+/**
+ * @brief Plot the training error to a graph image
+ * @param history History instance
+ * @param img_width Width of the image in pixels
+ * @param img_height Height of the image in pixels
+ * @return zero on success
+ */
+int deeplearn_history_plot(deeplearn_history * history,
+                           int img_width, int img_height)
+{
+#ifdef PLOT_WITH_GNUPLOT
+    return deeplearn_history_gnuplot(history, img_width, img_height);
+#else
+    return deeplearn_history_phosphene(history, img_width, img_height);
+#endif
 }

@@ -32,6 +32,7 @@
 
 #define DEEPLEARN_THREADS                 4
 
+#undef PLOT_WITH_GNUPLOT
 #define DEEPLEARN_PLOT_WIDTH              1024
 #define DEEPLEARN_PLOT_HEIGHT             1024
 

@@ -441,8 +441,8 @@ void deepconvnet_set_dropouts(deepconvnet * convnet, float dropout_percent)
 int deepconvnet_plot_history(deepconvnet * convnet,
                              int image_width, int image_height)
 {
-    return deeplearn_history_phosphene(&convnet->history,
-                                       image_width, image_height);
+    return deeplearn_history_plot(&convnet->history,
+                                  image_width, image_height);
 }
 
 /**
