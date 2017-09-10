@@ -1530,59 +1530,64 @@ void scope_draw_graph(scope * s,
                        img, 0, 0, width, height,
                        width, height, shape, 1);
 
-    /* horizontal */
-    x0 = border_x + ((width-(border_x*2))*1/grid_x);
-    y0 = border_y + ((height-(border_y*2))*(grid_y-1)/grid_y);
-    x1 = border_x + ((width-(border_x*2))*(grid_x-1)/grid_x);
-    y1 = border_y + ((height-(border_y*2))*(grid_y-1)/grid_y);
-    scope_trace_line(s, x0, y0, x1, y1,
-                     radius, intensity_percent,
-                     img, 0,0, width, height,
-                     width, height, shape);
+    if ((draw_type == PHOSPHENE_DRAW_ALL) ||
+        (draw_type == PHOSPHENE_DRAW_BACKGROUND)) {
 
-    scope_number_line(s, x0, y0, x1, y1,
-                      0, (int)s->time_ms,
-                      radius, intensity_percent,
-                      grid_x, grid_y, img,
-                      width, height, shape,
-                      text_size_pixels*5/10, no_of_increments);
+        /* horizontal */
+        x0 = border_x + ((width-(border_x*2))*1/grid_x);
+        y0 = border_y + ((height-(border_y*2))*(grid_y-1)/grid_y);
+        x1 = border_x + ((width-(border_x*2))*(grid_x-1)/grid_x);
+        y1 = border_y + ((height-(border_y*2))*(grid_y-1)/grid_y);
+        scope_trace_line(s, x0, y0, x1, y1,
+                         radius, intensity_percent,
+                         img, 0,0, width, height,
+                         width, height, shape);
 
-    /* vertical */
-    x1 = x0;
-    y1 = border_y + ((height-(border_y*2))*1/grid_y);
-    scope_trace_line(s, x0, y0, x1, y1,
-                     radius, intensity_percent,
-                     img, 0,0, width, height,
-                     width, height, shape);
+        scope_number_line(s, x0, y0, x1, y1,
+                          0, (int)s->time_ms,
+                          radius, intensity_percent,
+                          grid_x, grid_y, img,
+                          width, height, shape,
+                          text_size_pixels*5/10, no_of_increments);
 
-    scope_number_line(s, x0, y0, x1, y1,
-                      (int)s->trace1_min, (int)s->trace1_max,
-                      radius, intensity_percent,
-                      grid_x, grid_y, img,
-                      width, height, shape,
-                      text_size_pixels*5/10, no_of_increments);
+        /* vertical */
+        x1 = x0;
+        y1 = border_y + ((height-(border_y*2))*1/grid_y);
+        scope_trace_line(s, x0, y0, x1, y1,
+                         radius, intensity_percent,
+                         img, 0,0, width, height,
+                         width, height, shape);
+
+        scope_number_line(s, x0, y0, x1, y1,
+                          (int)s->trace1_min, (int)s->trace1_max,
+                          radius, intensity_percent,
+                          grid_x, grid_y, img,
+                          width, height, shape,
+                          text_size_pixels*5/10, no_of_increments);
 
 
-    scope_text(title, s,
-               border_x + ((width - (border_x*2))/2) -
-               (strlen(title)*text_size_pixels/2),
-               border_y+(((height - (border_y*2))/grid_y)-text_size_pixels),
-               text_size_pixels, text_size_pixels, 100,
-               img, width, height);
+        scope_text(title, s,
+                   border_x + ((width - (border_x*2))/2) -
+                   (strlen(title)*text_size_pixels/2),
+                   border_y +
+                   (((height - (border_y*2))/grid_y)-text_size_pixels),
+                   text_size_pixels, text_size_pixels, 100,
+                   img, width, height);
 
-    text_size_pixels = text_size_pixels*6/10;
+        text_size_pixels = text_size_pixels*6/10;
 
-    scope_text(horizontal_text, s,
-               border_x + ((width - (border_x*2))/2) -
-               (strlen(horizontal_text)*text_size_pixels/2),
-               height - border_y - text_size_pixels,
-               text_size_pixels, text_size_pixels, 100,
-               img, width, height);
+        scope_text(horizontal_text, s,
+                   border_x + ((width - (border_x*2))/2) -
+                   (strlen(horizontal_text)*text_size_pixels/2),
+                   height - border_y - text_size_pixels,
+                   text_size_pixels, text_size_pixels, 100,
+                   img, width, height);
 
-    scope_text_vertical(vertical_text, s,
-                        border_x,
-                        border_y + ((height - (border_y*2))/2) +
-                        (strlen(vertical_text)*text_size_pixels/2),
-                        text_size_pixels, text_size_pixels, 100,
-                        img, width, height);
+        scope_text_vertical(vertical_text, s,
+                            border_x,
+                            border_y + ((height - (border_y*2))/2) +
+                            (strlen(vertical_text)*text_size_pixels/2),
+                            text_size_pixels, text_size_pixels, 100,
+                            img, width, height);
+    }
 }
