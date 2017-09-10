@@ -936,7 +936,8 @@ static void scope_marker(scope * s, unsigned char img[],
 
     if (s->marker_orientation == PHOSPHENE_MARKER_VERTICAL) {
         x = top_x + border_x +
-            (s->marker_position * ((bottom_x-top_x)-(border_x*2)) / s->time_ms);
+            (s->marker_position *
+             ((bottom_x-top_x)-(border_x*2)) / s->time_ms);
         for (i = 0; i < s->marker_thickness; i++) {
             scope_trace_line(s, x+i, border_y, x+i, bottom_y - border_y,
                              1, 50, img, top_x, top_y, bottom_x, bottom_y,
@@ -1375,7 +1376,8 @@ void scope_text(char text[], scope * s,
     for (i = 0; i < (int)strlen(text); i++) {
         tx = x + (i*character_width_pixels);
         scope_character(text[i], s,
-                        tx, y, tx+character_width_pixels, y+character_height_pixels,
+                        tx, y, tx+character_width_pixels,
+                        y+character_height_pixels,
                         radius, intensity_percent, img,
                         0, 0, width, height,
                         width, height, PHOSPHENE_SHAPE_RECTANGULAR, 0);
@@ -1411,7 +1413,8 @@ void scope_text_vertical(char text[], scope * s,
     for (i = 0; i < (int)strlen(text); i++) {
         ty = y - (i*character_height_pixels);
         scope_character(text[i], s,
-                        x, ty, x+character_width_pixels, ty+character_height_pixels,
+                        x, ty, x+character_width_pixels,
+                        ty+character_height_pixels,
                         radius, intensity_percent, img,
                         0, 0, width, height,
                         width, height, PHOSPHENE_SHAPE_RECTANGULAR, 1);
@@ -1461,7 +1464,6 @@ void scope_number_line(scope * s,
     if (abs(dx) < abs(dy)) {
         /* vertical */
         offset_x = -(text_size_pixels/2);
-        /*-(((width - (border_x*2))/grid_x)/2) + (text_size_pixels/2);*/
         offset_y = 0;
     }
 
