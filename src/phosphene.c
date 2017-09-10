@@ -312,7 +312,7 @@ void scope_update(scope * s,
  * @param bottom_y Bottom y coordinate
  * @param width Width of the scope image
  * @param height Height of the scope image
- * @param shape Shape used for drawing
+ * @param shape Shape of the screen, rectangular or circular
  */
 static void scope_point(scope * s,
                         int x, int y,
@@ -406,7 +406,7 @@ static void scope_point(scope * s,
  * @param bottom_y Bottom y coordinate
  * @param width Width of the scope image
  * @param height Height of the scope image
- * @param shape Shape used for drawing
+ * @param shape Shape of the screen, rectangular or circular
  */
 static void scope_marking_point(scope * s,
                                 int x, int y,
@@ -477,7 +477,7 @@ static void scope_marking_point(scope * s,
  * @param bottom_y Bottom y coordinate
  * @param width Width of the scope image
  * @param height Height of the scope image
- * @param shape Shape used for drawing dots
+ * @param shape Shape of the screen, rectangular or circular
  */
 static void scope_dotted_line(scope * s,
                               int x0, int y0,
@@ -519,7 +519,7 @@ static void scope_dotted_line(scope * s,
  * @param bottom_y Bottom y coordinate
  * @param width Width of the scope image
  * @param height Height of the scope image
- * @param shape Shape used for drawing dots
+ * @param shape Shape of the screen, rectangular or circular
  */
 static void scope_marking_line(scope * s,
                                int x0, int y0,
@@ -577,7 +577,7 @@ static void scope_marking_line(scope * s,
  * @param bottom_y Bottom y coordinate
  * @param width Width of the scope image
  * @param height Height of the scope image
- * @param shape Shape used for drawing dots
+ * @param shape Shape of the screen, rectangular or circular
  */
 static void scope_marking(scope * s,
                           int x0, int y0,
@@ -625,7 +625,7 @@ static void scope_marking(scope * s,
  * @param bottom_y Bottom y coordinate
  * @param width Width of the scope image
  * @param height Height of the scope image
- * @param shape Shape used for drawing dots
+ * @param shape Shape of the screen, rectangular or circular
  */
 static void scope_increments(scope * s,
                              int x0, int y0,
@@ -674,7 +674,7 @@ static void scope_increments(scope * s,
  * @param bottom_y Bottom y coordinate
  * @param width Width of the scope image
  * @param height Height of the scope image
- * @param shape Shape used for drawing dots
+ * @param shape Shape of the screen, rectangular or circular
  */
 static void scope_grid(scope * s,
                        unsigned int cells_x, unsigned int cells_y,
@@ -747,7 +747,7 @@ static void scope_grid(scope * s,
  * @param bottom_y Bottom y coordinate
  * @param width Width of the scope image
  * @param height Height of the scope image
- * @param shape Shape used for drawing dots
+ * @param shape Shape of the screen, rectangular or circular
  */
 static void scope_trace_line(scope * s,
                              int x0, int y0,
@@ -790,13 +790,15 @@ static void scope_trace_line(scope * s,
  * @param top_y Top y coordinate
  * @param bottom_x Bottom x coordinate
  * @param bottom_y Bottom y coordinate
+ * @param shape Shape of the screen, rectangular or circular
  */
 static void scope_verticals(scope * s, unsigned int trace_index,
                             unsigned int no_of_traces,
                             double * min, double * max,
                             int * screen_by, int * screen_ty,
                             unsigned int top_x, unsigned int top_y,
-                            unsigned int bottom_x, unsigned int bottom_y)
+                            unsigned int bottom_x, unsigned int bottom_y,
+                            unsigned char shape)
 {
     unsigned int border_y = (bottom_y-top_y) * s->border_percent / 100;
     double vertical_percent;
@@ -813,10 +815,18 @@ static void scope_verticals(scope * s, unsigned int trace_index,
     }
 
     if (no_of_traces == 1) {
-        *screen_by = bottom_y - border_y -
-            (int)(((bottom_y-top_y)-(border_y*2))*(0+vertical_percent)/100);
-        *screen_ty = bottom_y - border_y -
-            (int)(((bottom_y-top_y)-(border_y*2))*(100+vertical_percent)/100);
+        if (shape != PHOSPHENE_SHAPE_CIRCULAR) {
+            *screen_by = bottom_y - border_y -
+                (int)(((bottom_y-top_y)-(border_y*2))*(0+vertical_percent)/100);
+            *screen_ty = bottom_y - border_y -
+                (int)(((bottom_y-top_y)-(border_y*2))*(100+vertical_percent)/100);
+        }
+        else {
+            *screen_by = bottom_y - border_y -
+                (int)(((bottom_y-top_y)-(border_y*2))*(20+vertical_percent)/100);
+            *screen_ty = bottom_y - border_y -
+                (int)(((bottom_y-top_y)-(border_y*2))*(80+vertical_percent)/100);
+        }
         if (*screen_ty < (int)border_y) *screen_ty = border_y;
     }
     else {
@@ -849,7 +859,7 @@ static void scope_verticals(scope * s, unsigned int trace_index,
  * @param bottom_y Bottom y coordinate
  * @param width Width of the scope image
  * @param height Height of the scope image
- * @param shape Shape used for drawing dots
+ * @param shape Shape of the screen, rectangular or circular
  */
 static void scope_trace(scope * s,
                         unsigned int trace_index,
@@ -869,7 +879,7 @@ static void scope_trace(scope * s,
     scope_verticals(s, trace_index, s->no_of_traces,
                     &min, &max,
                     &screen_by, &screen_ty,
-                    top_x, top_y, bottom_x, bottom_y);
+                    top_x, top_y, bottom_x, bottom_y, shape);
 
     while (t_ms < s->time_ms) {
         n = (int)t_ms - s->offset_ms;
@@ -913,7 +923,7 @@ static void scope_trace(scope * s,
  * @param bottom_y Bottom y coordinate
  * @param width Width of the scope image
  * @param height Height of the scope image
- * @param shape Shape used for drawing dots
+ * @param shape Shape of the screen, rectangular or circular
  */
 static void scope_marker(scope * s, unsigned char img[],
                          unsigned int top_x, unsigned int top_y,
@@ -946,7 +956,7 @@ static void scope_marker(scope * s, unsigned char img[],
         scope_verticals(s, trace_index, s->no_of_traces,
                         &min, &max,
                         &screen_by, &screen_ty,
-                        top_x, top_y, bottom_x, bottom_y);
+                        top_x, top_y, bottom_x, bottom_y, shape);
 
         y = screen_by - (int)((screen_by - screen_ty)*
             (s->marker_position-min)/(max - min));
@@ -969,7 +979,7 @@ static void scope_marker(scope * s, unsigned char img[],
  * @param bottom_y Bottom y coordinate
  * @param width Width of the scope image
  * @param height Height of the scope image
- * @param shape Shape used for drawing dots
+ * @param shape Shape of the screen, rectangular or circular
  */
 static void scope_background(scope * s, unsigned char img[],
                              unsigned int top_x, unsigned int top_y,
@@ -1039,7 +1049,7 @@ static void scope_background(scope * s, unsigned char img[],
  * @param bottom_y Bottom y coordinate
  * @param width Width of the scope image
  * @param height Height of the scope image
- * @param shape Shape used for drawing dots
+ * @param shape Shape of the screen, rectangular or circular
  */
 static void scope_xy(scope * s,
                      unsigned int radius, double intensity_percent,
@@ -1059,13 +1069,13 @@ static void scope_xy(scope * s,
     scope_verticals(s, 0, 1,
                     &min_x, &max_x,
                     &screen_bx, &screen_tx,
-                    top_x, top_y, bottom_x, bottom_y);
+                    top_x, top_y, bottom_x, bottom_y, shape);
 
     /* limits of trace 1 */
     scope_verticals(s, 1, 1,
                     &min_y, &max_y,
                     &screen_by, &screen_ty,
-                    top_x, top_y, bottom_x, bottom_y);
+                    top_x, top_y, bottom_x, bottom_y, shape);
 
     if ((max_x <= min_x) || (max_y <= min_y))
         return;
@@ -1118,7 +1128,7 @@ static void scope_xy(scope * s,
  * @param bottom_y Bottom y coordinate
  * @param width Width of the scope image
  * @param height Height of the scope image
- * @param shape Shape used for drawing dots
+ * @param shape Shape of the screen, rectangular or circular
  */
 static void scope_draw_background(scope * s,
                                   int grid_x, int grid_y,
@@ -1156,7 +1166,7 @@ static void scope_draw_background(scope * s,
  * @param bottom_y Bottom y coordinate
  * @param width Width of the scope image
  * @param height Height of the scope image
- * @param shape Shape used for drawing dots
+ * @param shape Shape of the screen, rectangular or circular
  * @param graph_type 0 = standard, 1 = with axes and title
  */
 void scope_draw_bounded(scope * s,
@@ -1259,7 +1269,7 @@ void scope_draw_bounded(scope * s,
  * @param img Array containing scope image
  * @param width Width of the scope image
  * @param height Height of the scope image
- * @param shape Shape used for drawing dots
+ * @param shape Shape of the screen, rectangular or circular
  */
 void scope_draw(scope * s,
                 unsigned char draw_type,
@@ -1297,7 +1307,7 @@ void scope_draw(scope * s,
  * @param bottom_y Bottom y coordinate
  * @param width Width of the scope image
  * @param height Height of the scope image
- * @param shape Shape used for drawing dots
+ * @param shape Shape of the screen, rectangular or circular
  * @param vertical Whether to draw the character in vertical orientation
  */
 static void scope_character(char c, scope * s,
@@ -1430,7 +1440,7 @@ void scope_text_vertical(char text[], scope * s,
  * @param img Array containing scope image
  * @param width Width of the scope image
  * @param height Height of the scope image
- * @param shape Shape used for drawing dots
+ * @param shape Shape of the screen, rectangular or circular
  * @param text_size_pixels Size of each number character
  * @param no_of_increments How many numbers along the line
  */
@@ -1495,7 +1505,7 @@ void scope_number_line(scope * s,
  * @param img Array containing scope image
  * @param width Width of the scope image
  * @param height Height of the scope image
- * @param shape Shape used for drawing dots
+ * @param shape Shape of the screen, rectangular or circular
  * @param title Title text
  * @param vertical_text Text on the vertical axis
  * @param horizontal_text Text on the horizontal axis
@@ -1530,8 +1540,9 @@ void scope_draw_graph(scope * s,
                        img, 0, 0, width, height,
                        width, height, shape, 1);
 
-    if ((draw_type == PHOSPHENE_DRAW_ALL) ||
-        (draw_type == PHOSPHENE_DRAW_BACKGROUND)) {
+    if ((shape != PHOSPHENE_SHAPE_CIRCULAR) &&
+        ((draw_type == PHOSPHENE_DRAW_ALL) ||
+         (draw_type == PHOSPHENE_DRAW_BACKGROUND))) {
 
         /* horizontal */
         x0 = border_x + ((width-(border_x*2))*1/grid_x);
