@@ -23,12 +23,16 @@ LIBDIR = lib64
 endif
 
 all:
+	rm -f src/flycheck*
 	gcc -shared -Wl,-soname,${SONAME} -std=c99 -pedantic -fPIC -O3 -o ${LIBNAME} src/*.c -Isrc -lm -fopenmp
 debug:
+	rm -f src/flycheck*
 	gcc -shared -Wl,-soname,${SONAME} -std=c99 -pedantic -fPIC -g -o ${LIBNAME} src/*.c -Isrc -lm -fopenmp
 debugstack:
+	rm -f src/flycheck*
 	gcc -shared -Wl,-soname,${SONAME} -std=c99 -pedantic -fsanitize=address -fPIC -g -o ${LIBNAME} src/*.c -Isrc -lm -fopenmp
 graph:
+	rm -f src/flycheck*
 	gcc -shared -Wl,-soname,${SONAME} -std=c99 -pedantic -fPIC -g -o ${LIBNAME} src/*.c -Isrc -lm -fopenmp -fdump-rtl-expand
 	egypt ${SOURCEFILE}.*.expand | xdot -
 	rm *.expand
