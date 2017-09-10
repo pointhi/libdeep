@@ -278,7 +278,8 @@ void scope_update(scope * s,
 {
     unsigned int t = t_ms/s->step_ms;
 
-    if (t >= PHOSPHENE_MAX_TIME_STEPS) return;
+    if (t >= PHOSPHENE_MAX_TIME_STEPS)
+        return;
 
     if (t_ms < s->time_ms) {
         if (trace_index == 0) {
