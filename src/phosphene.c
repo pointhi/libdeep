@@ -305,6 +305,13 @@ void scope_update(scope * s,
  * @param radius Radius of the point
  * @param intensity_percent Intensity in the range 0-100
  * @param img Array containing scope image data
+ * @param top_x Top left x coordinate
+ * @param top_y Top y coordinate
+ * @param bottom_x Bottom right x coordinate
+ * @param bottom_y Bottom y coordinate
+ * @param width Width of the scope image
+ * @param height Height of the scope image
+ * @param shape Shape used for drawing
  */
 static void scope_point(scope * s,
                         int x, int y,
@@ -784,8 +791,8 @@ static void scope_trace_line(scope * s,
  * @param screen_yy Returned top Y coordinate
  * @param top_x Top x coordinate
  * @param top_y Top y coordinate
- * @param botttom_x Bottom x coordinate
- * @param botttom_y Bottom y coordinate
+ * @param bottom_x Bottom x coordinate
+ * @param bottom_y Bottom y coordinate
  */
 static void scope_verticals(scope * s, unsigned int trace_index,
                             unsigned int no_of_traces,
