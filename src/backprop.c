@@ -803,7 +803,10 @@ float bp_weight_gradient_std(bp * net, int layer_index)
         }
     }
 
-    return (float)sqrt(total_deviation_sqr / total_weights);
+    if (fabs(mean) < 0.000001f)
+        return (float)sqrt(total_deviation_sqr / total_weights);
+
+    return (float)sqrt(total_deviation_sqr / total_weights) * 100.0f / mean;
 }
 
 /**
