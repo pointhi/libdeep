@@ -104,5 +104,7 @@ int bp_classifications_to_numbers(int no_of_instances,
 void bp_reproject(bp * net, int layer, int neuron_index);
 void bp_normalise_inputs(bp * net);
 float bp_get_input(bp * net, int index);
+float bp_weight_gradient_mean(bp * net, int layer_index);
+float bp_weight_gradient_std(bp * net, int layer_index);
 
 #endif

@@ -760,6 +760,53 @@ static void bp_clear_dropouts(bp * net)
 }
 
 /**
+ * @brief Returns the average weight change for a given layer
+ * @param net Backprop neural net object
+ * @param layer_index Index of the layer
+ * @returns average weight change
+ */
+float bp_weight_gradient_mean(bp * net, int layer_index)
+{
+    float total_weight_change = 0;
+    int total_weights = 0;
+
+    COUNTDOWN(i, HIDDENS_IN_LAYER(net, layer_index)) {
+        bp_neuron * n = net->hiddens[layer_index][i];
+        COUNTDOWN(w, n->no_of_inputs) {
+            total_weight_change += n->last_weight_change[w];
+            total_weights++;
+        }
+    }
+
+    return total_weight_change / total_weights;
+}
+
+/**
+ * @brief Returns the standard deviation of the weight change for a given layer
+ * @param net Backprop neural net object
+ * @param layer_index Index of the layer
+ * @returns standard deviation of weight change
+ */
+float bp_weight_gradient_std(bp * net, int layer_index)
+{
+    float mean = bp_weight_gradient_mean(net, layer_index);
+    float total_deviation_sqr = 0;
+    int total_weights = 0;
+
+    COUNTDOWN(i, HIDDENS_IN_LAYER(net, layer_index)) {
+        bp_neuron * n = net->hiddens[layer_index][i];
+        COUNTDOWN(w, n->no_of_inputs) {
+            total_deviation_sqr +=
+                (n->last_weight_change[w] - mean)*
+                (n->last_weight_change[w] - mean);
+            total_weights++;
+        }
+    }
+
+    return (float)sqrt(total_deviation_sqr / total_weights);
+}
+
+/**
 * @brief Randomly sets exclusion flags to cause units to drop out
 * @param net Backprop neural net object
 */
