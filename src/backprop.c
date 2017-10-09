@@ -768,17 +768,16 @@ static void bp_clear_dropouts(bp * net)
 float bp_weight_gradient_mean(bp * net, int layer_index)
 {
     float total_weight_change = 0;
-    int total_weights = 0;
+    int no_of_neurons = HIDDENS_IN_LAYER(net, layer_index);
 
-    COUNTDOWN(i, HIDDENS_IN_LAYER(net, layer_index)) {
+    COUNTDOWN(i, no_of_neurons) {
         bp_neuron * n = net->hiddens[layer_index][i];
-        COUNTDOWN(w, n->no_of_inputs) {
-            total_weight_change += n->last_weight_change[w];
-            total_weights++;
-        }
+        COUNTDOWN(w, n->no_of_inputs)
+            total_weight_change += fabs(n->last_weight_change[w]);
     }
 
-    return total_weight_change / total_weights;
+    return total_weight_change * 10000000 /
+        (float)(net->hiddens[layer_index][0]->no_of_inputs * no_of_neurons);
 }
 
 /**
@@ -789,24 +788,30 @@ float bp_weight_gradient_mean(bp * net, int layer_index)
  */
 float bp_weight_gradient_std(bp * net, int layer_index)
 {
-    float mean = bp_weight_gradient_mean(net, layer_index);
-    float total_deviation_sqr = 0;
-    int total_weights = 0;
+    float mean_weight = 0;
+    float total_deviation = 0;
+    unsigned int total_weights = 0;
 
+    /* calculate the average weight magnitude */
     COUNTDOWN(i, HIDDENS_IN_LAYER(net, layer_index)) {
         bp_neuron * n = net->hiddens[layer_index][i];
         COUNTDOWN(w, n->no_of_inputs) {
-            total_deviation_sqr +=
-                (n->last_weight_change[w] - mean)*
-                (n->last_weight_change[w] - mean);
+            mean_weight += fabs(n->weights[w]);
             total_weights++;
         }
     }
+    mean_weight /= (float)total_weights;
 
-    if (fabs(mean) < 0.000001f)
-        return (float)sqrt(total_deviation_sqr / total_weights);
+    /* sum of percentage deviation from the average weight magnitude */
+    COUNTDOWN(i, HIDDENS_IN_LAYER(net, layer_index)) {
+        bp_neuron * n = net->hiddens[layer_index][i];
+        COUNTDOWN(w, n->no_of_inputs) {
+            total_deviation +=
+                fabs(n->last_weight_change[w]*1000/mean_weight);
+        }
+    }
 
-    return (float)sqrt(total_deviation_sqr / total_weights) * 100.0f / mean;
+    return total_deviation * 10000 / (float)total_weights;
 }
 
 /**

@@ -34,9 +34,11 @@
  * @param history History instance
  * @param filename The image filename to save the history plot
  * @param title Title of the history plot
+ * @param label_vertical The text used on the vertical axis
  */
 void deeplearn_history_init(deeplearn_history * history,
-                            char filename[], char title[])
+                            char filename[], char title[],
+                            char label_vertical[])
 {
     history->itterations = 0;
     history->ctr = 0;
@@ -46,15 +48,19 @@ void deeplearn_history_init(deeplearn_history * history,
 
     sprintf(history->filename,"%s", filename);
     sprintf(history->title,"%s", title);
+    sprintf(history->label_vertical, "%s", label_vertical);
+
+    COUNTDOWN(t, DEEPLEARN_HISTORY_SIZE)
+        memset((void*)&history->history[0], '\0',
+               sizeof(float)*HISTORY_DIMENSIONS);
 }
 
 /**
  * @brief Update the history of scores during feature learning
  * @param history History instance
- * @param matching score Current score when matching features
+ * @param value The value to be logged
  */
-void deeplearn_history_update(deeplearn_history * history,
-                              float matching_score)
+void deeplearn_history_update(deeplearn_history * history, float value)
 {
     history->itterations++;
 
@@ -62,17 +68,50 @@ void deeplearn_history_update(deeplearn_history * history,
 
     history->ctr++;
     if (history->ctr >= history->step) {
-        if (matching_score == DEEPLEARN_UNKNOWN_ERROR)
-            matching_score = 0;
+        if (value == DEEPLEARN_UNKNOWN_ERROR)
+            value = 0;
 
-        history->history[history->index] =
-            matching_score;
+        history->history[history->index][0] = value;
+
         history->index++;
         history->ctr = 0;
 
         if (history->index >= DEEPLEARN_HISTORY_SIZE) {
             COUNTUP(i, history->index)
-                history->history[i/2] = history->history[i];
+                memcpy((void*)&history->history[i/2][0],
+                       (void*)&history->history[i][0],
+                       sizeof(float)*HISTORY_DIMENSIONS);
+
+            history->index /= 2;
+            history->step *= 2;
+        }
+    }
+}
+
+/**
+ * @brief Update the history of scores during feature learning
+ * @param history History instance
+ * @param value The value array to be logged
+ */
+void deeplearn_history_update_from_array(deeplearn_history * history, float value[])
+{
+    history->itterations++;
+
+    if (history->step == 0) return;
+
+    history->ctr++;
+    if (history->ctr >= history->step) {
+        memcpy((void*)&history->history[history->index][0],
+               (void*)&value[0], sizeof(float)*HISTORY_DIMENSIONS);
+
+        history->index++;
+        history->ctr = 0;
+
+        if (history->index >= DEEPLEARN_HISTORY_SIZE) {
+            COUNTUP(i, history->index)
+                memcpy((void*)&history->history[i/2][0],
+                       (void*)&history->history[i][0],
+                       sizeof(float)*HISTORY_DIMENSIONS);
 
             history->index /= 2;
             history->step *= 2;
@@ -118,7 +157,7 @@ int deeplearn_history_gnuplot(deeplearn_history * history,
         return -3;
 
     COUNTUP(index, history->index) {
-        value = history->history[index];
+        value = history->history[index][0];
         fprintf(fp,"%d    %.10f\n",
                 index*history->step,value);
         /* record the maximum error value */
@@ -183,7 +222,7 @@ int deeplearn_history_phosphene(deeplearn_history * history,
     unsigned char * img;
 
     COUNTUP(index, history->index) {
-        value = history->history[index];
+        value = history->history[index][0];
         if (value > max_voltage)
             max_voltage = value;
     }
@@ -202,7 +241,7 @@ int deeplearn_history_phosphene(deeplearn_history * history,
 
     for (t = 0; t < history->index; t++) {
         scope_update(&s, channel,
-                     history->history[t],
+                     history->history[t][0],
                      0.0f, max_voltage, t);
     }
 
@@ -211,7 +250,7 @@ int deeplearn_history_phosphene(deeplearn_history * history,
                      img, img_width, img_height,
                      PHOSPHENE_SHAPE_RECTANGULAR,
                      history->title,
-                     "Training Error %", "Time Step", 25, 4);
+                     history->label_vertical, "Time Step", 25, 4);
 
     phosphene_write_png_file(history->filename,
                              img_width, img_height, 24, img);
@@ -220,7 +259,6 @@ int deeplearn_history_phosphene(deeplearn_history * history,
 
     return 0;
 }
-
 
 /**
  * @brief Plot the training error to a graph image

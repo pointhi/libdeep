@@ -95,7 +95,11 @@ int deeplearn_init(deeplearn * learner,
     learner->field_length = 0;
 
     deeplearn_history_init(&learner->history, "training.png",
-                           "Training History");
+                           "Training History", "Training Error %");
+    deeplearn_history_init(&learner->gradients_std, "weight_gradients_std.png",
+                           "Weight Gradient Standard Deviation", "Gradient Std. Dev.");
+    deeplearn_history_init(&learner->gradients_mean, "weight_gradients_mean.png",
+                           "Average Weight Gradient", "Gradient mean");
 
     FLOATALLOC(learner->input_range_min, no_of_inputs);
     if (!learner->input_range_min)
@@ -248,6 +252,37 @@ void deeplearn_pretrain(bp * net, ac * autocoder, int current_layer)
 }
 
 /**
+ * @brief Calculate weight gradient standard deviations for each layer
+ * @param learner Deep learner object
+ */
+static int deeplearn_update_weight_gradients(deeplearn * learner)
+{
+    float weight_gradients[HISTORY_DIMENSIONS];
+
+    if (learner->gradients_std.ctr+1 < learner->gradients_std.step)
+       return 0;
+
+    if (learner->net->hidden_layers >= HISTORY_DIMENSIONS)
+        return 0;
+
+    COUNTDOWN(layer_index, learner->net->hidden_layers) {
+        weight_gradients[layer_index] =
+            bp_weight_gradient_std(learner->net, layer_index);
+    }
+
+    deeplearn_history_update_from_array(&learner->gradients_std, weight_gradients);
+
+    COUNTDOWN(layer_index, learner->net->hidden_layers) {
+        weight_gradients[layer_index] =
+            bp_weight_gradient_mean(learner->net, layer_index);
+    }
+
+    deeplearn_history_update_from_array(&learner->gradients_mean, weight_gradients);
+
+    return 1;
+}
+
+/**
  * @brief Performs training initially using autocoders
  *        for each hidden
  *        layer and eventually for the entire network.
@@ -311,6 +346,9 @@ void deeplearn_update(deeplearn * learner)
         /* set the training completed flag */
         if (learner->backprop_error < minimum_error_percent)
             learner->training_complete = 1;
+
+        /* record the history of error values */
+        deeplearn_update_weight_gradients(learner);
     }
 
     /* record the history of error values */
@@ -731,6 +769,12 @@ int deeplearn_save(FILE * fp, deeplearn * learner)
     if (fwrite(&learner->history, sizeof(deeplearn_history), 1, fp) == 0)
         return -14;
 
+    if (fwrite(&learner->gradients_std, sizeof(deeplearn_history), 1, fp) == 0)
+        return -15;
+
+    if (fwrite(&learner->gradients_mean, sizeof(deeplearn_history), 1, fp) == 0)
+        return -16;
+
     return 0;
 }
 
@@ -830,6 +874,12 @@ int deeplearn_load(FILE * fp, deeplearn * learner)
     if (fread(&learner->history, sizeof(deeplearn_history), 1, fp) == 0)
         return -23;
 
+    if (fread(&learner->gradients_std, sizeof(deeplearn_history), 1, fp) == 0)
+        return -24;
+
+    if (fread(&learner->gradients_mean, sizeof(deeplearn_history), 1, fp) == 0)
+        return -25;
+
     return 0;
 }
 
@@ -867,8 +917,8 @@ int deeplearn_compare(deeplearn * learner1,
         return -7;
 
     COUNTDOWN(i, learner1->history.index) {
-        if (learner1->history.history[i] !=
-            learner2->history.history[i])
+        if (learner1->history.history[i][0] !=
+            learner2->history.history[i][0])
             return -8;
     }
 
@@ -920,6 +970,25 @@ int deeplearn_plot_history(deeplearn * learner,
                            int image_width, int image_height)
 {
     return deeplearn_history_plot(&learner->history,
+                                  image_width, image_height);
+}
+
+/**
+ * @brief Uses gnuplot to plot the weight gradients for the given learner
+ * @param gradient_type The type of gradient to be plotted
+ * @param learner Deep learner object
+ * @param image_width Width of the image in pixels
+ * @param image_height Height of the image in pixels
+ * @return zero on success
+ */
+int deeplearn_plot_gradients(int gradient_type,
+                             deeplearn * learner,
+                             int image_width, int image_height)
+{
+    if (gradient_type == GRADIENT_STANDARD_DEVIATION)
+        return deeplearn_history_plot(&learner->gradients_std,
+                                      image_width, image_height);
+    return deeplearn_history_plot(&learner->gradients_mean,
                                   image_width, image_height);
 }
 

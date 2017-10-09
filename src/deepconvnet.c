@@ -73,7 +73,7 @@ int deepconvnet_init(int no_of_convolutions,
                      unsigned int * random_seed)
 {
     deeplearn_history_init(&convnet->history, "training.png",
-                           "Training History");
+                           "Training History", "Training Error %");
 
     convnet->convolution = (deeplearn_conv*)malloc(sizeof(deeplearn_conv));
 

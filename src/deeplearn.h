@@ -48,6 +48,12 @@ enum {
     EXPORT_ARDUINO
 };
 
+/* types of weight gradient to plot */
+enum {
+    GRADIENT_STANDARD_DEVIATION = 0,
+    GRADIENT_MEAN
+};
+
 struct deeplearndata {
     float * inputs;
     char ** inputs_text;
@@ -104,6 +110,8 @@ struct deepl {
     unsigned int training_ctr;
 
     deeplearn_history history;
+    deeplearn_history gradients_std;
+    deeplearn_history gradients_mean;
 };
 typedef struct deepl deeplearn;
 
@@ -137,6 +145,8 @@ int deeplearn_compare(deeplearn * learner1,
                       deeplearn * learner2);
 int deeplearn_plot_history(deeplearn * learner,
                            int image_width, int image_height);
+int deeplearn_plot_gradients(int gradient_type, deeplearn * learner,
+                             int image_width, int image_height);
 int deeplearn_inputs_from_image_patch(deeplearn * learner,
                                       unsigned char * img,
                                       int image_width, int image_height,

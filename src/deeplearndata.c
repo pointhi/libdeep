@@ -750,6 +750,10 @@ static void deeplearndata_update_training_history(deeplearn * learner)
     if (learner->training_ctr > learner->history.interval) {
         deeplearn_plot_history(learner,
                                DEEPLEARN_PLOT_WIDTH, DEEPLEARN_PLOT_HEIGHT);
+        deeplearn_plot_gradients(GRADIENT_STANDARD_DEVIATION, learner,
+                                 DEEPLEARN_PLOT_WIDTH, DEEPLEARN_PLOT_HEIGHT);
+        deeplearn_plot_gradients(GRADIENT_MEAN, learner,
+                                 DEEPLEARN_PLOT_WIDTH, DEEPLEARN_PLOT_HEIGHT);
         learner->training_ctr = 0;
     }
     learner->training_ctr++;

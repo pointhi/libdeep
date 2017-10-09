@@ -37,6 +37,8 @@
 #include "globals.h"
 #include "phosphene.h"
 
+#define HISTORY_DIMENSIONS 16
+
 typedef struct {
     /* training itterations elapsed */
     unsigned int itterations;
@@ -45,15 +47,17 @@ typedef struct {
     unsigned int interval;
     char filename[256];
     char title[256];
+    char label_vertical[256];
 
-    float history[DEEPLEARN_HISTORY_SIZE];
+    float history[DEEPLEARN_HISTORY_SIZE][HISTORY_DIMENSIONS];
     int index, ctr, step;
 } deeplearn_history;
 
 void deeplearn_history_init(deeplearn_history * history,
-                            char filename[], char title[]);
-void deeplearn_history_update(deeplearn_history * history,
-                              float matching_score);
+                            char filename[], char title[],
+                            char label_vertical[]);
+void deeplearn_history_update(deeplearn_history * history, float value);
+void deeplearn_history_update_from_array(deeplearn_history * history, float value[]);
 int deeplearn_history_gnuplot(deeplearn_history * history,
                               int img_width, int img_height);
 int deeplearn_history_phosphene(deeplearn_history * history,

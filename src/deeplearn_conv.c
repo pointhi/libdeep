@@ -57,7 +57,8 @@ int conv_init(int no_of_layers,
     conv->random_seed = 672593;
 
     deeplearn_history_init(&conv->history, "feature_learning.png",
-                           "Feature Learning Training History");
+                           "Feature Learning Training History",
+                           "Training Error %");
 
     COUNTUP(l, no_of_layers) {
         conv->layer[l].ctr = (unsigned int)0;
@@ -968,5 +969,5 @@ float conv_get_output(deeplearn_conv * conv, int index)
  */
 float conv_get_error(deeplearn_conv * conv)
 {
-    return conv->history.history[conv->history.index];
+    return conv->history.history[conv->history.index][0];
 }
