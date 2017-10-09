@@ -788,7 +788,7 @@ float bp_weight_gradient_mean(bp * net, int layer_index)
  */
 float bp_weight_gradient_std(bp * net, int layer_index)
 {
-    float mean_weight = 0;
+    float mean_weight_change = 0;
     float total_deviation = 0;
     int no_of_neurons = HIDDENS_IN_LAYER(net, layer_index);
     int inputs = net->hiddens[layer_index][0]->no_of_inputs;
@@ -796,20 +796,24 @@ float bp_weight_gradient_std(bp * net, int layer_index)
     /* calculate the average weight magnitude */
     COUNTDOWN(i, no_of_neurons) {
         bp_neuron * n = net->hiddens[layer_index][i];
-        COUNTDOWN(w, inputs)
-            mean_weight += fabs(n->weights[w]);
+        COUNTDOWN(w, inputs) {
+            mean_weight_change += n->last_weight_change[w];
+        }
     }
-    mean_weight /= (float)(no_of_neurons * inputs);
+    mean_weight_change /= (no_of_neurons * inputs);
 
     /* sum of percentage deviation from the average weight magnitude */
-    COUNTDOWN(i, no_of_neurons) {
-        bp_neuron * n = net->hiddens[layer_index][i];
-        COUNTDOWN(w, inputs)
-            total_deviation +=
-                fabs(n->last_weight_change[w] * 1000 / mean_weight);
+    if (fabs(mean_weight_change) > 0.0000000001f) {
+        COUNTDOWN(i, no_of_neurons) {
+            bp_neuron * n = net->hiddens[layer_index][i];
+            COUNTDOWN(w, inputs) {
+                total_deviation +=
+                    fabs((n->last_weight_change[w] - mean_weight_change)/mean_weight_change);
+            }
+        }
     }
 
-    return total_deviation * 10000 / (float)(no_of_neurons * inputs);
+    return total_deviation * 100 / (no_of_neurons * inputs);
 }
 
 /**

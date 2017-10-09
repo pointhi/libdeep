@@ -110,7 +110,7 @@ void deeplearn_history_update_from_array(deeplearn_history * history, float valu
                 if (history->index > 0) {
                     prev_value = history->history[history->index-1][i];
                     history->history[history->index][i] =
-                        prev_value + ((value[i] - prev_value)*0.1f);
+                        prev_value + ((value[i] - prev_value)*0.02f);
                 }
                 else
                     history->history[history->index][i] = value[i];
@@ -234,6 +234,7 @@ int deeplearn_history_phosphene(deeplearn_history * history,
     scope s;
     unsigned int t, channel = 0;
     double max_voltage = 0.01f;
+    double min_voltage = history->history[0][0];
     unsigned int grid_horizontal = 20;
     unsigned int grid_vertical = 16;
     unsigned char * img;
@@ -242,9 +243,12 @@ int deeplearn_history_phosphene(deeplearn_history * history,
         value = history->history[index][0];
         if (value > max_voltage)
             max_voltage = value;
+        if (value < min_voltage)
+            min_voltage = value;
     }
+    min_voltage=min_voltage-(max_voltage*2/100);
     max_voltage=max_voltage*102/100;
-    if (max_voltage < 1) max_voltage = 1;
+    if (max_voltage < 0.01) max_voltage = 0.01;
 
     UCHARALLOC(img, img_width*img_height*3);
     if (!img)
@@ -259,7 +263,7 @@ int deeplearn_history_phosphene(deeplearn_history * history,
     for (t = 0; t < history->index; t++) {
         scope_update(&s, channel,
                      history->history[t][0],
-                     0.0f, max_voltage, t);
+                     min_voltage, max_voltage, t);
     }
 
     scope_draw_graph(&s, PHOSPHENE_DRAW_ALL, 3, 100,
