@@ -769,15 +769,15 @@ float bp_weight_gradient_mean(bp * net, int layer_index)
 {
     float total_weight_change = 0;
     int no_of_neurons = HIDDENS_IN_LAYER(net, layer_index);
+    int inputs = net->hiddens[layer_index][0]->no_of_inputs;
 
     COUNTDOWN(i, no_of_neurons) {
         bp_neuron * n = net->hiddens[layer_index][i];
-        COUNTDOWN(w, n->no_of_inputs)
+        COUNTDOWN(w, inputs)
             total_weight_change += fabs(n->last_weight_change[w]);
     }
 
-    return total_weight_change * 10000000 /
-        (float)(net->hiddens[layer_index][0]->no_of_inputs * no_of_neurons);
+    return total_weight_change * 10000000 / (float)(inputs * no_of_neurons);
 }
 
 /**
@@ -790,28 +790,26 @@ float bp_weight_gradient_std(bp * net, int layer_index)
 {
     float mean_weight = 0;
     float total_deviation = 0;
-    unsigned int total_weights = 0;
+    int no_of_neurons = HIDDENS_IN_LAYER(net, layer_index);
+    int inputs = net->hiddens[layer_index][0]->no_of_inputs;
 
     /* calculate the average weight magnitude */
-    COUNTDOWN(i, HIDDENS_IN_LAYER(net, layer_index)) {
+    COUNTDOWN(i, no_of_neurons) {
         bp_neuron * n = net->hiddens[layer_index][i];
-        COUNTDOWN(w, n->no_of_inputs) {
+        COUNTDOWN(w, inputs)
             mean_weight += fabs(n->weights[w]);
-            total_weights++;
-        }
     }
-    mean_weight /= (float)total_weights;
+    mean_weight /= (float)(no_of_neurons * inputs);
 
     /* sum of percentage deviation from the average weight magnitude */
-    COUNTDOWN(i, HIDDENS_IN_LAYER(net, layer_index)) {
+    COUNTDOWN(i, no_of_neurons) {
         bp_neuron * n = net->hiddens[layer_index][i];
-        COUNTDOWN(w, n->no_of_inputs) {
+        COUNTDOWN(w, inputs)
             total_deviation +=
-                fabs(n->last_weight_change[w]*1000/mean_weight);
-        }
+                fabs(n->last_weight_change[w] * 1000 / mean_weight);
     }
 
-    return total_deviation * 10000 / (float)total_weights;
+    return total_deviation * 10000 / (float)(no_of_neurons * inputs);
 }
 
 /**
