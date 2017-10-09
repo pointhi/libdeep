@@ -97,9 +97,9 @@ int deeplearn_init(deeplearn * learner,
     deeplearn_history_init(&learner->history, "training.png",
                            "Training History", "Training Error %");
     deeplearn_history_init(&learner->gradients_std, "weight_gradients_std.png",
-                           "Weight Gradient Standard Deviation", "Gradient Std. Dev.");
+                           "Weight Gradient Standard Deviation", "Weight Gradient Std. Dev.");
     deeplearn_history_init(&learner->gradients_mean, "weight_gradients_mean.png",
-                           "Average Weight Gradient", "Gradient mean");
+                           "Average Weight Gradient", "Weight Gradient mean");
 
     FLOATALLOC(learner->input_range_min, no_of_inputs);
     if (!learner->input_range_min)
@@ -185,6 +185,18 @@ int deeplearn_init(deeplearn * learner,
 
     learner->backprop_error = DEEPLEARN_UNKNOWN_ERROR;
     return 0;
+}
+
+/**
+ * @brief Sets the title for graphs
+ * @param learner Deep learner object
+ * @param title Title to use
+ */
+void deeplearn_set_title(deeplearn * learner, char title[])
+{
+    sprintf(learner->history.title, "%s", title);
+    sprintf(learner->gradients_std.title, "%s", title);
+    sprintf(learner->gradients_mean.title, "%s", title);
 }
 
 /**

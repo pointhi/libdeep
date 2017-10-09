@@ -71,7 +71,7 @@ int main(int argc, char* argv[])
 
     learner.history.interval = 200000;
 
-    sprintf(learner.history.title,"%s",TITLE);
+    deeplearn_set_title(&learner, TITLE);
 
     while (deeplearndata_training(&learner) != 0) {
     }

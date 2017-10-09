@@ -71,7 +71,7 @@ int main(int argc, char* argv[])
 
     learner.history_plot_interval = 50000;
 
-    sprintf(learner.history_plot_title,"%s",TITLE);
+    deeplearn_set_title(&learner, TITLE);
 
     while (deeplearndata_training(&learner) != 0) {
     }

@@ -93,7 +93,7 @@ static void facerec_training()
 
     convnet.history.interval = 800;
 
-    sprintf(convnet.history.title, "%s", TITLE);
+    deeplearn_set_title(&learner, TITLE);
 
     ctr = 99999;
     while (deepconvnet_training(&convnet) == 0) {
