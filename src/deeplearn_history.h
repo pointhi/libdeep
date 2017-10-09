@@ -39,6 +39,12 @@
 
 #define HISTORY_DIMENSIONS 16
 
+/* types of plot */
+enum {
+    PLOT_STANDARD = 0,
+    PLOT_RUNNING_AVERAGE
+};
+
 typedef struct {
     /* training itterations elapsed */
     unsigned int itterations;
@@ -57,7 +63,8 @@ void deeplearn_history_init(deeplearn_history * history,
                             char filename[], char title[],
                             char label_vertical[]);
 void deeplearn_history_update(deeplearn_history * history, float value);
-void deeplearn_history_update_from_array(deeplearn_history * history, float value[]);
+void deeplearn_history_update_from_array(deeplearn_history * history,
+                                         float value[], int plot_type);
 int deeplearn_history_gnuplot(deeplearn_history * history,
                               int img_width, int img_height);
 int deeplearn_history_phosphene(deeplearn_history * history,

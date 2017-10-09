@@ -92,17 +92,34 @@ void deeplearn_history_update(deeplearn_history * history, float value)
  * @brief Update the history of scores during feature learning
  * @param history History instance
  * @param value The value array to be logged
+ * @param plot_type The type of plot
  */
-void deeplearn_history_update_from_array(deeplearn_history * history, float value[])
+void deeplearn_history_update_from_array(deeplearn_history * history, float value[],
+                                         int plot_type)
 {
+    float prev_value;
+
     history->itterations++;
 
     if (history->step == 0) return;
 
     history->ctr++;
     if (history->ctr >= history->step) {
-        memcpy((void*)&history->history[history->index][0],
-               (void*)&value[0], sizeof(float)*HISTORY_DIMENSIONS);
+        if (plot_type == PLOT_RUNNING_AVERAGE) {
+            COUNTDOWN(i, HISTORY_DIMENSIONS) {
+                if (history->index > 0) {
+                    prev_value = history->history[history->index-1][i];
+                    history->history[history->index][i] =
+                        prev_value + ((value[i] - prev_value)*0.1f);
+                }
+                else
+                    history->history[history->index][i] = value[i];
+            }
+        }
+        else {
+            memcpy((void*)&history->history[history->index][0],
+                   (void*)&value[0], sizeof(float)*HISTORY_DIMENSIONS);
+        }
 
         history->index++;
         history->ctr = 0;

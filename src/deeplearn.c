@@ -270,14 +270,16 @@ static int deeplearn_update_weight_gradients(deeplearn * learner)
             bp_weight_gradient_std(learner->net, layer_index);
     }
 
-    deeplearn_history_update_from_array(&learner->gradients_std, weight_gradients);
+    deeplearn_history_update_from_array(&learner->gradients_std, weight_gradients,
+                                        PLOT_RUNNING_AVERAGE);
 
     COUNTDOWN(layer_index, learner->net->hidden_layers) {
         weight_gradients[layer_index] =
             bp_weight_gradient_mean(learner->net, layer_index);
     }
 
-    deeplearn_history_update_from_array(&learner->gradients_mean, weight_gradients);
+    deeplearn_history_update_from_array(&learner->gradients_mean, weight_gradients,
+                                        PLOT_RUNNING_AVERAGE);
 
     return 1;
 }
