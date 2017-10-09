@@ -131,6 +131,9 @@ int bp_init(bp * net,
         COUNTDOWN(j, HIDDENS_IN_LAYER(net,hidden_layers-1))
             bp_neuron_add_connection(n, j, net->hiddens[hidden_layers-1][j]);
     }
+
+    FLOATALLOC(net->mutual_information[0], hidden_layers);
+    FLOATALLOC(net->mutual_information[1], hidden_layers);
     return 0;
 }
 
@@ -140,6 +143,9 @@ int bp_init(bp * net,
 */
 void bp_free(bp * net)
 {
+    free(net->mutual_information[0]);
+    free(net->mutual_information[1]);
+
     COUNTDOWN(i, net->no_of_inputs) {
         bp_neuron_free(net->inputs[i]);
         free(net->inputs[i]);
@@ -356,8 +362,36 @@ void bp_reproject(bp * net, int layer, int neuron_index)
 }
 
 /**
+ * @brief Update the mutual information between hidden layers and
+ *        input/output layers
+ * @param net Backprop neural net object
+ */
+void bp_update_mutual_information(bp * net)
+{
+    FOR(l, 0, net->hidden_layers) {
+#pragma omp parallel for schedule(static) num_threads(DEEPLEARN_THREADS)
+        COUNTDOWN(i, HIDDENS_IN_LAYER(net,l)) {
+            COUNTDOWN(inp, net->no_of_inputs)
+                net->mutual_information[MI_INPUTS][l] +=
+                    LOG_ODDS(net->hiddens[l][i]->value * net->inputs[inp]->value);
+
+            COUNTDOWN(outp, net->no_of_outputs)
+                net->mutual_information[MI_OUTPUTS][l] +=
+                    LOG_ODDS(net->hiddens[l][i]->value * net->outputs[outp]->desired_value);
+        }
+
+        if ((fabs(net->mutual_information[MI_INPUTS][l]) > 32000) ||
+            (fabs(net->mutual_information[MI_OUTPUTS][l]) > 32000)) {
+            net->mutual_information[MI_INPUTS][l] /= 2;
+            net->mutual_information[MI_OUTPUTS][l] /= 2;
+        }
+    }
+}
+
+/**
 * @brief Adjust connection weights and bias values
 * @param net Backprop neural net object
+* @param current_hidden_layer The hidden layer currently being trained
 */
 void bp_learn(bp * net, int current_hidden_layer)
 {
@@ -851,6 +885,7 @@ void bp_update(bp * net, int current_hidden_layer)
     bp_feed_forward(net);
     bp_backprop(net, current_hidden_layer);
     bp_learn(net, current_hidden_layer);
+    bp_mutual_information(net);
     bp_clear_dropouts(net);
 }
 

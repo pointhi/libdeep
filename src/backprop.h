@@ -40,6 +40,9 @@
 #include "backprop_neuron.h"
 #include "encoding.h"
 
+#define MI_INPUTS  0
+#define MI_OUTPUTS 1
+
 /* macro returns the number of hidden units at a given layer index */
 #define HIDDENS_IN_LAYER(net, layer)                                    \
     ((layer) == 0 ? (net)->no_of_hiddens :                                \
@@ -61,6 +64,7 @@ struct backprop {
     float noise;
     unsigned int random_seed;
     unsigned int itterations;
+    float * mutual_information[2];
 };
 typedef struct backprop bp;
 
@@ -106,5 +110,6 @@ void bp_normalise_inputs(bp * net);
 float bp_get_input(bp * net, int index);
 float bp_weight_gradient_mean(bp * net, int layer_index);
 float bp_weight_gradient_std(bp * net, int layer_index);
+void bp_update_mutual_information(bp * net);
 
 #endif
