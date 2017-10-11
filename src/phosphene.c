@@ -206,6 +206,18 @@ void create_scope(scope * s, unsigned int step_ms)
     s->trace_colour[1] = 252;
     s->trace_colour[2] = 252;
 
+    s->trace_colour_green[0] = 252;
+    s->trace_colour_green[1] = 152;
+    s->trace_colour_green[2] = 152;
+
+    s->trace_colour_blue[0] = 152;
+    s->trace_colour_blue[1] = 152;
+    s->trace_colour_blue[2] = 252;
+
+    s->trace_colour_red[0] = 252;
+    s->trace_colour_red[1] = 252;
+    s->trace_colour_red[2] = 122;
+
     s->trace_surround_colour[0] = 30;
     s->trace_surround_colour[1] = 164;
     s->trace_surround_colour[2] = 127;
@@ -274,7 +286,7 @@ static double scope_radius_squared(unsigned int top_x,
 void scope_update(scope * s,
                   unsigned int trace_index,
                   double value, double min, double max,
-                  unsigned int t_ms)
+                  unsigned int t_ms, unsigned char class)
 {
     unsigned int t = t_ms/s->step_ms;
 
@@ -296,6 +308,7 @@ void scope_update(scope * s,
             s->trace2_max = max;
             s->trace2_scan_ms = t_ms;
         }
+        s->trace_class[t] = class;
     }
 }
 
@@ -314,6 +327,7 @@ void scope_update(scope * s,
  * @param width Width of the scope image
  * @param height Height of the scope image
  * @param shape Shape of the screen, rectangular or circular
+ * @param class Class indicates colour of the point
  */
 static void scope_point(scope * s,
                         int x, int y,
@@ -322,7 +336,7 @@ static void scope_point(scope * s,
                         unsigned int top_x, unsigned int top_y,
                         unsigned int bottom_x, unsigned int bottom_y,
                         unsigned int width, unsigned int height,
-                        unsigned char shape)
+                        unsigned char shape, unsigned char class)
 {
     int xx,yy,dx,dy,dist,c,target,n,noise;
     int tx = x - radius;
@@ -334,6 +348,7 @@ static void scope_point(scope * s,
     unsigned int border_x = (bottom_x-top_x)*s->border_percent/100;
     double radius_squared = 0;
     int cx,cy;
+    unsigned char * trace_colour = &s->trace_colour[0];
 
     if (shape == PHOSPHENE_SHAPE_CIRCULAR) {
         radius_squared = scope_radius_squared(top_x+radius,
@@ -346,6 +361,22 @@ static void scope_point(scope * s,
         dy = y - cy;
         if (dx*dx + dy*dy > radius_squared)
             return;
+    }
+
+    /* alter the colour depending on the class of the point */
+    switch(class) {
+    case 1: {
+        trace_colour = &s->trace_colour_green[0];
+        break;
+    }
+    case 2: {
+        trace_colour = &s->trace_colour_blue[0];
+        break;
+    }
+    case 3: {
+        trace_colour = &s->trace_colour_red[0];
+        break;
+    }
     }
 
     if (tx < top_x) tx = top_x;
@@ -379,7 +410,7 @@ static void scope_point(scope * s,
                 noise = (rand()%60)-30;
                 for (c = 2; c >= 0; c--) {
                     diff =
-                        (s->trace_colour[c] - s->trace_surround_colour[c]) *
+                        (trace_colour[c] - s->trace_surround_colour[c]) *
                         intensity_percent;
                     target =
                         s->trace_surround_colour[c] +
@@ -771,7 +802,7 @@ static void scope_trace_line(scope * s,
         if (!((x==prev_x) && (y==prev_y))) {
             scope_point(s, x, y, radius, intensity_percent,
                         img, top_x, top_y, bottom_x, bottom_y,
-                        width, height, shape);
+                        width, height, shape, 0);
             prev_x = x;
             prev_y = y;
         }
@@ -1103,7 +1134,7 @@ static void scope_xy(scope * s,
             scope_point(s, x, y,
                         radius, intensity_percent,
                         img, top_x, top_y, bottom_x, bottom_y,
-                        width, height, shape);
+                        width, height, shape, s->trace_class[t]);
         else
             scope_trace_line(s, prev_x, prev_y, x, y,
                              radius, intensity_percent,
@@ -1346,7 +1377,7 @@ static void scope_character(char c, scope * s,
                 ((vertical == 0) && (bitmap[y] & 1 << x)))
                 scope_point(s, img_x, img_y, radius, intensity_percent,
                             img, top_x, top_y, bottom_x, bottom_y,
-                            width, height, shape);
+                            width, height, shape, 0);
         }
     }
 }

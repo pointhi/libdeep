@@ -73,6 +73,7 @@ struct scope_struct {
     double trace2_min, trace2_max;
     double trace1[PHOSPHENE_MAX_TIME_STEPS];
     double trace2[PHOSPHENE_MAX_TIME_STEPS];
+    unsigned char trace_class[PHOSPHENE_MAX_TIME_STEPS];
     int offset_ms;
     unsigned int time_ms, step_ms;
     unsigned int trace1_scan_ms, trace2_scan_ms;
@@ -84,6 +85,9 @@ struct scope_struct {
     unsigned char background_border_colour[3];
     unsigned char markings_colour[3];
     unsigned char trace_colour[3];
+    unsigned char trace_colour_green[3];
+    unsigned char trace_colour_red[3];
+    unsigned char trace_colour_blue[3];
     unsigned char trace_surround_colour[3];
     unsigned int horizontal_multiplier;
     double noise;
@@ -99,7 +103,7 @@ void scope_clear(scope * s);
 void scope_update(scope * s,
                   unsigned int trace_index,
                   double value, double min, double max,
-                  unsigned int t_ms);
+                  unsigned int t_ms, unsigned char class);
 void scope_draw_bounded(scope * s,
                         unsigned char draw_type,
                         double intensity_percent,

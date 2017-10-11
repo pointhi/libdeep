@@ -299,7 +299,7 @@ int deeplearn_history_phosphene(deeplearn_history * history,
         for (t = 0; t < history->index; t++) {
             scope_update(&s, channel,
                          history->history[t][0],
-                         min_voltage, max_voltage, t);
+                         min_voltage, max_voltage, t, 0);
         }
     }
     else {
@@ -312,9 +312,9 @@ int deeplearn_history_phosphene(deeplearn_history * history,
                 y = history->history[t][p*2+1];
 
                 scope_update(&s, channel, x,
-                             min_time, max_time, t2);
+                             min_time, max_time, t2, p);
                 scope_update(&s, channel+1, y,
-                             min_voltage, max_voltage, t2);
+                             min_voltage, max_voltage, t2, p);
                 t2++;
             }
         }
