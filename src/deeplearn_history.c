@@ -160,6 +160,9 @@ int deeplearn_history_gnuplot(deeplearn_history * history,
     char * filename = history->filename;
     char * title = history->title;
 
+    if (history->no_of_points > 0)
+        return 0;
+
     if (strlen(filename) == 0)
         return -1;
 
