@@ -53,7 +53,9 @@ typedef struct {
     unsigned int interval;
     char filename[256];
     char title[256];
+    char label_horizontal[256];
     char label_vertical[256];
+    char no_of_points;
 
     float history[DEEPLEARN_HISTORY_SIZE][HISTORY_DIMENSIONS];
     int index, ctr, step;
@@ -61,7 +63,7 @@ typedef struct {
 
 void deeplearn_history_init(deeplearn_history * history,
                             char filename[], char title[],
-                            char label_vertical[]);
+                            char label_horizontal[], char label_vertical[]);
 void deeplearn_history_update(deeplearn_history * history, float value);
 void deeplearn_history_update_from_array(deeplearn_history * history,
                                          float value[], int plot_type);

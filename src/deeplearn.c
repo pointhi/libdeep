@@ -95,11 +95,18 @@ int deeplearn_init(deeplearn * learner,
     learner->field_length = 0;
 
     deeplearn_history_init(&learner->history, "training.png",
-                           "Training History", "Training Error %");
+                           "Training History",
+                           "Time Step", "Training Error %");
     deeplearn_history_init(&learner->gradients_std, "weight_gradients_std.png",
-                           "Weight Gradient Standard Deviation", "Weight Gradient Std. Dev.");
+                           "Weight Gradient Standard Deviation",
+                           "Time Step", "Weight Gradient Std. Dev.");
     deeplearn_history_init(&learner->gradients_mean, "weight_gradients_mean.png",
-                           "Average Weight Gradient", "Weight Gradient mean");
+                           "Average Weight Gradient",
+                           "Time Step", "Weight Gradient mean");
+    deeplearn_history_init(&learner->information_plane, "information_plane.png",
+                           "Information Plane",
+                           "I(T,X)", "I(T,Y)");
+    learner->information_plane.no_of_points = no_of_hiddens;
 
     FLOATALLOC(learner->input_range_min, no_of_inputs);
     if (!learner->input_range_min)
@@ -197,6 +204,7 @@ void deeplearn_set_title(deeplearn * learner, char title[])
     sprintf(learner->history.title, "%s", title);
     sprintf(learner->gradients_std.title, "%s", title);
     sprintf(learner->gradients_mean.title, "%s", title);
+    sprintf(learner->information_plane.title, "%s", title);
 }
 
 /**
@@ -299,6 +307,27 @@ static int deeplearn_update_weight_gradients(deeplearn * learner)
 }
 
 /**
+ * @brief Update the mutual information graph
+ * @param learner Deep learner object
+ */
+static void deeplearn_update_mutual_information(deeplearn * learner) {
+    float points[HISTORY_DIMENSIONS];
+
+    memset((void*)&points[0], '\0', HISTORY_DIMENSIONS*sizeof(float));
+    COUNTUP(layer_index, learner->net->hidden_layers) {
+        if (layer_index*2+1 >= HISTORY_DIMENSIONS)
+            break;
+        points[layer_index*2] =
+            learner->net->mutual_information[MI_INPUTS][layer_index];
+        points[layer_index*2+1] =
+            learner->net->mutual_information[MI_OUTPUTS][layer_index];
+    }
+
+    deeplearn_history_update_from_array(&learner->information_plane,
+                                        &points[0], PLOT_STANDARD);
+}
+
+/**
  * @brief Performs training initially using autocoders
  *        for each hidden
  *        layer and eventually for the entire network.
@@ -365,6 +394,10 @@ void deeplearn_update(deeplearn * learner)
 
         /* record the history of error values */
         deeplearn_update_weight_gradients(learner);
+
+        /* update the points on the mutual information graph */
+        bp_update_mutual_information(learner->net);
+        deeplearn_update_mutual_information(learner);
     }
 
     /* record the history of error values */
@@ -791,6 +824,9 @@ int deeplearn_save(FILE * fp, deeplearn * learner)
     if (fwrite(&learner->gradients_mean, sizeof(deeplearn_history), 1, fp) == 0)
         return -16;
 
+    if (fwrite(&learner->information_plane, sizeof(deeplearn_history), 1, fp) == 0)
+        return -17;
+
     return 0;
 }
 
@@ -896,6 +932,9 @@ int deeplearn_load(FILE * fp, deeplearn * learner)
     if (fread(&learner->gradients_mean, sizeof(deeplearn_history), 1, fp) == 0)
         return -25;
 
+    if (fread(&learner->information_plane, sizeof(deeplearn_history), 1, fp) == 0)
+        return -26;
+
     return 0;
 }
 
@@ -976,7 +1015,7 @@ int deeplearn_compare(deeplearn * learner1,
 }
 
 /**
- * @brief Uses gnuplot to plot the training error for the given learner
+ * @brief Plots the training error for the given learner
  * @param learner Deep learner object
  * @param image_width Width of the image in pixels
  * @param image_height Height of the image in pixels
@@ -990,7 +1029,7 @@ int deeplearn_plot_history(deeplearn * learner,
 }
 
 /**
- * @brief Uses gnuplot to plot the weight gradients for the given learner
+ * @brief Plot the weight gradients for the given learner
  * @param gradient_type The type of gradient to be plotted
  * @param learner Deep learner object
  * @param image_width Width of the image in pixels
@@ -1005,6 +1044,20 @@ int deeplearn_plot_gradients(int gradient_type,
         return deeplearn_history_plot(&learner->gradients_std,
                                       image_width, image_height);
     return deeplearn_history_plot(&learner->gradients_mean,
+                                  image_width, image_height);
+}
+
+/**
+ * @brief Plot the information plane for the given learner
+ * @param learner Deep learner object
+ * @param image_width Width of the image in pixels
+ * @param image_height Height of the image in pixels
+ * @return zero on success
+ */
+int deeplearn_plot_information_plane(deeplearn * learner,
+                                     int image_width, int image_height)
+{
+    return deeplearn_history_plot(&learner->information_plane,
                                   image_width, image_height);
 }
 

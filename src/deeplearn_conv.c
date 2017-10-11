@@ -58,7 +58,7 @@ int conv_init(int no_of_layers,
 
     deeplearn_history_init(&conv->history, "feature_learning.png",
                            "Feature Learning Training History",
-                           "Training Error %");
+                           "Time Step", "Training Error %");
 
     COUNTUP(l, no_of_layers) {
         conv->layer[l].ctr = (unsigned int)0;

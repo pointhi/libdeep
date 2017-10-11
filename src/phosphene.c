@@ -281,7 +281,8 @@ void scope_update(scope * s,
     if (t >= PHOSPHENE_MAX_TIME_STEPS)
         return;
 
-    if (t_ms < s->time_ms) {
+    if ((t_ms < s->time_ms) ||
+        (s->mode > PHOSPHENE_MODE_DEFAULT)) {
         if (trace_index == 0) {
             s->trace1[t] = value;
             s->trace1_min = min;
@@ -1554,12 +1555,22 @@ void scope_draw_graph(scope * s,
                          img, 0,0, width, height,
                          width, height, shape);
 
-        scope_number_line(s, x0, y0, x1, y1,
-                          0, (int)s->time_ms,
-                          radius, intensity_percent,
-                          grid_x, grid_y, img,
-                          width, height, shape,
-                          text_size_pixels*5/10, no_of_increments);
+        if (s->mode == PHOSPHENE_MODE_DEFAULT) {
+            scope_number_line(s, x0, y0, x1, y1,
+                              0, (int)s->time_ms,
+                              radius, intensity_percent,
+                              grid_x, grid_y, img,
+                              width, height, shape,
+                              text_size_pixels*5/10, no_of_increments);
+        }
+        else {
+            scope_number_line(s, x0, y0, x1, y1,
+                              (int)s->trace1_min, (int)s->trace1_max,
+                              radius, intensity_percent,
+                              grid_x, grid_y, img,
+                              width, height, shape,
+                              text_size_pixels*5/10, no_of_increments);
+        }
 
         /* vertical */
         x1 = x0;
@@ -1569,12 +1580,22 @@ void scope_draw_graph(scope * s,
                          img, 0,0, width, height,
                          width, height, shape);
 
-        scope_number_line(s, x0, y0, x1, y1,
-                          (int)s->trace1_min, (int)s->trace1_max,
-                          radius, intensity_percent,
-                          grid_x, grid_y, img,
-                          width, height, shape,
-                          text_size_pixels*5/10, no_of_increments);
+        if (s->mode == PHOSPHENE_MODE_DEFAULT) {
+            scope_number_line(s, x0, y0, x1, y1,
+                              (int)s->trace1_min, (int)s->trace1_max,
+                              radius, intensity_percent,
+                              grid_x, grid_y, img,
+                              width, height, shape,
+                              text_size_pixels*5/10, no_of_increments);
+        }
+        else {
+            scope_number_line(s, x0, y0, x1, y1,
+                              (int)s->trace2_min, (int)s->trace2_max,
+                              radius, intensity_percent,
+                              grid_x, grid_y, img,
+                              width, height, shape,
+                              text_size_pixels*5/10, no_of_increments);
+        }
 
 
         scope_text(title, s,

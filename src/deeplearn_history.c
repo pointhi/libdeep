@@ -34,10 +34,12 @@
  * @param history History instance
  * @param filename The image filename to save the history plot
  * @param title Title of the history plot
+ * @param label_horizontal The text used on the horizontal axis
  * @param label_vertical The text used on the vertical axis
  */
 void deeplearn_history_init(deeplearn_history * history,
                             char filename[], char title[],
+                            char label_horizontal[],
                             char label_vertical[])
 {
     history->itterations = 0;
@@ -45,9 +47,11 @@ void deeplearn_history_init(deeplearn_history * history,
     history->index = 0;
     history->step = 1;
     history->interval = 10;
+    history->no_of_points = 0;
 
     sprintf(history->filename,"%s", filename);
     sprintf(history->title,"%s", title);
+    sprintf(history->label_horizontal, "%s", label_horizontal);
     sprintf(history->label_vertical, "%s", label_vertical);
 
     COUNTDOWN(t, DEEPLEARN_HISTORY_SIZE)
@@ -230,40 +234,87 @@ int deeplearn_history_gnuplot(deeplearn_history * history,
 int deeplearn_history_phosphene(deeplearn_history * history,
                                 int img_width, int img_height)
 {
-    double value;
+    double value,x,y;
     scope s;
-    unsigned int t, channel = 0;
+    unsigned int t, channel = 0, t2 = 0;
+    double min_time=9999999;
+    double max_time=-9999999;
     double max_voltage = 0.01f;
     double min_voltage = history->history[0][0];
     unsigned int grid_horizontal = 20;
     unsigned int grid_vertical = 16;
     unsigned char * img;
 
-    COUNTUP(index, history->index) {
-        value = history->history[index][0];
-        if (value > max_voltage)
-            max_voltage = value;
-        if (value < min_voltage)
-            min_voltage = value;
+    if (history->no_of_points == 0) {
+        COUNTUP(index, history->index) {
+            value = history->history[index][0];
+            if (value > max_voltage)
+                max_voltage = value;
+            if (value < min_voltage)
+                min_voltage = value;
+        }
+    }
+    else {
+        COUNTUP(index, history->index) {
+            COUNTUP(p, history->no_of_points) {
+                if (p*2+1 >= HISTORY_DIMENSIONS)
+                    break;
+
+                x = history->history[index][p*2];
+                y = history->history[index][p*2+1];
+
+                if (x > max_time)
+                    max_time = x;
+                if (x < min_time)
+                    min_time = x;
+
+                if (y > max_voltage)
+                    max_voltage = y;
+                if (y < min_voltage)
+                    min_voltage = y;
+            }
+        }
+        min_time=min_time-(max_time*2/100);
+        max_time=max_time*102/100;
     }
     min_voltage=min_voltage-(max_voltage*2/100);
     max_voltage=max_voltage*102/100;
-    if (max_voltage < 0.01) max_voltage = 0.01;
 
     UCHARALLOC(img, img_width*img_height*3);
     if (!img)
         return 1;
 
     create_scope(&s, 1);
+    if (history->no_of_points > 0)
+        s.mode = PHOSPHENE_MODE_POINTS;
     s.offset_ms = 0;
     s.marker_position = 0;
     s.time_ms = history->index;
     s.horizontal_multiplier = (unsigned int)history->step;
 
-    for (t = 0; t < history->index; t++) {
-        scope_update(&s, channel,
-                     history->history[t][0],
-                     min_voltage, max_voltage, t);
+    if (history->no_of_points == 0) {
+        for (t = 0; t < history->index; t++) {
+            scope_update(&s, channel,
+                         history->history[t][0],
+                         min_voltage, max_voltage, t);
+        }
+    }
+    else {
+        for (t = 0; t < history->index; t++) {
+            COUNTUP(p, history->no_of_points) {
+                if (p*2+1 >= HISTORY_DIMENSIONS)
+                    break;
+
+                x = history->history[t][p*2];
+                y = history->history[t][p*2+1];
+
+                scope_update(&s, channel, x,
+                             min_time, max_time, t2);
+                scope_update(&s, channel+1, y,
+                             min_voltage, max_voltage, t2);
+                t2++;
+            }
+        }
     }
 
     scope_draw_graph(&s, PHOSPHENE_DRAW_ALL, 3, 100,
@@ -271,7 +322,8 @@ int deeplearn_history_phosphene(deeplearn_history * history,
                      img, img_width, img_height,
                      PHOSPHENE_SHAPE_RECTANGULAR,
                      history->title,
-                     history->label_vertical, "Time Step", 25, 4);
+                     history->label_vertical,
+                     history->label_horizontal, 25, 4);
 
     phosphene_write_png_file(history->filename,
                              img_width, img_height, 24, img);

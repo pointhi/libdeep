@@ -112,6 +112,7 @@ struct deepl {
     deeplearn_history history;
     deeplearn_history gradients_std;
     deeplearn_history gradients_mean;
+    deeplearn_history information_plane;
 };
 typedef struct deepl deeplearn;
 
@@ -166,5 +167,7 @@ void copy_autocoder_to_hidden_layer(deeplearn * learner, int hidden_layer);
 void deeplearn_pretrain(bp * net, ac * autocoder, int current_layer);
 int deeplearn_inputs_from_convnet(deeplearn * learner, deeplearn_conv * conv);
 void deeplearn_set_title(deeplearn * learner, char title[]);
+int deeplearn_plot_information_plane(deeplearn * learner,
+                                     int image_width, int image_height);
 
 #endif

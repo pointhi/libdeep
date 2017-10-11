@@ -368,23 +368,23 @@ void bp_reproject(bp * net, int layer, int neuron_index)
  */
 void bp_update_mutual_information(bp * net)
 {
-    FOR(l, 0, net->hidden_layers) {
 #pragma omp parallel for schedule(static) num_threads(DEEPLEARN_THREADS)
-        COUNTDOWN(i, HIDDENS_IN_LAYER(net,l)) {
+    FOR(l, 0, net->hidden_layers) {
+        float x = 0;
+        float y = 0;
+
+        COUNTDOWN(i, HIDDENS_IN_LAYER(net, l)) {
+            float h = bp_get_hidden(net, l, i);
+
             COUNTDOWN(inp, net->no_of_inputs)
-                net->mutual_information[MI_INPUTS][l] +=
-                    LOG_ODDS(net->hiddens[l][i]->value * net->inputs[inp]->value);
+                x += h * bp_get_input(net, inp);
 
             COUNTDOWN(outp, net->no_of_outputs)
-                net->mutual_information[MI_OUTPUTS][l] +=
-                    LOG_ODDS(net->hiddens[l][i]->value * net->outputs[outp]->desired_value);
+                y +=  h * bp_get_desired(net, outp);
         }
 
-        if ((fabs(net->mutual_information[MI_INPUTS][l]) > 32000) ||
-            (fabs(net->mutual_information[MI_OUTPUTS][l]) > 32000)) {
-            net->mutual_information[MI_INPUTS][l] /= 2;
-            net->mutual_information[MI_OUTPUTS][l] /= 2;
-        }
+        net->mutual_information[MI_INPUTS][l] = x / net->no_of_inputs;
+        net->mutual_information[MI_OUTPUTS][l] = y / net->no_of_outputs;
     }
 }
 
@@ -404,12 +404,12 @@ void bp_learn(bp * net, int current_hidden_layer)
     FOR(l, start_hidden_layer, net->hidden_layers) {
 #pragma omp parallel for schedule(static) num_threads(DEEPLEARN_THREADS)
         COUNTDOWN(i, HIDDENS_IN_LAYER(net,l))
-            bp_neuron_learn(net->hiddens[l][i],net->learning_rate);
+            bp_neuron_learn(net->hiddens[l][i], net->learning_rate);
     }
 
 #pragma omp parallel for schedule(static) num_threads(DEEPLEARN_THREADS)
     COUNTDOWN(i, net->no_of_outputs)
-        bp_neuron_learn(net->outputs[i],net->learning_rate);
+        bp_neuron_learn(net->outputs[i], net->learning_rate);
 }
 
 /**
@@ -885,7 +885,6 @@ void bp_update(bp * net, int current_hidden_layer)
     bp_feed_forward(net);
     bp_backprop(net, current_hidden_layer);
     bp_learn(net, current_hidden_layer);
-    bp_mutual_information(net);
     bp_clear_dropouts(net);
 }
 
