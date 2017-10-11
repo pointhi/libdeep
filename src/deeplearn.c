@@ -105,7 +105,7 @@ int deeplearn_init(deeplearn * learner,
                            "Time Step", "Weight Gradient mean");
     deeplearn_history_init(&learner->information_plane, "information_plane.png",
                            "Information Plane",
-                           "I(T,X)", "I(T,Y)");
+                           "Correlation (T,X)", "Correlation (T,Y)");
     learner->information_plane.no_of_points = no_of_hiddens;
 
     FLOATALLOC(learner->input_range_min, no_of_inputs);
@@ -307,10 +307,10 @@ static int deeplearn_update_weight_gradients(deeplearn * learner)
 }
 
 /**
- * @brief Update the mutual information graph
+ * @brief Update the correlation graph
  * @param learner Deep learner object
  */
-static void deeplearn_update_mutual_information(deeplearn * learner) {
+static void deeplearn_update_correlation(deeplearn * learner) {
     float points[HISTORY_DIMENSIONS];
 
     memset((void*)&points[0], '\0', HISTORY_DIMENSIONS*sizeof(float));
@@ -318,9 +318,9 @@ static void deeplearn_update_mutual_information(deeplearn * learner) {
         if (layer_index*2+1 >= HISTORY_DIMENSIONS)
             break;
         points[layer_index*2] =
-            learner->net->mutual_information[MI_INPUTS][layer_index];
+            learner->net->correlation[COV_INPUTS][layer_index];
         points[layer_index*2+1] =
-            learner->net->mutual_information[MI_OUTPUTS][layer_index];
+            learner->net->correlation[COV_OUTPUTS][layer_index];
     }
 
     deeplearn_history_update_from_array(&learner->information_plane,
@@ -396,8 +396,8 @@ void deeplearn_update(deeplearn * learner)
         deeplearn_update_weight_gradients(learner);
 
         /* update the points on the mutual information graph */
-        bp_update_mutual_information(learner->net);
-        deeplearn_update_mutual_information(learner);
+        bp_update_correlation(learner->net);
+        deeplearn_update_correlation(learner);
     }
 
     /* record the history of error values */

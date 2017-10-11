@@ -132,8 +132,8 @@ int bp_init(bp * net,
             bp_neuron_add_connection(n, j, net->hiddens[hidden_layers-1][j]);
     }
 
-    FLOATALLOC(net->mutual_information[0], hidden_layers);
-    FLOATALLOC(net->mutual_information[1], hidden_layers);
+    FLOATALLOC(net->correlation[0], hidden_layers);
+    FLOATALLOC(net->correlation[1], hidden_layers);
     return 0;
 }
 
@@ -143,8 +143,8 @@ int bp_init(bp * net,
 */
 void bp_free(bp * net)
 {
-    free(net->mutual_information[0]);
-    free(net->mutual_information[1]);
+    free(net->correlation[0]);
+    free(net->correlation[1]);
 
     COUNTDOWN(i, net->no_of_inputs) {
         bp_neuron_free(net->inputs[i]);
@@ -362,11 +362,11 @@ void bp_reproject(bp * net, int layer, int neuron_index)
 }
 
 /**
- * @brief Update the mutual information between hidden layers and
+ * @brief Update the correlation between hidden layers and
  *        input/output layers
  * @param net Backprop neural net object
  */
-void bp_update_mutual_information(bp * net)
+void bp_update_correlation(bp * net)
 {
 #pragma omp parallel for schedule(static) num_threads(DEEPLEARN_THREADS)
     FOR(l, 0, net->hidden_layers) {
@@ -374,17 +374,19 @@ void bp_update_mutual_information(bp * net)
         float y = 0;
 
         COUNTDOWN(i, HIDDENS_IN_LAYER(net, l)) {
-            float h = bp_get_hidden(net, l, i);
+            float h = net->hiddens[l][i]->value;
 
-            COUNTDOWN(inp, net->no_of_inputs)
-                x += h * bp_get_input(net, inp);
+            COUNTDOWN(inp, net->no_of_inputs) {
+                x += h * net->inputs[inp]->value;
+            }
 
-            COUNTDOWN(outp, net->no_of_outputs)
-                y +=  h * bp_get_desired(net, outp);
+            COUNTDOWN(outp, net->no_of_outputs) {
+                y += h * net->inputs[outp]->value;
+            }
         }
 
-        net->mutual_information[MI_INPUTS][l] = x / net->no_of_inputs;
-        net->mutual_information[MI_OUTPUTS][l] = y / net->no_of_outputs;
+        net->correlation[COV_INPUTS][l] = x / net->no_of_inputs;
+        net->correlation[COV_OUTPUTS][l] = y / net->no_of_outputs;
     }
 }
 
