@@ -6,7 +6,7 @@ This is a C library which can be used in deep learning applications.  It allows 
 
 A Python API for libdeep can be found at https://github.com/bashrc/libdeep-python
 
-<img src="https://github.com/bashrc/libdeep/blob/master/examples/cancer_classification/cancer_detection_training_error.png?raw=true" width=640/>
+<img src="https://github.com/bashrc/libdeep/blob/master/img/training.jpg?raw=true" width=640/>
 
 Installation
 ============
