@@ -39,9 +39,10 @@
 #include "deeplearn_images.h"
 #include "backprop_neuron.h"
 #include "encoding.h"
+#include "mutual_information.h"
 
-#define COV_INPUTS  0
-#define COV_OUTPUTS 1
+#define MID_INPUTS  0
+#define MID_OUTPUTS 1
 
 /* macro returns the number of hidden units at a given layer index */
 #define HIDDENS_IN_LAYER(net, layer)                                    \
@@ -64,7 +65,7 @@ struct backprop {
     float noise;
     unsigned int random_seed;
     unsigned int itterations;
-    float * correlation[2];
+    float * information_plane[2];
 };
 typedef struct backprop bp;
 
@@ -111,6 +112,6 @@ float bp_get_input(bp * net, int index);
 float bp_weight_gradient_mean(bp * net, int layer_index);
 float bp_weight_gradient_std(bp * net, int layer_index);
 void bp_update_averages(bp * net, float running_average_factor);
-void bp_update_correlation(bp * net);
+void bp_update_information_plane(bp * net);
 
 #endif

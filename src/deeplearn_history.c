@@ -277,11 +277,11 @@ int deeplearn_history_phosphene(deeplearn_history * history,
                     min_voltage = y;
             }
         }
-        min_time=min_time-(max_time*2/100);
-        max_time=max_time*102/100;
+        min_time = min_time-(max_time*2/100);
+        max_time = max_time*102/100;
     }
-    min_voltage=min_voltage-(max_voltage*2/100);
-    max_voltage=max_voltage*102/100;
+    min_voltage = min_voltage-(max_voltage*2/100);
+    max_voltage = max_voltage*102/100;
 
     UCHARALLOC(img, img_width*img_height*3);
     if (!img)
@@ -312,9 +312,9 @@ int deeplearn_history_phosphene(deeplearn_history * history,
                 y = history->history[t][p*2+1];
 
                 scope_update(&s, channel, x,
-                             min_time, max_time, t2, p);
+                             min_time, max_time, t2, (unsigned char)p);
                 scope_update(&s, channel+1, y,
-                             min_voltage, max_voltage, t2, p);
+                             min_voltage, max_voltage, t2, (unsigned char)p);
                 t2++;
             }
         }

@@ -132,8 +132,8 @@ int bp_init(bp * net,
             bp_neuron_add_connection(n, j, net->hiddens[hidden_layers-1][j]);
     }
 
-    FLOATALLOC(net->correlation[0], hidden_layers);
-    FLOATALLOC(net->correlation[1], hidden_layers);
+    FLOATALLOC(net->information_plane[0], hidden_layers);
+    FLOATALLOC(net->information_plane[1], hidden_layers);
     return 0;
 }
 
@@ -143,8 +143,8 @@ int bp_init(bp * net,
 */
 void bp_free(bp * net)
 {
-    free(net->correlation[0]);
-    free(net->correlation[1]);
+    free(net->information_plane[0]);
+    free(net->information_plane[1]);
 
     COUNTDOWN(i, net->no_of_inputs) {
         bp_neuron_free(net->inputs[i]);
@@ -361,32 +361,48 @@ void bp_reproject(bp * net, int layer, int neuron_index)
     }
 }
 
+#define MID_ARRAY_SIZE 32
+
 /**
- * @brief Update the correlation between hidden layers and
+ * @brief Update the information_plane between hidden layers and
  *        input/output layers
  * @param net Backprop neural net object
  */
-void bp_update_correlation(bp * net)
+void bp_update_information_plane(bp * net)
 {
-#pragma omp parallel for schedule(static) num_threads(DEEPLEARN_THREADS)
-    FOR(l, 0, net->hidden_layers) {
-        float x = 0;
-        float y = 0;
+    double x[MID_ARRAY_SIZE], y[MID_ARRAY_SIZE];
+
+    /* clear mutual information arrays */
+    memset((void*)x, '\0', MID_ARRAY_SIZE*sizeof(double));
+    memset((void*)y, '\0', MID_ARRAY_SIZE*sizeof(double));
+
+    COUNTDOWN(inp, net->no_of_inputs) {
+        if (inp >= MID_ARRAY_SIZE)
+            break;
+
+        x[inp] = net->inputs[inp]->value;
+    }
+
+    COUNTDOWN(outp, net->no_of_outputs) {
+        if (outp >= MID_ARRAY_SIZE)
+            break;
+
+        y[outp] = net->outputs[outp]->desired_value;
+    }
+
+    COUNTDOWN(l, net->hidden_layers) {
+        double T[MID_ARRAY_SIZE];
 
         COUNTDOWN(i, HIDDENS_IN_LAYER(net, l)) {
-            float h = net->hiddens[l][i]->value;
-
-            COUNTDOWN(inp, net->no_of_inputs) {
-                x += h * net->inputs[inp]->value;
-            }
-
-            COUNTDOWN(outp, net->no_of_outputs) {
-                y += h * net->inputs[outp]->value;
-            }
+            if (i >= MID_ARRAY_SIZE)
+                break;
+            T[i] = net->hiddens[l][i]->value;
         }
 
-        net->correlation[COV_INPUTS][l] = x / net->no_of_inputs;
-        net->correlation[COV_OUTPUTS][l] = y / net->no_of_outputs;
+        net->information_plane[MID_INPUTS][l] =
+            mutual_information(T, x, MID_ARRAY_SIZE);
+        net->information_plane[MID_OUTPUTS][l] =
+            mutual_information(T, y, MID_ARRAY_SIZE);
     }
 }
 
