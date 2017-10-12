@@ -310,11 +310,15 @@ static void information_dimension(double x[], double y[], int length,
  * @param length Length of the arrays
  * @returns Mutual information dimension
  */
-double mutual_information(double x[], double y[], int length)
+double mutual_information(double x[], double y[], int length,
+                          double * ix, double * iy)
 {
-    double ix=0, iy=0, idim_xy=0, mi;
+    double idim_xy=0, mi;
     int level_max = floor(log(length) / log(2));
     int level_max_cov = floor(log(length) / log(4)) + 4;
+
+    *ix = 0;
+    *iy = 0;
 
     COUNTDOWN(i, length) {
         if (x[i] < 0) x[i] = 0;
@@ -327,10 +331,10 @@ double mutual_information(double x[], double y[], int length)
 
     information_dimension(x, y, length,
                           level_max, level_max_cov,
-                          &ix, &iy, &idim_xy);
-    mi = ix + iy - idim_xy;
+                          ix, iy, &idim_xy);
+    mi = *ix + *iy - idim_xy;
     if (mi > 1) mi = 1;
     if (mi < 0) mi = 0;
 
-    return ix;
+    return idim_xy;
 }
