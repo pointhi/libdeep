@@ -1075,11 +1075,13 @@ int deeplearn_plot_information_plane(deeplearn * learner,
                                      int image_width, int image_height)
 {
     if (learner->enable_information_plane != 0) {
-        sprintf(learner->information_plane.filename,
-                "information_plane_%06d.png", learner->information_plane_index);
-        learner->information_plane_index++;
-        return deeplearn_history_plot(&learner->information_plane,
-                                      image_width, image_height);
+        if (learner->information_plane.index > 0) {
+            sprintf(learner->information_plane.filename,
+                    "information_plane_%06d.png", learner->information_plane_index);
+            learner->information_plane_index++;
+            return deeplearn_history_plot(&learner->information_plane,
+                                          image_width, image_height);
+        }
     }
 
     return 0;
