@@ -95,6 +95,7 @@ int deeplearn_init(deeplearn * learner,
     learner->field_length = 0;
 
     learner->enable_information_plane = 0;
+    learner->information_plane_index = 0;
 
     deeplearn_history_init(&learner->history, "training.png",
                            "Training History",
@@ -834,6 +835,9 @@ int deeplearn_save(FILE * fp, deeplearn * learner)
     if (INTWRITE(learner->enable_information_plane) == 0)
         return -18;
 
+    if (INTWRITE(learner->information_plane_index) == 0)
+        return -19;
+
     return 0;
 }
 
@@ -944,6 +948,9 @@ int deeplearn_load(FILE * fp, deeplearn * learner)
 
     if (INTREAD(learner->enable_information_plane) == 0)
         return -27;
+
+    if (INTREAD(learner->information_plane_index) == 0)
+        return -28;
 
     return 0;
 }
@@ -1067,9 +1074,14 @@ int deeplearn_plot_gradients(int gradient_type,
 int deeplearn_plot_information_plane(deeplearn * learner,
                                      int image_width, int image_height)
 {
-    if (learner->enable_information_plane != 0)
+    if (learner->enable_information_plane != 0) {
+        sprintf(learner->information_plane.filename,
+                "information_plane_%06d.png", learner->information_plane_index);
+        learner->information_plane_index++;
         return deeplearn_history_plot(&learner->information_plane,
                                       image_width, image_height);
+    }
+
     return 0;
 }
 
