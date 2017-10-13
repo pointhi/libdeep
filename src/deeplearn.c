@@ -94,6 +94,8 @@ int deeplearn_init(deeplearn * learner,
     learner->no_of_input_fields = 0;
     learner->field_length = 0;
 
+    learner->enable_information_plane = 0;
+
     deeplearn_history_init(&learner->history, "training.png",
                            "Training History",
                            "Time Step", "Training Error %");
@@ -395,9 +397,11 @@ void deeplearn_update(deeplearn * learner)
         /* record the history of error values */
         deeplearn_update_weight_gradients(learner);
 
-        /* update the points on the mutual information graph */
-        bp_update_information_plane(learner->net);
-        deeplearn_update_information_plane(learner);
+        if (learner->enable_information_plane != 0) {
+            /* update the points on the mutual information graph */
+            bp_update_information_plane(learner->net);
+            deeplearn_update_information_plane(learner);
+        }
     }
 
     /* record the history of error values */
@@ -827,6 +831,9 @@ int deeplearn_save(FILE * fp, deeplearn * learner)
     if (fwrite(&learner->information_plane, sizeof(deeplearn_history), 1, fp) == 0)
         return -17;
 
+    if (INTWRITE(learner->enable_information_plane) == 0)
+        return -18;
+
     return 0;
 }
 
@@ -934,6 +941,9 @@ int deeplearn_load(FILE * fp, deeplearn * learner)
 
     if (fread(&learner->information_plane, sizeof(deeplearn_history), 1, fp) == 0)
         return -26;
+
+    if (INTREAD(learner->enable_information_plane) == 0)
+        return -27;
 
     return 0;
 }
@@ -1057,8 +1067,10 @@ int deeplearn_plot_gradients(int gradient_type,
 int deeplearn_plot_information_plane(deeplearn * learner,
                                      int image_width, int image_height)
 {
-    return deeplearn_history_plot(&learner->information_plane,
-                                  image_width, image_height);
+    if (learner->enable_information_plane != 0)
+        return deeplearn_history_plot(&learner->information_plane,
+                                      image_width, image_height);
+    return 0;
 }
 
 /**

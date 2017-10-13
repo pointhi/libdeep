@@ -102,6 +102,8 @@ struct deepl {
     deeplearndata_meta ** indexed_test_data;
     int indexed_test_data_samples;
 
+    int enable_information_plane;
+
     float * input_range_min;
     float * input_range_max;
     float * output_range_min;
