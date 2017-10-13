@@ -60,6 +60,27 @@ To generate source code documentation make sure that you have doxygen installed 
 man libdeep
 ```
 
+Text or Numeric
+===============
+
+Inputs within training data sets can include both text and/or numeric data. For example, within the XOR training data you can have something like:
+
+``` text
+0.0,0.0,0.0
+0.0,1.0,1.0
+1.0,0.0,1.0
+1.0,1.0,0.0
+```
+
+or alternatively, using whatever text representations you prefer:
+
+``` text
+zero,zero,0.0
+zero,one,1.0
+one,zero,1.0
+one,one,0.0
+```
+
 Showing the call graph
 ======================
 
