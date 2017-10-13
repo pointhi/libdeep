@@ -108,7 +108,7 @@ int deeplearn_init(deeplearn * learner,
                            "Time Step", "Weight Gradient mean");
     deeplearn_history_init(&learner->information_plane, "information_plane.png",
                            "Information Plane",
-                           "MID(T,X)", "MID(T,Y)");
+                           "I(T,X)", "I(T,Y)");
     learner->information_plane.no_of_points = no_of_hiddens;
 
     FLOATALLOC(learner->input_range_min, no_of_inputs);
@@ -321,9 +321,9 @@ static void deeplearn_update_information_plane(deeplearn * learner) {
         if (layer_index*2+1 >= HISTORY_DIMENSIONS)
             break;
         points[layer_index*2] =
-            learner->net->information_plane[MID_INPUTS][layer_index];
+            learner->net->information_plane[MI_INPUTS][layer_index];
         points[layer_index*2+1] =
-            learner->net->information_plane[MID_OUTPUTS][layer_index];
+            learner->net->information_plane[MI_OUTPUTS][layer_index];
     }
 
     deeplearn_history_update_from_array(&learner->information_plane,

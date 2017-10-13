@@ -41,8 +41,11 @@
 #include "encoding.h"
 #include "mutual_information.h"
 
-#define MID_INPUTS  0
-#define MID_OUTPUTS 1
+/* size of the array used for mutual information calculation */
+#define MI_ARRAY_SIZE 32
+
+#define MI_INPUTS     0
+#define MI_OUTPUTS    1
 
 /* macro returns the number of hidden units at a given layer index */
 #define HIDDENS_IN_LAYER(net, layer)                                    \

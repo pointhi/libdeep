@@ -361,8 +361,6 @@ void bp_reproject(bp * net, int layer, int neuron_index)
     }
 }
 
-#define MID_ARRAY_SIZE 32
-
 /**
  * @brief Update the information_plane between hidden layers and
  *        input/output layers
@@ -370,41 +368,41 @@ void bp_reproject(bp * net, int layer, int neuron_index)
  */
 void bp_update_information_plane(bp * net)
 {
-    double x[MID_ARRAY_SIZE], y[MID_ARRAY_SIZE];
+    double x[MI_ARRAY_SIZE], y[MI_ARRAY_SIZE];
 
     /* clear mutual information arrays */
-    memset((void*)x, '\0', MID_ARRAY_SIZE*sizeof(double));
-    memset((void*)y, '\0', MID_ARRAY_SIZE*sizeof(double));
+    memset((void*)x, '\0', MI_ARRAY_SIZE*sizeof(double));
+    memset((void*)y, '\0', MI_ARRAY_SIZE*sizeof(double));
 
     COUNTDOWN(inp, net->no_of_inputs) {
-        if (inp >= MID_ARRAY_SIZE)
+        if (inp >= MI_ARRAY_SIZE)
             break;
 
         x[inp] = net->inputs[inp]->value;
     }
 
     COUNTDOWN(outp, net->no_of_outputs) {
-        if (outp >= MID_ARRAY_SIZE)
+        if (outp >= MI_ARRAY_SIZE)
             break;
 
         y[outp] = net->outputs[outp]->desired_value;
     }
 
     COUNTDOWN(l, net->hidden_layers) {
-        double T[MID_ARRAY_SIZE], ix, iy;
+        double T[MI_ARRAY_SIZE], ix, iy;
+        int no_of_hiddens = HIDDENS_IN_LAYER(net, l);
 
-        COUNTDOWN(i, HIDDENS_IN_LAYER(net, l)) {
-            if (i >= MID_ARRAY_SIZE)
+        COUNTDOWN(i, no_of_hiddens) {
+            if (i >= MI_ARRAY_SIZE)
                 break;
             T[i] = net->hiddens[l][i]->value;
         }
 
-        net->information_plane[MID_INPUTS][l] =
-            (float)mutual_information(T, x, MID_ARRAY_SIZE, &ix, &iy);
+        net->information_plane[MI_INPUTS][l] =
+            (float)mutual_information(T, x, MI_ARRAY_SIZE, &ix, &iy);
 
-        net->information_plane[MID_OUTPUTS][l] =
-            (float)mutual_information(T, y, MID_ARRAY_SIZE, &iy, &iy);
-
+        net->information_plane[MI_OUTPUTS][l] =
+            (float)mutual_information(T, y, MI_ARRAY_SIZE, &iy, &iy);
     }
 }
 
