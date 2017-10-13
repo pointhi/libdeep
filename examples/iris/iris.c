@@ -67,7 +67,7 @@ int main(int argc, char* argv[])
     deeplearn_set_learning_rate(&learner, 0.1f);
     deeplearn_set_dropouts(&learner, 0.01f);
 
-    learner.history.interval = 1000000;
+    learner.history.interval = 500000;
 
     /* create information plane plot */
     learner.enable_information_plane = 1;

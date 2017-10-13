@@ -1502,20 +1502,36 @@ void scope_number_line(scope * s,
         offset_y = 0;
     }
 
+    if ((start_number == 0) && (end_number == 0))
+        end_number = 1;
+
     for (i = 0; i < no_of_increments; i++) {
         x = x0 + (dx*i/(no_of_increments-1)) + offset_x;
         y = y0 + (dy*i/(no_of_increments-1)) + offset_y;
         value = start_number +
             ((end_number - start_number)*i/(no_of_increments-1));
+
+        /*
         if (abs(dx) > abs(dy))
             value *= s->horizontal_multiplier;
-        sprintf(numstr, "%d", value);
-        if (abs(value) >= 1000)
-            sprintf(numstr, "%.1fK", value/1000.0f);
-        if (abs(value) >= 1000000)
-            sprintf(numstr, "%.1fM", value/1000000.0f);
-        if (abs(value) >= 1000000000)
-            sprintf(numstr, "%.1fG", value/1000000000.0f);
+        */
+
+        if ((i > 0) && (value == 0)) {
+            sprintf(numstr, "%.1f",
+                    (float)start_number +
+                    ((end_number - start_number)*i/
+                     (float)(no_of_increments-1)));
+        }
+        else {
+            sprintf(numstr, "%d", value);
+            if (abs(value) >= 1000)
+                sprintf(numstr, "%.1fK", value/1000.0f);
+            if (abs(value) >= 1000000)
+                sprintf(numstr, "%.1fM", value/1000000.0f);
+            if (abs(value) >= 1000000000)
+                sprintf(numstr, "%.1fG", value/1000000000.0f);
+        }
+
         if (abs(dx) < abs(dy))
             x -= (strlen(numstr)*text_size_pixels);
         else
