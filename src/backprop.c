@@ -389,7 +389,7 @@ void bp_update_information_plane(bp * net)
     }
 
     COUNTDOWN(l, net->hidden_layers) {
-        double T[MI_ARRAY_SIZE], ix, iy;
+        double T[MI_ARRAY_SIZE];
         int no_of_hiddens = HIDDENS_IN_LAYER(net, l);
 
         COUNTDOWN(i, no_of_hiddens) {
@@ -399,10 +399,10 @@ void bp_update_information_plane(bp * net)
         }
 
         net->information_plane[MI_INPUTS][l] =
-            (float)mutual_information(T, x, MI_ARRAY_SIZE, &ix, &iy);
+            (float)mutual_information(T, x, MI_ARRAY_SIZE);
 
         net->information_plane[MI_OUTPUTS][l] =
-            (float)mutual_information(T, y, MI_ARRAY_SIZE, &iy, &iy);
+            (float)mutual_information(T, y, MI_ARRAY_SIZE);
     }
 }
 

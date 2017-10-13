@@ -183,43 +183,42 @@ static double keepmax(double x, double y, double xy)
     return (xy > tmp ? xy : tmp);
 }
 
-static void information_dimension(double x[], double y[], int length,
-                                  int level_max, int level_max_cov,
-                                  double * idim_x, double * idim_y,
-                                  double * idim_xy)
+static double information_dimension(double x[], double y[], int length,
+                                    int level_max, int level_max_cov)
 {
     int k, m = 0, width, *codes_x, *codes_y;
     long int *B_x, *B_y, **B_xy;
     double *result_x, *result_y, *result_xy;
+    double idim_x = 0, idim_y = 0, idim_xy = 0;
 
     codes_x = (int *)malloc(sizeof(int) * length);
     if (!codes_x) {
         printf("Error allocating codes_x array\n");
-        return;
+        return 0;
     }
 
     codes_y = (int *)malloc(sizeof(int) * length);
     if (!codes_y) {
         printf("Error allocating codes_y array\n");
-        return;
+        return 0;
     }
 
     result_x = (double *)malloc(sizeof(double) * level_max);
     if (!result_x) {
         printf("Error allocating result_x array\n");
-        return;
+        return 0;
     }
 
     result_y = (double *)malloc(sizeof(double) * level_max);
     if (!result_y) {
         printf("Error allocating result_y array\n");
-        return;
+        return 0;
     }
 
     result_xy = (double *)malloc(sizeof(double) * level_max_cov);
     if (!result_xy) {
         printf("Error allocating result_xy array\n");
-        return;
+        return 0;
     }
 
     FOR(level, 1, level_max+1) {
@@ -228,13 +227,13 @@ static void information_dimension(double x[], double y[], int length,
         B_x = (long int *)malloc(sizeof(long int) * k);
         if (!B_x) {
             printf("Error allocating B_x array\n");
-            return;
+            return 0;
         }
 
         B_y = (long int *)malloc(sizeof(long int) * k);
         if (!B_y) {
             printf("Error allocating B_y array\n");
-            return;
+            return 0;
         }
 
         memset((void*)B_x, '\0', sizeof(long int) * k);
@@ -244,14 +243,14 @@ static void information_dimension(double x[], double y[], int length,
             B_xy = (long int **)malloc(sizeof(long int *) * k);
             if (!B_xy) {
                 printf("Error allocating B_xy array\n");
-                return;
+                return 0;
             }
 
             COUNTDOWN(i, k) {
                 B_xy[i] = (long int *)malloc(sizeof(long int) * k);
                 if (!B_xy[i]) {
                     printf("Error allocating B_xy[%d] array\n", i);
-                    return;
+                    return 0;
                 }
 
                 memset((void*)B_xy[i], '\0', sizeof(long int) * k);
@@ -291,35 +290,32 @@ static void information_dimension(double x[], double y[], int length,
     free(codes_y);
 
     width = ceil(log(length) / log(4));
-    *idim_x = estimate(level_max, result_x, width, 0, 0);
-    *idim_y = estimate(level_max, result_y, width, 0, 0);
-    *idim_xy = estimate_covariance(level_max_cov, result_xy, width, 1,
-                                   *idim_x < *idim_y ? *idim_x : *idim_y);
-    *idim_xy = keepmax(*idim_x, *idim_y, *idim_xy);
+    idim_x = estimate(level_max, result_x, width, 0, 0);
+    idim_y = estimate(level_max, result_y, width, 0, 0);
+    idim_xy = estimate_covariance(level_max_cov, result_xy, width, 1,
+                                   idim_x < idim_y ? idim_x : idim_y);
+    idim_xy = keepmax(idim_x, idim_y, idim_xy);
 
     free(result_x);
     free(result_y);
     free(result_xy);
+    return idim_xy;
 }
 
 /**
- * @brief Returns the mutual information dimension between two arrays
+ * @brief Returns the mutual information value between two arrays
  *        of a given length. Array values should be in the 0.0 -> 1.0 range
  * @param x First array of values in the range 0.0 -> 1.0
  * @param y Second array of values in the range 0.0 -> 1.0
  * @param length Length of the arrays
- * @returns Mutual information dimension
+ * @returns Mutual information value
  */
-double mutual_information(double x[], double y[], int length,
-                          double * ix, double * iy)
+double mutual_information(double x[], double y[], int length)
 {
-    double idim_xy=0, mi;
     int level_max = floor(log(length) / log(2));
     int level_max_cov = floor(log(length) / log(4)) + 4;
 
-    *ix = 0;
-    *iy = 0;
-
+    /* sanitize the arrays */
     COUNTDOWN(i, length) {
         if (x[i] < 0) x[i] = 0;
         if (x[i] > 1) x[i] = 1;
@@ -329,12 +325,5 @@ double mutual_information(double x[], double y[], int length,
         if (isnan(y[i])) y[i] = 0;
     }
 
-    information_dimension(x, y, length,
-                          level_max, level_max_cov,
-                          ix, iy, &idim_xy);
-    mi = *ix + *iy - idim_xy;
-    if (mi > 1) mi = 1;
-    if (mi < 0) mi = 0;
-
-    return idim_xy;
+    return information_dimension(x, y, length, level_max, level_max_cov);
 }

@@ -38,7 +38,6 @@
 #include <math.h>
 #include "globals.h"
 
-double mutual_information(double x[], double y[], int length,
-                          double * ix, double * iy);
+double mutual_information(double x[], double y[], int length);
 
 #endif
