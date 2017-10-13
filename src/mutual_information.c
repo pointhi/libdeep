@@ -302,6 +302,15 @@ static double information_dimension(double x[], double y[], int length,
     return idim_xy;
 }
 
+static void sanitize(double x[], int length)
+{
+    COUNTDOWN(i, length) {
+        if (x[i] < 0) x[i] = 0;
+        if (x[i] > 1) x[i] = 1;
+        if (isnan(x[i])) x[i] = 0;
+    }
+}
+
 /**
  * @brief Returns the mutual information value between two arrays
  *        of a given length. Array values should be in the 0.0 -> 1.0 range
@@ -315,15 +324,8 @@ double mutual_information(double x[], double y[], int length)
     int level_max = floor(log(length) / log(2));
     int level_max_cov = floor(log(length) / log(4)) + 4;
 
-    /* sanitize the arrays */
-    COUNTDOWN(i, length) {
-        if (x[i] < 0) x[i] = 0;
-        if (x[i] > 1) x[i] = 1;
-        if (y[i] < 0) y[i] = 0;
-        if (y[i] > 1) y[i] = 1;
-        if (isnan(x[i])) x[i] = 0;
-        if (isnan(y[i])) y[i] = 0;
-    }
+    sanitize(x, length);
+    sanitize(y, length);
 
     return information_dimension(x, y, length, level_max, level_max_cov);
 }
