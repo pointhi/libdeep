@@ -114,6 +114,19 @@ Using trained neural nets in your system
 
 You can export trained neural nets either as a C program or a Python program. These programs are completely independent and can be used either as commands or integrated into a larger software application. This makes it easy to use the resulting neural net without needing to link to libdeep. See the source code in the examples directory for how to use the export function. If you include the word "sketch" or "arduino" within the filename to be exported to then it will appear as Arduino compatible C suitable for use within an Arduino IDE rather than as standard C.
 
+In your training program:
+
+``` C
+deeplearn_export(&learner, "export.c");
+```
+
+Then when training is done:
+
+``` bash
+gcc -o export_c export.c -lm
+./export_c [first input] [second input]...
+```
+
 Portability
 ===========
 
