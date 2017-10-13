@@ -69,6 +69,9 @@ int main(int argc, char* argv[])
 
     learner.history.interval = 1000000;
 
+    /* create information plane plot */
+    learner.enable_information_plane = 1;
+
     deeplearn_set_title(&learner, TITLE);
 
     while (deeplearndata_training(&learner) != 0) {
