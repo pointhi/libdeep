@@ -94,9 +94,6 @@ int deeplearn_init(deeplearn * learner,
     learner->no_of_input_fields = 0;
     learner->field_length = 0;
 
-    learner->enable_information_plane = 0;
-    learner->information_plane_index = 0;
-
     deeplearn_history_init(&learner->history, "training.png",
                            "Training History",
                            "Time Step", "Training Error %");
@@ -106,10 +103,6 @@ int deeplearn_init(deeplearn * learner,
     deeplearn_history_init(&learner->gradients_mean, "weight_gradients_mean.png",
                            "Average Weight Gradient",
                            "Time Step", "Weight Gradient mean");
-    deeplearn_history_init(&learner->information_plane, "information_plane.png",
-                           "Information Plane",
-                           "I(T,X)", "I(T,Y)");
-    learner->information_plane.no_of_points = no_of_hiddens;
 
     FLOATALLOC(learner->input_range_min, no_of_inputs);
     if (!learner->input_range_min)
@@ -207,7 +200,6 @@ void deeplearn_set_title(deeplearn * learner, char title[])
     sprintf(learner->history.title, "%s", title);
     sprintf(learner->gradients_std.title, "%s", title);
     sprintf(learner->gradients_mean.title, "%s", title);
-    sprintf(learner->information_plane.title, "%s", title);
 }
 
 /**
@@ -310,27 +302,6 @@ static int deeplearn_update_weight_gradients(deeplearn * learner)
 }
 
 /**
- * @brief Update the information plane graph
- * @param learner Deep learner object
- */
-static void deeplearn_update_information_plane(deeplearn * learner) {
-    float points[HISTORY_DIMENSIONS];
-
-    memset((void*)&points[0], '\0', HISTORY_DIMENSIONS*sizeof(float));
-    COUNTUP(layer_index, learner->net->hidden_layers) {
-        if (layer_index*2+1 >= HISTORY_DIMENSIONS)
-            break;
-        points[layer_index*2] =
-            learner->net->information_plane[MI_INPUTS][layer_index];
-        points[layer_index*2+1] =
-            learner->net->information_plane[MI_OUTPUTS][layer_index];
-    }
-
-    deeplearn_history_update_from_array(&learner->information_plane,
-                                        &points[0], PLOT_STANDARD);
-}
-
-/**
  * @brief Performs training initially using autocoders
  *        for each hidden
  *        layer and eventually for the entire network.
@@ -397,12 +368,6 @@ void deeplearn_update(deeplearn * learner)
 
         /* record the history of error values */
         deeplearn_update_weight_gradients(learner);
-
-        if (learner->enable_information_plane != 0) {
-            /* update the points on the mutual information graph */
-            bp_update_information_plane(learner->net);
-            deeplearn_update_information_plane(learner);
-        }
     }
 
     /* record the history of error values */
@@ -829,15 +794,6 @@ int deeplearn_save(FILE * fp, deeplearn * learner)
     if (fwrite(&learner->gradients_mean, sizeof(deeplearn_history), 1, fp) == 0)
         return -16;
 
-    if (fwrite(&learner->information_plane, sizeof(deeplearn_history), 1, fp) == 0)
-        return -17;
-
-    if (INTWRITE(learner->enable_information_plane) == 0)
-        return -18;
-
-    if (INTWRITE(learner->information_plane_index) == 0)
-        return -19;
-
     return 0;
 }
 
@@ -942,15 +898,6 @@ int deeplearn_load(FILE * fp, deeplearn * learner)
 
     if (fread(&learner->gradients_mean, sizeof(deeplearn_history), 1, fp) == 0)
         return -25;
-
-    if (fread(&learner->information_plane, sizeof(deeplearn_history), 1, fp) == 0)
-        return -26;
-
-    if (INTREAD(learner->enable_information_plane) == 0)
-        return -27;
-
-    if (INTREAD(learner->information_plane_index) == 0)
-        return -28;
 
     return 0;
 }
@@ -1062,29 +1009,6 @@ int deeplearn_plot_gradients(int gradient_type,
                                       image_width, image_height);
     return deeplearn_history_plot(&learner->gradients_mean,
                                   image_width, image_height);
-}
-
-/**
- * @brief Plot the information plane for the given learner
- * @param learner Deep learner object
- * @param image_width Width of the image in pixels
- * @param image_height Height of the image in pixels
- * @return zero on success
- */
-int deeplearn_plot_information_plane(deeplearn * learner,
-                                     int image_width, int image_height)
-{
-    if (learner->enable_information_plane != 0) {
-        if (learner->information_plane.index > 0) {
-            sprintf(learner->information_plane.filename,
-                    "information_plane_%06d.png", learner->information_plane_index);
-            learner->information_plane_index++;
-            return deeplearn_history_plot(&learner->information_plane,
-                                          image_width, image_height);
-        }
-    }
-
-    return 0;
 }
 
 /**

@@ -110,8 +110,4 @@
 /* truncate a value in the range 0.0 -> 1.0 */
 #define TRUNCATE(x) ((x) > 0 ? ((x) < 1 ? (x) : 1) : 0)
 
-/* used for mutual information estimate */
-#define LOG_ODDS(p) (log10(p) / (1.0f - (p)))
-#define LOG_ODDS_TO_PROB(odds) (1.0f - (1.0f/(1.0f + (float)exp(odds))))
-
 #endif

@@ -754,8 +754,6 @@ static void deeplearndata_update_training_history(deeplearn * learner)
                                  DEEPLEARN_PLOT_WIDTH, DEEPLEARN_PLOT_HEIGHT);
         deeplearn_plot_gradients(GRADIENT_MEAN, learner,
                                  DEEPLEARN_PLOT_WIDTH, DEEPLEARN_PLOT_HEIGHT);
-        deeplearn_plot_information_plane(learner, DEEPLEARN_PLOT_WIDTH,
-                                         DEEPLEARN_PLOT_HEIGHT);
         learner->training_ctr = 0;
     }
     learner->training_ctr++;

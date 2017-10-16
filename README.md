@@ -136,5 +136,3 @@ Packaging
 =========
 
 To build packages for Debian (deb) see https://github.com/bashrc/libdeep-debian
-
-<img src="https://github.com/bashrc/libdeep/blob/master/img/information_plane.jpg?raw=true" width=640/>

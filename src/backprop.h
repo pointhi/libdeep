@@ -39,13 +39,6 @@
 #include "deeplearn_images.h"
 #include "backprop_neuron.h"
 #include "encoding.h"
-#include "mutual_information.h"
-
-/* size of the array used for mutual information calculation */
-#define MI_ARRAY_SIZE 32
-
-#define MI_INPUTS     0
-#define MI_OUTPUTS    1
 
 /* macro returns the number of hidden units at a given layer index */
 #define HIDDENS_IN_LAYER(net, layer)                                    \
@@ -68,7 +61,6 @@ struct backprop {
     float noise;
     unsigned int random_seed;
     unsigned int itterations;
-    float * information_plane[2];
 };
 typedef struct backprop bp;
 
@@ -115,6 +107,5 @@ float bp_get_input(bp * net, int index);
 float bp_weight_gradient_mean(bp * net, int layer_index);
 float bp_weight_gradient_std(bp * net, int layer_index);
 void bp_update_averages(bp * net, float running_average_factor);
-void bp_update_information_plane(bp * net);
 
 #endif
