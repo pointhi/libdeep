@@ -347,8 +347,6 @@ int deeplearn_load_training_images(char * images_directory,
 
                     COUNTDOWN(s, extra_synthetic_images) {
                         UCHARALLOC(img2, width*height);
-                        if (!img2)
-                            return -6;
                         if (img2 != NULL) {
                             /* scaling factor 0.5 -> 1.0 */
                             scale = 0.5f +
@@ -370,6 +368,8 @@ int deeplearn_load_training_images(char * images_directory,
                                         width, height, 1, img2);
                             (*images)[no_of_images] = img2;
                         }
+                        else
+                            return -6;
 
                         CHARALLOC(classification, 256);
                         if (!classification)

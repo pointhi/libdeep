@@ -422,20 +422,18 @@ void deeplearn_free(deeplearn * learner)
     while (sample != 0) {
         prev_sample = sample;
         sample = (deeplearndata *)sample->next;
-        if (prev_sample != 0) {
-            if (prev_sample->inputs_text != 0) {
-                /* clear any input text strings */
-                COUNTDOWN(i, learner->no_of_input_fields) {
-                    if (prev_sample->inputs_text[i] != 0)
-                        free(prev_sample->inputs_text[i]);
-                }
-                free(prev_sample->inputs_text);
+        if (prev_sample->inputs_text != 0) {
+            /* clear any input text strings */
+            COUNTDOWN(i, learner->no_of_input_fields) {
+                if (prev_sample->inputs_text[i] != 0)
+                    free(prev_sample->inputs_text[i]);
             }
-            /* clear numerical fields */
-            free(prev_sample->inputs);
-            free(prev_sample->outputs);
-            free(prev_sample);
+            free(prev_sample->inputs_text);
         }
+        /* clear numerical fields */
+        free(prev_sample->inputs);
+        free(prev_sample->outputs);
+        free(prev_sample);
     }
 
     /* free training samples */
