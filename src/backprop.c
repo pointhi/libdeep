@@ -1108,7 +1108,12 @@ int bp_classifications_to_numbers(int no_of_instances,
             CHARALLOC(unique_classification[unique_ctr],
                       1+strlen(instance_classification[i]));
             if (!unique_classification[unique_ctr])
+            {
+                COUNTDOWN(i, unique_ctr)
+                    free(unique_classification[i]);
+                free(unique_classification);
                 return -2;
+            }
 
             sprintf(unique_classification[unique_ctr],
                     "%s", instance_classification[i]);
