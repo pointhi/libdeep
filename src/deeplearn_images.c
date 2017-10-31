@@ -464,7 +464,6 @@ int image_resize(unsigned char img[],
             int n = (y*result_width + x) * result_depth;
             int n_orig = (y_orig*image_width + x_orig) * image_depth;
             if (result_depth == 1) {
-                result[n] = 0;
                 int sum = 0;
                 COUNTDOWN(d, image_depth)
                     sum += (int)img[n_orig + d];
