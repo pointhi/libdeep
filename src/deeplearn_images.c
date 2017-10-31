@@ -122,6 +122,9 @@ int deeplearn_write_png_file(char * filename,
             error = lodepng_encode24_file(filename, image, width, height);
             free(image);
         }
+        else {
+            return -2;
+        }
     }
 
     if (error) {
