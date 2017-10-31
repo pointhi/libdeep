@@ -77,8 +77,10 @@ int bp_neuron_init(bp_neuron * n,
         return -1;
 
     FLOATALLOC(n->last_weight_change, no_of_inputs);
-    if (!n->last_weight_change)
+    if (!n->last_weight_change) {
+        free(n->weights);
         return -2;
+    }
 
     bp_neuron_init_weights(n, random_seed);
     n->desired_value = -1;
@@ -89,8 +91,11 @@ int bp_neuron_init(bp_neuron * n,
 
     /* pointers to input neurons */
     n->inputs = (struct bp_n **)malloc(no_of_inputs*sizeof(struct bp_n *));
-    if (!n->inputs)
+    if (!n->inputs) {
+        free(n->weights);
+        free(n->last_weight_change);
         return -3;
+    }
 
     memset(n->inputs, '\0', no_of_inputs*sizeof(struct bp_n *));
 
