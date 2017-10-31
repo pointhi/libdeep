@@ -139,6 +139,7 @@ unsigned char font8x8_basic[128][8] = {
  * @param height Height of the image
  * @param bitsperpixel Number of bits per pixel (typically 24)
  * @param buffer Array containing image to be saved
+ * @returns Zero on success
  */
 int phosphene_write_png_file(char* filename,
                              unsigned int width, unsigned int height,
@@ -164,6 +165,9 @@ int phosphene_write_png_file(char* filename,
 
             error = lodepng_encode24_file(filename, image, width, height);
             free(image);
+        }
+        else {
+            return -2;
         }
     }
 
