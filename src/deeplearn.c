@@ -161,25 +161,56 @@ int deeplearn_init(deeplearn * learner,
 
     /* create the network */
     learner->net = (bp*)malloc(sizeof(bp));
-    if (!learner->net)
+    if (!learner->net) {
+        free(learner->error_threshold);
+        free(learner->output_range_max);
+        free(learner->output_range_min);
+        free(learner->input_range_max);
+        free(learner->input_range_min);
         return -6;
+    }
 
     /* initialise the network */
     if (bp_init(learner->net,
                 no_of_inputs, no_of_hiddens,
                 hidden_layers, no_of_outputs,
-                random_seed) != 0)
+                random_seed) != 0) {
+        free(learner->net);
+        free(learner->error_threshold);
+        free(learner->output_range_max);
+        free(learner->output_range_min);
+        free(learner->input_range_max);
+        free(learner->input_range_min);
         return -7;
+    }
 
     /* create the autocoder */
     learner->autocoder = (ac**)malloc(sizeof(ac*)*hidden_layers);
-    if (!learner->autocoder)
+    if (!learner->autocoder) {
+        free(learner->net);
+        free(learner->error_threshold);
+        free(learner->output_range_max);
+        free(learner->output_range_min);
+        free(learner->input_range_max);
+        free(learner->input_range_min);
         return -8;
+    }
 
     COUNTUP(i, hidden_layers) {
         learner->autocoder[i] = (ac*)malloc(sizeof(ac));
-        if (!learner->autocoder[i])
+        if (!learner->autocoder[i]) {
+            COUNTDOWN(j, i) {
+                free(learner->autocoder[j]);
+            }
+            free(learner->autocoder);
+            free(learner->net);
+            free(learner->error_threshold);
+            free(learner->output_range_max);
+            free(learner->output_range_min);
+            free(learner->input_range_max);
+            free(learner->input_range_min);
             return -9;
+        }
 
         if (i == 0) {
             /* if this is the first hidden layer then number of inputs
@@ -187,15 +218,37 @@ int deeplearn_init(deeplearn * learner,
                neural net input units */
             if (autocoder_init(learner->autocoder[i], no_of_inputs,
                                HIDDENS_IN_LAYER(learner->net,i),
-                               learner->net->random_seed) != 0)
+                               learner->net->random_seed) != 0) {
+                COUNTDOWN(j, i) {
+                    free(learner->autocoder[j]);
+                }
+                free(learner->autocoder);
+                free(learner->net);
+                free(learner->error_threshold);
+                free(learner->output_range_max);
+                free(learner->output_range_min);
+                free(learner->input_range_max);
+                free(learner->input_range_min);
                 return -10;
+            }
         }
         else {
             if (autocoder_init(learner->autocoder[i],
                                HIDDENS_IN_LAYER(learner->net,i-1),
                                HIDDENS_IN_LAYER(learner->net,i),
-                               learner->net->random_seed) != 0)
+                               learner->net->random_seed) != 0) {
+                COUNTDOWN(j, i) {
+                    free(learner->autocoder[j]);
+                }
+                free(learner->autocoder);
+                free(learner->net);
+                free(learner->error_threshold);
+                free(learner->output_range_max);
+                free(learner->output_range_min);
+                free(learner->input_range_max);
+                free(learner->input_range_min);
                 return -11;
+            }
         }
 
     }
