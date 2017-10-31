@@ -1107,8 +1107,7 @@ int bp_classifications_to_numbers(int no_of_instances,
             /* store the description */
             CHARALLOC(unique_classification[unique_ctr],
                       1+strlen(instance_classification[i]));
-            if (!unique_classification[unique_ctr])
-            {
+            if (!unique_classification[unique_ctr]) {
                 COUNTDOWN(i, unique_ctr)
                     free(unique_classification[i]);
                 free(unique_classification);
