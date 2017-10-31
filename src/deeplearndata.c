@@ -62,29 +62,50 @@ int deeplearndata_add(deeplearndata ** datalist,
 
     /* create arrays to store the data */
     FLOATALLOC(data->inputs, no_of_input_fields);
-    if (!data->inputs)
+    if (!data->inputs) {
+        free(data);
         return -2;
+    }
 
     data->inputs_text = 0;
     if (inputs_text != 0) {
         CHARPTRALLOC(data->inputs_text, no_of_input_fields);
-        if (!data->inputs_text)
+        if (!data->inputs_text) {
+            free(data->inputs);
+            free(data);
             return -3;
+        }
 
         COUNTUP(i, no_of_input_fields) {
             data->inputs_text[i] = 0;
             if (inputs_text[i] != 0) {
                 /* copy the string */
                 CHARALLOC(data->inputs_text[i], strlen(inputs_text[i])+1);
-                if (!data->inputs_text[i])
+                if (!data->inputs_text[i]) {
+                    COUNTDOWN(j, i) {
+                        free(data->inputs_text[j]);
+                    }
+                    free(data->inputs_text);
+                    free(data->inputs);
+                    free(data);
                     return -4;
+                }
                 strcpy(data->inputs_text[i], inputs_text[i]);
             }
         }
     }
     FLOATALLOC(data->outputs, no_of_outputs);
-    if (!data->outputs)
+    if (!data->outputs) {
+        if (inputs_text != 0) {
+            COUNTDOWN(i, no_of_input_fields) {
+                free(data->inputs_text[i]);
+            }
+            free(data->inputs_text);
+        }
+        free(data->inputs);
+        free(data);
         return -5;
+    }
 
     /* copy the data */
     memcpy((void*)data->inputs, inputs, no_of_input_fields*sizeof(float));
