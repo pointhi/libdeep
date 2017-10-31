@@ -50,32 +50,67 @@ int autocoder_init(ac * autocoder,
         return -1;
 
     FLOATALLOC(autocoder->hiddens, no_of_hiddens);
-    if (!autocoder->hiddens)
+    if (!autocoder->hiddens) {
+        free(autocoder->inputs);
         return -2;
+    }
 
     FLOATALLOC(autocoder->bias, no_of_hiddens);
-    if (!autocoder->bias)
+    if (!autocoder->bias) {
+        free(autocoder->hiddens);
+        free(autocoder->inputs);
         return -3;
+    }
 
     FLOATALLOC(autocoder->weights, no_of_hiddens*no_of_inputs);
-    if (!autocoder->weights)
+    if (!autocoder->weights) {
+        free(autocoder->bias);
+        free(autocoder->hiddens);
+        free(autocoder->inputs);
         return -4;
+    }
 
     FLOATALLOC(autocoder->last_weight_change, no_of_hiddens*no_of_inputs);
-    if (!autocoder->last_weight_change)
+    if (!autocoder->last_weight_change) {
+        free(autocoder->weights);
+        free(autocoder->bias);
+        free(autocoder->hiddens);
+        free(autocoder->inputs);
         return -5;
+    }
 
     FLOATALLOC(autocoder->outputs, no_of_inputs);
-    if (!autocoder->outputs)
+    if (!autocoder->outputs) {
+        free(autocoder->last_weight_change);
+        free(autocoder->weights);
+        free(autocoder->bias);
+        free(autocoder->hiddens);
+        free(autocoder->inputs);
         return -6;
+    }
 
     FLOATALLOC(autocoder->bperr, no_of_hiddens);
-    if (!autocoder->bperr)
+    if (!autocoder->bperr) {
+        free(autocoder->outputs);
+        free(autocoder->last_weight_change);
+        free(autocoder->weights);
+        free(autocoder->bias);
+        free(autocoder->hiddens);
+        free(autocoder->inputs);
         return -7;
+    }
 
     FLOATALLOC(autocoder->last_bias_change, no_of_hiddens);
-    if (!autocoder->last_bias_change)
+    if (!autocoder->last_bias_change) {
+        free(autocoder->bperr);
+        free(autocoder->outputs);
+        free(autocoder->last_weight_change);
+        free(autocoder->weights);
+        free(autocoder->bias);
+        free(autocoder->hiddens);
+        free(autocoder->inputs);
         return -8;
+    }
 
     FLOATCLEAR(autocoder->inputs, no_of_inputs);
     FLOATCLEAR(autocoder->outputs, no_of_inputs);
