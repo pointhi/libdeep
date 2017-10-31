@@ -109,16 +109,25 @@ int deeplearn_init(deeplearn * learner,
         return -1;
 
     FLOATALLOC(learner->input_range_max, no_of_inputs);
-    if (!learner->input_range_max)
+    if (!learner->input_range_max) {
+        free(learner->input_range_min);
         return -2;
+    }
 
     FLOATALLOC(learner->output_range_min, no_of_outputs);
-    if (!learner->output_range_min)
+    if (!learner->output_range_min) {
+        free(learner->input_range_max);
+        free(learner->input_range_min);
         return -3;
+    }
 
     FLOATALLOC(learner->output_range_max, no_of_outputs);
-    if (!learner->output_range_max)
+    if (!learner->output_range_max) {
+        free(learner->output_range_min);
+        free(learner->input_range_max);
+        free(learner->input_range_min);
         return -4;
+    }
 
     COUNTDOWN(i, no_of_inputs) {
         learner->input_range_min[i] = 99999;
@@ -135,8 +144,13 @@ int deeplearn_init(deeplearn * learner,
 
     /* create the error thresholds for each layer */
     FLOATALLOC(learner->error_threshold, hidden_layers+1);
-    if (!learner->error_threshold)
+    if (!learner->error_threshold) {
+        free(learner->output_range_max);
+        free(learner->output_range_min);
+        free(learner->input_range_max);
+        free(learner->input_range_min);
         return -5;
+    }
 
     memcpy((void*)learner->error_threshold,
            (void*)error_threshold,
