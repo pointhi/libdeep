@@ -283,13 +283,18 @@ int deeplearn_load_training_images(char * images_directory,
 
     /* allocate memory for the classifications */
     CHARPTRALLOC(*classifications, no_of_images);
-    if (!classifications)
+    if (!classifications) {
+        free(*images);
         return -2;
+    }
 
     /* allocate memory for the class number assigned to each image */
     INTALLOC(*classification_number, no_of_images);
-    if (!classification_number)
+    if (!classification_number) {
+        free(*classifications);
+        free(*images);
         return -3;
+    }
 
     /* get image filenames */
     no_of_images = 0;
@@ -314,8 +319,15 @@ int deeplearn_load_training_images(char * images_directory,
                                                 &im_bitsperpixel, &img) == 0) {
                         /* create a fixed size image */
                         UCHARALLOC(downsampled, width*height);
-                        if (!downsampled)
+                        if (!downsampled) {
+                            COUNTDOWN(i, no_of_images) {
+                                if ((*images)[i] != NULL)
+                                    free((*images)[i]);
+                            }
+                            free(*classifications);
+                            free(*images);
                             return -4;
+                        }
 
                         deeplearn_downsample_colour_to_mono(img, (int)im_width,
                                                             (int)im_height,
@@ -333,8 +345,15 @@ int deeplearn_load_training_images(char * images_directory,
 
                     /* allocate memory for the classification */
                     CHARALLOC(classification, 256);
-                    if (!classification)
+                    if (!classification) {
+                        COUNTDOWN(i, no_of_images) {
+                            if ((*images)[i] != NULL)
+                                free((*images)[i]);
+                        }
+                        free(*classifications);
+                        free(*images);
                         return -5;
+                    }
 
                     /* get the name of the classification */
                     bp_get_classification_from_filename(filename,
@@ -371,12 +390,26 @@ int deeplearn_load_training_images(char * images_directory,
                                         width, height, 1, img2);
                             (*images)[no_of_images] = img2;
                         }
-                        else
+                        else {
+                            COUNTDOWN(i, no_of_images) {
+                                if ((*images)[i] != NULL)
+                                    free((*images)[i]);
+                            }
+                            free(*classifications);
+                            free(*images);
                             return -6;
+                        }
 
                         CHARALLOC(classification, 256);
-                        if (!classification)
+                        if (!classification) {
+                            COUNTDOWN(i, no_of_images+1) {
+                                if ((*images)[i] != NULL)
+                                    free((*images)[i]);
+                            }
+                            free(*classifications);
+                            free(*images);
                             return -7;
+                        }
 
                         (*classifications)[no_of_images] = classification;
 
