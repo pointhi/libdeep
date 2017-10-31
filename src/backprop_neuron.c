@@ -40,7 +40,6 @@ static void bp_neuron_init_weights(bp_neuron * n,
     n->min_weight = 9999;
     n->max_weight = -9999;
 
-    /* do the weights */
     COUNTDOWN(i, n->no_of_inputs) {
         n->weights[i] = rand_initial_weight(random_seed, n->no_of_inputs);
         n->last_weight_change[i] = 0;
@@ -55,35 +54,6 @@ static void bp_neuron_init_weights(bp_neuron * n,
     /* dont forget the bias value */
     n->bias = rand_initial_weight(random_seed, 2);
     n->last_bias_change = 0;
-}
-
-/**
-* @brief Copy weights from one neuron to another
-* @param source The neuron to copy from
-* @param dest The neuron to copy to
-*/
-void bp_neuron_copy(bp_neuron * source,
-                    bp_neuron * dest)
-{
-    /* check that the source and destination have the same
-       number of inputs */
-    if (source->no_of_inputs != dest->no_of_inputs) {
-        printf("Warning: neurons have different numbers of inputs\n");
-        return;
-    }
-
-    /* copy the connection weights */
-    memcpy(dest->weights,source->weights,source->no_of_inputs*sizeof(float));
-
-    /* copy the bias */
-    dest->bias = source->bias;
-
-    /* copy the weight range */
-    dest->min_weight = source->min_weight;
-    dest->max_weight = source->max_weight;
-
-    /* clear the previous weight changes */
-    FLOATCLEAR(dest->last_weight_change, dest->no_of_inputs);
 }
 
 /**
