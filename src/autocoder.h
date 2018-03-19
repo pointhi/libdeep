@@ -46,6 +46,7 @@ struct autocode {
        Number of outputs is the same as number of inputs */
     int no_of_inputs,no_of_hiddens;
 
+    /* in the range 0.0 -> 1.0 */
     float dropout_percent;
 
     /* layers */
@@ -88,7 +89,8 @@ int autocoder_init(ac * autocoder,
 void autocoder_free(ac * autocoder);
 void autocoder_encode(ac * autocoder, float encoded[],
                       unsigned char use_dropouts);
-void autocoder_decode(ac * autocoder, float decoded[]);
+void autocoder_decode(ac * autocoder, float decoded[],
+                      unsigned char use_dropouts);
 void autocoder_feed_forward(ac * autocoder);
 void autocoder_backprop(ac * autocoder);
 void autocoder_learn(ac * autocoder);

@@ -162,13 +162,15 @@ void autocoder_free(ac * autocoder)
 void autocoder_encode(ac * autocoder, float encoded[],
                       unsigned char use_dropouts)
 {
+    const unsigned int drop_percent =
+        (unsigned int)(autocoder->dropout_percent*100);
+
 #pragma omp parallel for schedule(static) num_threads(DEEPLEARN_THREADS)
     COUNTDOWN(h, autocoder->no_of_hiddens) {
         unsigned int randseed = (unsigned int)h + autocoder->random_seed;
 
         if (use_dropouts != 0) {
-            if (rand_num(&randseed)%10000 <
-                autocoder->dropout_percent*100) {
+            if (rand_num(&randseed)%10000 < drop_percent) {
                 autocoder->hiddens[h] = (int)AUTOCODER_DROPPED_OUT;
                 continue;
             }
@@ -178,8 +180,17 @@ void autocoder_encode(ac * autocoder, float encoded[],
         float adder = autocoder->bias[h];
         float * w = &autocoder->weights[h*autocoder->no_of_inputs];
         float * inp = &autocoder->inputs[0];
-        COUNTDOWN(i, autocoder->no_of_inputs) {
-            adder += w[i] * inp[i];
+        if (use_dropouts == 0) {
+            COUNTDOWN(i, autocoder->no_of_inputs) {
+                adder += w[i] * inp[i];
+            }
+        }
+        else {
+            COUNTDOWN(i, autocoder->no_of_inputs) {
+                if (rand_num(&randseed)%10000 > drop_percent) {
+                    adder += w[i] * inp[i];
+                }
+            }
         }
 
         /* add some random noise */
@@ -200,24 +211,40 @@ void autocoder_encode(ac * autocoder, float encoded[],
  * @brief Decodes the encoded (hidden) units to a given output array
  * @param autocoder Autocoder object
  * @param decoded Array to store the decoded output values
+ * @param use_dropouts If non-zero then allow dropouts in the returned results
  */
-void autocoder_decode(ac * autocoder, float decoded[])
+void autocoder_decode(ac * autocoder, float decoded[],
+                      unsigned char use_dropouts)
 {
+    const unsigned int drop_percent =
+        (unsigned int)(autocoder->dropout_percent*100);
+
 #pragma omp parallel for schedule(static) num_threads(DEEPLEARN_THREADS)
     COUNTDOWN(i, autocoder->no_of_inputs) {
+        unsigned int randseed = (unsigned int)i + autocoder->random_seed;
+
         /* weighted sum of hidden inputs */
         float adder = 0;
         float * w = &autocoder->weights[i];
         float * inp = &autocoder->hiddens[0];
         int step = autocoder->no_of_inputs;
-        COUNTDOWN(h, autocoder->no_of_hiddens) {
-            if (inp[h] != AUTOCODER_DROPPED_OUT)
+        if (use_dropouts == 0) {
+            COUNTDOWN(h, autocoder->no_of_hiddens) {
                 adder += w[h*step] * inp[h];
+            }
+        }
+        else {
+            COUNTDOWN(h, autocoder->no_of_hiddens) {
+                if (inp[h] != AUTOCODER_DROPPED_OUT) {
+                    if (rand_num(&randseed)%10000 > drop_percent) {
+                        adder += w[h*step] * inp[h];
+                    }
+                }
+            }
         }
 
         /* add some random noise */
         if (autocoder->noise > 0) {
-            unsigned int randseed = (unsigned int)i + autocoder->random_seed;
             adder = ((1.0f - autocoder->noise) * adder) +
                 (autocoder->noise *
                  ((rand_num(&randseed)%10000)/10000.0f));
@@ -236,8 +263,8 @@ void autocoder_decode(ac * autocoder, float decoded[])
  */
 void autocoder_feed_forward(ac * autocoder)
 {
-    autocoder_encode(autocoder, autocoder->hiddens,1);
-    autocoder_decode(autocoder, autocoder->outputs);
+    autocoder_encode(autocoder, autocoder->hiddens, 1);
+    autocoder_decode(autocoder, autocoder->outputs, 1);
 }
 
 /**
