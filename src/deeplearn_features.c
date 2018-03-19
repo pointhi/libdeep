@@ -232,7 +232,7 @@ static float learn_features_mono(float img[],
                                 (img[n0] -
                                  curr_feature[n1])*learning_rate;
 
-                        curr_feature[n1] = TRUNCATE(curr_feature[n1]);
+                        curr_feature[n1] = CLIP(curr_feature[n1], 0.0f, 1.0f);
                     }
 
                     n0++;
@@ -398,7 +398,8 @@ float learn_features(float img[],
                                     (img[n0+d] -
                                      curr_feature[n1+d])*learning_rate;
 
-                            curr_feature[n1+d] = TRUNCATE(curr_feature[n1+d]);
+                            curr_feature[n1+d] =
+                                CLIP(curr_feature[n1+d], 0.0f, 1.0f);
                         }
                     }
                     n0 += img_depth;
