@@ -1077,6 +1077,76 @@ int deeplearn_plot_gradients(int gradient_type,
 }
 
 /**
+ * @brief Uses phosphene to plot the weight magnitude histogram
+ * @param learner Deep learner object
+ * @param buckets Number of histogram buckets
+ * @param max_magnitude The maximum weight magnitude
+ * @param img_width Width of the image in pixels
+ * @param img_height Height of the image in pixels
+ * @return zero on success
+ */
+int deeplearn_plot_weight_magnitude(deeplearn * learner,
+                                    int buckets,
+                                    float max_magnitude,
+                                    int img_width, int img_height)
+{
+    double value,x,y;
+    scope s;
+    unsigned int t, channel = 0;
+    double min_time=0;
+    double max_time=buckets;
+    double max_voltage = 1000;
+    double min_voltage = 0;
+    unsigned int grid_horizontal = 20;
+    unsigned int grid_vertical = 16;
+    unsigned char * img;
+    unsigned int * histogram = NULL;
+
+
+    UCHARALLOC(img, img_width*img_height*3);
+    if (!img)
+        return 1;
+
+    UINTALLOC(histogram, buckets);
+    if (!histogram) {
+        free(img);
+        return 2;
+    }
+    bp_weight_histogram(learner->net,
+                        histogram, buckets,
+                        max_magnitude);
+
+    create_scope(&s, 1);
+    s.offset_ms = 0;
+    s.marker_position = 0;
+    s.time_ms = buckets;
+    s.step_ms = 1;
+    s.horizontal_multiplier = 1;
+
+    COUNTUP(p, buckets) {
+        scope_update(&s, 0, histogram[p],
+                     min_voltage, max_voltage,
+                     p, 0);
+    }
+
+    scope_draw_graph(&s, PHOSPHENE_DRAW_ALL, 3, 100,
+                     grid_horizontal, grid_vertical,
+                     img, img_width, img_height,
+                     PHOSPHENE_SHAPE_RECTANGULAR,
+                     "Weight Magnitude",
+                     "Frequency", "Magnitude", 25, 4);
+
+    phosphene_write_png_file("weight_magnitude.png",
+                             img_width, img_height, 24, img);
+
+    free(img);
+    free(histogram);
+
+    return 0;
+}
+
+
+/**
  * @brief Updates the input units from a patch within a larger image
  * @param learner Deep learner object
  * @param img Image buffer (1 byte per pixel)

@@ -793,6 +793,46 @@ float bp_weight_gradient_mean(bp * net, int layer_index)
 }
 
 /**
+ * @brief Returns a weight histogram with values in the range 0 -> 1000
+ * @param net Backprop neural net object
+ * @param histogram Histogram array
+ * @param buckets Number of histogram buckets
+ * @param max_value The maximum weight magnitude
+ */
+void bp_weight_histogram(bp * net,
+                         unsigned int histogram[], int buckets,
+                         float max_value)
+{
+    UINTCLEAR(histogram, buckets);
+
+    COUNTDOWN(l, net->hidden_layers) {
+        int no_of_neurons = HIDDENS_IN_LAYER(net, l);
+        int inputs = net->hiddens[l][0]->no_of_inputs;
+
+        COUNTDOWN(i, no_of_neurons) {
+            bp_neuron * n = net->hiddens[l][i];
+            COUNTDOWN(w, inputs) {
+                float value = fabs(n->weights[w]);
+                if (value < max_value) {
+                    histogram[(int)(value * buckets / max_value)]++;
+                }
+            }
+        }
+    }
+
+    /* normalize */
+    unsigned int max = 1;
+    COUNTDOWN(i, buckets) {
+        if (histogram[i] > max)
+            max = histogram[i];
+    }
+
+    COUNTDOWN(i, buckets) {
+        histogram[i] = histogram[i] * 1000 / max;
+    }
+}
+
+/**
  * @brief Returns the standard deviation of the weight change for a given layer
  * @param net Backprop neural net object
  * @param layer_index Index of the layer

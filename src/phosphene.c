@@ -286,6 +286,7 @@ static double scope_radius_squared(unsigned int top_x,
  * @param min Minimum value
  * @param max Maximum value
  * @param t_ms Time on the horizontal axis
+ * @param class
  */
 void scope_update(scope * s,
                   unsigned int trace_index,

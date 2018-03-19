@@ -166,5 +166,9 @@ void copy_autocoder_to_hidden_layer(deeplearn * learner, int hidden_layer);
 void deeplearn_pretrain(bp * net, ac * autocoder, int current_layer);
 int deeplearn_inputs_from_convnet(deeplearn * learner, deeplearn_conv * conv);
 void deeplearn_set_title(deeplearn * learner, char title[]);
+int deeplearn_plot_weight_magnitude(deeplearn * learner,
+                                    int buckets,
+                                    float max_magnitude,
+                                    int img_width, int img_height);
 
 #endif

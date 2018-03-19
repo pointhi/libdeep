@@ -107,5 +107,8 @@ float bp_get_input(bp * net, int index);
 float bp_weight_gradient_mean(bp * net, int layer_index);
 float bp_weight_gradient_std(bp * net, int layer_index);
 void bp_update_averages(bp * net, float running_average_factor);
+void bp_weight_histogram(bp * net,
+                         unsigned int histogram[], int buckets,
+                         float max_value);
 
 #endif
