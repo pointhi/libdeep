@@ -168,10 +168,12 @@ void bp_neuron_add_connection(bp_neuron * dest,
 * @brief Feed forward
 * @param n Backprop neuron object
 * @param noise Noise in the range 0.0 to 1.0
+* @param dropout_percent Dropouts percent in the range 0 -> 100
 * @param random_seed Random number generator seed
 */
 void bp_neuron_feedForward(bp_neuron * n,
                            float noise,
+                           unsigned int dropout_percent,
                            unsigned int * random_seed)
 {
     float adder;
@@ -186,9 +188,16 @@ void bp_neuron_feedForward(bp_neuron * n,
     adder = n->bias;
 
     /* calculate weighted sum of inputs */
-    COUNTDOWN(i, n->no_of_inputs)
-        adder += n->weights[i] * n->inputs[i]->value;
-
+    if (dropout_percent == 0) {
+        COUNTDOWN(i, n->no_of_inputs)
+            adder += n->weights[i] * n->inputs[i]->value;
+    }
+    else {
+        COUNTDOWN(i, n->no_of_inputs) {
+            if (rand_num(random_seed)%10000 > dropout_percent)
+                adder += n->weights[i] * n->inputs[i]->value;
+        }
+    }
 
     /* add some random noise */
     if (noise > 0)

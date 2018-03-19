@@ -46,7 +46,7 @@ struct autocode {
        Number of outputs is the same as number of inputs */
     int no_of_inputs,no_of_hiddens;
 
-    /* in the range 0.0 -> 1.0 */
+    /* in the range 0 -> 100 */
     float dropout_percent;
 
     /* layers */

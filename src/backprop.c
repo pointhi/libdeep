@@ -173,18 +173,23 @@ void bp_free(bp * net)
 */
 void bp_feed_forward(bp * net)
 {
+    unsigned int drop_percent =
+        (unsigned int)(net->dropout_percent*100);
+
     /* for each hidden layer */
     COUNTUP(l, net->hidden_layers) {
         /* For each unit within the layer */
 #pragma omp parallel for schedule(static) num_threads(DEEPLEARN_THREADS)
         COUNTDOWN(i, HIDDENS_IN_LAYER(net,l))
             bp_neuron_feedForward(net->hiddens[l][i],
-                                  net->noise, &net->random_seed);
+                                  net->noise, drop_percent,
+                                  &net->random_seed);
     }
 
     /* for each unit in the output layer */
     COUNTDOWN(i, net->no_of_outputs)
-        bp_neuron_feedForward(net->outputs[i], net->noise, &net->random_seed);
+        bp_neuron_feedForward(net->outputs[i], net->noise, drop_percent,
+                              &net->random_seed);
 }
 
 /**
@@ -195,6 +200,9 @@ void bp_feed_forward(bp * net)
 */
 void bp_feed_forward_layers(bp * net, int layers)
 {
+    unsigned int drop_percent =
+        (unsigned int)(net->dropout_percent*100);
+
     /* for each hidden layer */
     COUNTUP(l, layers) {
         /* if this layer is a hidden layer */
@@ -203,14 +211,16 @@ void bp_feed_forward_layers(bp * net, int layers)
 #pragma omp parallel for schedule(static) num_threads(DEEPLEARN_THREADS)
             COUNTDOWN(i, HIDDENS_IN_LAYER(net,l))
                 bp_neuron_feedForward(net->hiddens[l][i],
-                                      net->noise, &net->random_seed);
+                                      net->noise, drop_percent,
+                                      &net->random_seed);
         }
         else {
             /* For each unit within the output layer */
 #pragma omp parallel for schedule(static) num_threads(DEEPLEARN_THREADS)
             COUNTDOWN(i, net->no_of_outputs)
                 bp_neuron_feedForward(net->outputs[i],
-                                      net->noise, &net->random_seed);
+                                      net->noise, drop_percent,
+                                      &net->random_seed);
         }
     }
 }

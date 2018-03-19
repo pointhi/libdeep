@@ -71,6 +71,7 @@ void bp_neuron_add_connection(bp_neuron * dest,
                               int index, bp_neuron * source);
 void bp_neuron_feedForward(bp_neuron * n,
                            float noise,
+                           unsigned int dropout_percent,
                            unsigned int * random_seed);
 void bp_neuron_backprop(bp_neuron * n);
 void bp_neuron_learn(bp_neuron * n,
