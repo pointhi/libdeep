@@ -107,7 +107,7 @@ There are also some example programs within the examples directory. Reading the 
  * Assessing wine quality from ingredients
  * Predicting concrete quality from ingredients
 
-<img src="https://github.com/bashrc/libdeep/blob/master/img/weight_gradients_std.jpg?raw=true" width=640/>
+<img src="https://github.com/bashrc/libdeep/blob/master/img/weight_magnitude.jpg?raw=true" width=640/>
 
 Using trained neural nets in your system
 ========================================

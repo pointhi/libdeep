@@ -78,7 +78,7 @@ int main(int argc, char* argv[])
 
     printf("Training Completed\n");
 
-    deeplearn_plot_weight_magnitude(&learner, 80, 1.5f, 1000, 1000);
+    deeplearn_plot_weight_magnitude(&learner, 20, 1.5f, 1000, 1000);
 
     printf("Test data set performance is %.1f%%\n", deeplearndata_get_performance(&learner));
 
