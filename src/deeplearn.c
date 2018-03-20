@@ -1327,8 +1327,11 @@ static int deeplearn_export_c_base(deeplearn * learner, int export_type,
 
         COUNTUP(j, HIDDENS_IN_LAYER(learner->net, i)) {
             COUNTUP(k, no_of_weights) {
-                fprintf(fp, "%.10f",
-                        learner->net->hiddens[i][j]->weights[k]);
+                float w = learner->net->hiddens[i][j]->weights[k];
+                if (w != 0)
+                    fprintf(fp, "%.10f", w);
+                else
+                    fprintf(fp, "%d", 0);
                 if (!((j == HIDDENS_IN_LAYER(learner->net, i)-1) &&
                       (k == no_of_weights-1)))
                     fprintf(fp, ",");
@@ -1355,8 +1358,11 @@ static int deeplearn_export_c_base(deeplearn * learner, int export_type,
     COUNTUP(i, learner->net->no_of_outputs) {
         COUNTUP(j, HIDDENS_IN_LAYER(learner->net,
                                        learner->net->hidden_layers-1)) {
-            fprintf(fp, "%.10f",
-                    learner->net->outputs[i]->weights[j]);
+            float w = learner->net->outputs[i]->weights[j];
+            if (w != 0)
+                fprintf(fp, "%.10f", w);
+            else
+                fprintf(fp, "%d", 0);
             if (!((i == learner->net->no_of_outputs-1) &&
                   (j == HIDDENS_IN_LAYER(learner->net,
                                             learner->net->hidden_layers-1)-1)))
@@ -1713,8 +1719,11 @@ static int deeplearn_export_python(deeplearn * learner, char * filename)
 
         COUNTUP(j, HIDDENS_IN_LAYER(learner->net, i)) {
             COUNTUP(k, no_of_weights) {
-                fprintf(fp, "%.10f",
-                        learner->net->hiddens[i][j]->weights[k]);
+                float w = learner->net->hiddens[i][j]->weights[k];
+                if (w != 0)
+                    fprintf(fp, "%.10f", w);
+                else
+                    fprintf(fp, "%d", 0);
                 if (!((j == HIDDENS_IN_LAYER(learner->net, i)-1) &&
                       (k == no_of_weights-1)))
                     fprintf(fp, ",");
@@ -1741,8 +1750,11 @@ static int deeplearn_export_python(deeplearn * learner, char * filename)
     COUNTUP(i, learner->net->no_of_outputs) {
         COUNTUP(j, HIDDENS_IN_LAYER(learner->net,
                                        learner->net->hidden_layers-1)) {
-            fprintf(fp, "%.10f",
-                    learner->net->outputs[i]->weights[j]);
+            float w = learner->net->outputs[i]->weights[j];
+            if (w != 0)
+                fprintf(fp, "%.10f", w);
+            else
+                fprintf(fp, "%d", 0);
             if (!((i == learner->net->no_of_outputs-1) &&
                   (j == HIDDENS_IN_LAYER(learner->net,
                                             learner->net->hidden_layers-1)-1)))
