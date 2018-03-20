@@ -1090,11 +1090,7 @@ int deeplearn_plot_weight_magnitude(deeplearn * learner,
                                     float max_magnitude,
                                     int img_width, int img_height)
 {
-    double value,x,y;
     scope s;
-    unsigned int t, channel = 0;
-    double min_time=0;
-    double max_time=buckets;
     double max_voltage = 1000;
     double min_voltage = 0;
     unsigned int grid_horizontal = 20;

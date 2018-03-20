@@ -78,6 +78,8 @@ int main(int argc, char* argv[])
 
     printf("Training Completed\n");
 
+    deeplearn_plot_weight_magnitude(&learner, 80, 1.5f, 1000, 1000);
+
     printf("Test data set performance is %.1f%%\n", deeplearndata_get_performance(&learner));
 
     pruned_percent = deeplearn_prune_weights(&learner, 0.9f);
@@ -87,8 +89,6 @@ int main(int argc, char* argv[])
     deeplearn_export(&learner, "export_wine_classifier.c");
     deeplearn_export(&learner, "export_wine_classifier_sketch.c");
     deeplearn_export(&learner, "export_wine_classifier.py");
-
-    deeplearn_plot_weight_magnitude(&learner, 20, 0.5f, 1000, 1000);
 
     deeplearn_free(&learner);
 
