@@ -1,6 +1,6 @@
 /*
  Cancer detection demo using deep learning
- Copyright (C) 2015-2017  Bob Mottram <bob@robotics.uk.to>
+ Copyright (C) 2015-2018  Bob Mottram <bob@freedombone.net>
 
  Redistribution and use in source and binary forms, with or without
  modification, are permitted provided that the following conditions
@@ -44,8 +44,9 @@ int main(int argc, char* argv[])
 {
     int no_of_outputs = 1;
     int output_field_index[] = { 1 };
-    float error_threshold_percent[] = { 1.0f, 1.0f, 1.5f, 6.0f };
+    float error_threshold_percent[] = { 1.5f, 1.5f, 1.5f, 20.0f };
     unsigned int random_seed = 123;
+    int pruned_percent;
 
     /* load the data */
     printf("Loading data set\n");
@@ -78,8 +79,15 @@ int main(int argc, char* argv[])
 
     printf("Training Completed\n");
 
+    deeplearn_plot_weight_magnitude(&learner, 80, 1.5f, 1000, 1000);
+
     printf("Test data set performance is %.1f%%\n",
            deeplearndata_get_performance(&learner));
+
+    pruned_percent = deeplearn_prune_weights(&learner, 0.3f);
+
+    printf("Test data set performance after %d%% pruning is %.1f%%\n",
+           pruned_percent, deeplearndata_get_performance(&learner));
 
     deeplearn_export(&learner, "export_cancer_classifier.c");
     deeplearn_export(&learner, "export_cancer_classifier_sketch.c");
