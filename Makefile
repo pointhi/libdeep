@@ -24,16 +24,16 @@ endif
 
 all:
 	rm -f src/flycheck*
-	gcc -shared -Wl,-soname,${SONAME} -std=c99 -pedantic -mindirect-branch=thunk -fPIC -O3 -o ${LIBNAME} src/*.c -Isrc -lm -fopenmp -funroll-loops
+	gcc -shared -Wl,-soname,${SONAME} -std=c99 -pedantic -mindirect-branch=thunk -fPIC -O3 -o ${LIBNAME} src/*.c -Isrc -lm -fopenmp
 debug:
 	rm -f src/flycheck*
-	gcc -shared -Wl,-soname,${SONAME} -std=c99 -pedantic -mindirect-branch=thunk -fPIC -g -o ${LIBNAME} src/*.c -Isrc -lm -fopenmp -funroll-loops
+	gcc -shared -Wl,-soname,${SONAME} -std=c99 -pedantic -mindirect-branch=thunk -fPIC -g -o ${LIBNAME} src/*.c -Isrc -lm -fopenmp
 debugstack:
 	rm -f src/flycheck*
-	gcc -shared -Wl,-soname,${SONAME} -std=c99 -pedantic -mindirect-branch=thunk -fsanitize=address -fPIC -g -o ${LIBNAME} src/*.c -Isrc -lm -fopenmp -funroll-loops
+	gcc -shared -Wl,-soname,${SONAME} -std=c99 -pedantic -mindirect-branch=thunk -fsanitize=address -fPIC -g -o ${LIBNAME} src/*.c -Isrc -lm -fopenmp
 graph:
 	rm -f src/flycheck*
-	gcc -shared -Wl,-soname,${SONAME} -std=c99 -pedantic -mindirect-branch=thunk -fPIC -g -o ${LIBNAME} src/*.c -Isrc -lm -fopenmp -funroll-loops -fdump-rtl-expand
+	gcc -shared -Wl,-soname,${SONAME} -std=c99 -pedantic -mindirect-branch=thunk -fPIC -g -o ${LIBNAME} src/*.c -Isrc -lm -fopenmp -fdump-rtl-expand
 	egypt ${SOURCEFILE}.*.expand | xdot -
 	rm *.expand
 source:
