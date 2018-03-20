@@ -88,6 +88,8 @@ int main(int argc, char* argv[])
     deeplearn_export(&learner, "export_wine_classifier_sketch.c");
     deeplearn_export(&learner, "export_wine_classifier.py");
 
+    deeplearn_plot_weight_magnitude(&learner, 20, 0.5f, 1000, 1000);
+
     deeplearn_free(&learner);
 
     return 0;
