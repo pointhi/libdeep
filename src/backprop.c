@@ -833,6 +833,51 @@ void bp_weight_histogram(bp * net,
 }
 
 /**
+ * @brief Sets small weights to zero
+ * @param net Backprop neural net object
+ * @param threshold Pruning threshold in the range 0.0 -> 1.0
+ */
+void bp_prune_weights(bp * net, float threshold)
+{
+    float mean = 0;
+    unsigned int hits = 0;
+
+    COUNTDOWN(l, net->hidden_layers) {
+        int no_of_neurons = HIDDENS_IN_LAYER(net, l);
+        int inputs = net->hiddens[l][0]->no_of_inputs;
+
+        hits += no_of_neurons*inputs;
+
+        COUNTDOWN(i, no_of_neurons) {
+            bp_neuron * n = net->hiddens[l][i];
+            COUNTDOWN(w, inputs) {
+                mean += fabs(n->weights[w]);
+            }
+        }
+    }
+
+    if (hits == 0)
+        return;
+
+    mean /= (float)hits;
+    threshold = mean * (1.0f - threshold);
+
+    /* set weights to zero if they are below the pruning threshold */
+    COUNTDOWN(l, net->hidden_layers) {
+        int no_of_neurons = HIDDENS_IN_LAYER(net, l);
+        int inputs = net->hiddens[l][0]->no_of_inputs;
+
+        COUNTDOWN(i, no_of_neurons) {
+            bp_neuron * n = net->hiddens[l][i];
+            COUNTDOWN(w, inputs) {
+                if (fabs(n->weights[w]) < threshold)
+                    n->weights[w] = 0;
+            }
+        }
+    }
+}
+
+/**
  * @brief Returns the standard deviation of the weight change for a given layer
  * @param net Backprop neural net object
  * @param layer_index Index of the layer
