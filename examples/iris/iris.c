@@ -1,6 +1,6 @@
 /*
  Iris classification demo using deep learning
- Copyright (C) 2015  Bob Mottram <bob@robotics.uk.to>
+ Copyright (C) 2015,2018  Bob Mottram <bob@freedombone.net>
 
  Redistribution and use in source and binary forms, with or without
  modification, are permitted provided that the following conditions
@@ -44,7 +44,7 @@ int main(int argc, char* argv[])
 {
     int no_of_outputs = 1;
     int output_field_index[] = { 4 };
-    float error_threshold_percent[] = { 0.5f, 0.5f, 0.5f, 5.0f };
+    float error_threshold_percent[] = { 0.7f, 0.7f, 0.7f, 7.0f };
     unsigned int random_seed = 123;
     int classes = 3;
 
