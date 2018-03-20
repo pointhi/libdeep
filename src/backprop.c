@@ -858,6 +858,14 @@ int bp_prune_weights(bp * net, float threshold)
         }
     }
 
+    COUNTDOWN(i, net->no_of_outputs) {
+        bp_neuron * n = net->outputs[i];
+        COUNTDOWN(w, n->no_of_inputs) {
+            mean += fabs(n->weights[w]);
+            hits++;
+        }
+    }
+
     if (hits == 0)
         return 0;
 
@@ -876,6 +884,16 @@ int bp_prune_weights(bp * net, float threshold)
                     n->weights[w] = 0;
                     pruned++;
                 }
+            }
+        }
+    }
+
+    COUNTDOWN(i, net->no_of_outputs) {
+        bp_neuron * n = net->outputs[i];
+        COUNTDOWN(w, n->no_of_inputs) {
+            if (fabs(n->weights[w]) < threshold) {
+                n->weights[w] = 0;
+                pruned++;
             }
         }
     }
