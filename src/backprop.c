@@ -860,7 +860,7 @@ void bp_prune_weights(bp * net, float threshold)
         return;
 
     mean /= (float)hits;
-    threshold = mean * (1.0f - threshold);
+    threshold = mean * threshold;
 
     /* set weights to zero if they are below the pruning threshold */
     COUNTDOWN(l, net->hidden_layers) {
