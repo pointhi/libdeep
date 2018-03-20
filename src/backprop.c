@@ -836,11 +836,13 @@ void bp_weight_histogram(bp * net,
  * @brief Sets small weights to zero
  * @param net Backprop neural net object
  * @param threshold Pruning threshold in the range 0.0 -> 1.0
+ * @returns The percent of weights pruned
  */
-void bp_prune_weights(bp * net, float threshold)
+int bp_prune_weights(bp * net, float threshold)
 {
     float mean = 0;
     unsigned int hits = 0;
+    unsigned int pruned = 0;
 
     COUNTDOWN(l, net->hidden_layers) {
         int no_of_neurons = HIDDENS_IN_LAYER(net, l);
@@ -857,7 +859,7 @@ void bp_prune_weights(bp * net, float threshold)
     }
 
     if (hits == 0)
-        return;
+        return 0;
 
     mean /= (float)hits;
     threshold = mean * threshold;
@@ -870,11 +872,15 @@ void bp_prune_weights(bp * net, float threshold)
         COUNTDOWN(i, no_of_neurons) {
             bp_neuron * n = net->hiddens[l][i];
             COUNTDOWN(w, inputs) {
-                if (fabs(n->weights[w]) < threshold)
+                if (fabs(n->weights[w]) < threshold) {
                     n->weights[w] = 0;
+                    pruned++;
+                }
             }
         }
     }
+
+    return (int)(pruned * 100 / hits);
 }
 
 /**

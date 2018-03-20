@@ -1970,8 +1970,9 @@ int deeplearn_export(deeplearn * learner, char * filename)
  * @brief Sets small weights to zero
  * @param net Backprop neural net object
  * @param threshold Pruning threshold in the range 0.0 -> 1.0
+ * @returns The percent of weights pruned
  */
-void deeplearn_prune_weights(deeplearn * learner, float threshold)
+int deeplearn_prune_weights(deeplearn * learner, float threshold)
 {
-    bp_prune_weights(learner->net, threshold);
+    return bp_prune_weights(learner->net, threshold);
 }

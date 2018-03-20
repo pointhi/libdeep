@@ -46,6 +46,7 @@ int main(int argc, char* argv[])
     int output_field_index[] = { 11 };
     float error_threshold_percent[] = { 1.6f, 2.05f, 4.0f, 9.5f };
     unsigned int random_seed = 123;
+    int pruned_percent;
 
     /* load the data */
     printf("Loading data set\n");
@@ -78,6 +79,10 @@ int main(int argc, char* argv[])
     printf("Training Completed\n");
 
     printf("Test data set performance is %.1f%%\n", deeplearndata_get_performance(&learner));
+
+    pruned_percent = deeplearn_prune_weights(&learner, 0.9f);
+
+    printf("Test data set performance after %d%% pruning is %.1f%%\n", pruned_percent, deeplearndata_get_performance(&learner));
 
     deeplearn_export(&learner, "export_wine_classifier.c");
     deeplearn_export(&learner, "export_wine_classifier_sketch.c");

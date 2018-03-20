@@ -110,6 +110,6 @@ void bp_update_averages(bp * net, float running_average_factor);
 void bp_weight_histogram(bp * net,
                          unsigned int histogram[], int buckets,
                          float max_value);
-void bp_prune_weights(bp * net, float threshold);
+int bp_prune_weights(bp * net, float threshold);
 
 #endif
