@@ -254,13 +254,14 @@ void bp_neuron_reproject(bp_neuron * n)
 void bp_neuron_learn(bp_neuron * n,
                      float learning_rate)
 {
-    float afact,e,gradient;
+    float afact,e,gradient,egradient;
 
     if (n->excluded > 0) return;
 
     e = learning_rate / (1.0f + n->no_of_inputs);
     afact = af(n->value);
     gradient = afact * n->backprop_error;
+    egradient = e * gradient;
     n->last_bias_change = e * (n->last_bias_change + 1.0f) * gradient;
     n->bias = CLIP_WEIGHT(n->bias + n->last_bias_change);
     n->min_weight = -2;
@@ -270,8 +271,8 @@ void bp_neuron_learn(bp_neuron * n,
     COUNTDOWN(i, n->no_of_inputs) {
         if (n->inputs[i] != 0) {
             n->last_weight_change[i] =
-                e * (n->last_weight_change[i] + 1) *
-                gradient * n->inputs[i]->value;
+                egradient * (n->last_weight_change[i] + 1) *
+                n->inputs[i]->value;
             n->weights[i] =
                 CLIP_WEIGHT(n->weights[i] + n->last_weight_change[i]);
         }

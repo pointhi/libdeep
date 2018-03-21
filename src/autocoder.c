@@ -331,13 +331,14 @@ void autocoder_learn(ac * autocoder)
         float afact = autocoder->outputs[i] * (1.0f - autocoder->outputs[i]);
         float backprop_error = autocoder->inputs[i] - autocoder->outputs[i];
         float gradient = afact * backprop_error;
+        float egradient = e * gradient;
         int step = autocoder->no_of_inputs;
         int n = (autocoder->no_of_hiddens-1)*step + i;
         COUNTDOWN(h, autocoder->no_of_hiddens) {
             if (autocoder->hiddens[h] != AUTOCODER_DROPPED_OUT) {
                 autocoder->last_weight_change[n] =
-                    e * (autocoder->last_weight_change[n] + 1) *
-                    gradient * autocoder->hiddens[h];
+                    egradient * (autocoder->last_weight_change[n] + 1) *
+                    autocoder->hiddens[h];
                 autocoder->weights[n] =
                     CLIP_WEIGHT(autocoder->weights[n] +
                                 autocoder->last_weight_change[n]);
@@ -357,6 +358,7 @@ void autocoder_learn(ac * autocoder)
         float afact = autocoder->hiddens[h] * (1.0f - autocoder->hiddens[h]);
         float backprop_error = autocoder->bperr[h];
         float gradient = afact * backprop_error;
+        float egradient = e * gradient;
         autocoder->last_bias_change[h] =
             e * (autocoder->last_bias_change[h] + 1.0f) * gradient;
         autocoder->bias[h] =
@@ -365,8 +367,8 @@ void autocoder_learn(ac * autocoder)
         int n = (h+1)*autocoder->no_of_inputs - 1;
         COUNTDOWN(i, autocoder->no_of_inputs) {
             autocoder->last_weight_change[n] =
-                e * (autocoder->last_weight_change[n] + 1) *
-                gradient * autocoder->inputs[i];
+                egradient * (autocoder->last_weight_change[n] + 1) *
+                autocoder->inputs[i];
             autocoder->weights[n] =
                 CLIP_WEIGHT(autocoder->weights[n] +
                             autocoder->last_weight_change[n]);
