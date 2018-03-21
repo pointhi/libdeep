@@ -338,8 +338,9 @@ void autocoder_learn(ac * autocoder)
                 autocoder->last_weight_change[n] =
                     e * (autocoder->last_weight_change[n] + 1) *
                     gradient * autocoder->hiddens[h];
-                autocoder->weights[n] += autocoder->last_weight_change[n];
-                autocoder->weights[n] = CLIP(autocoder->weights[n], -2, 2);
+                autocoder->weights[n] =
+                    CLIP_WEIGHT(autocoder->weights[n] +
+                                autocoder->last_weight_change[n]);
             }
             n -= step;
         }
@@ -358,15 +359,17 @@ void autocoder_learn(ac * autocoder)
         float gradient = afact * backprop_error;
         autocoder->last_bias_change[h] =
             e * (autocoder->last_bias_change[h] + 1.0f) * gradient;
-        autocoder->bias[h] += autocoder->last_bias_change[h];
-        autocoder->bias[h] = CLIP(autocoder->bias[h], -2, 2);
+        autocoder->bias[h] =
+            CLIP_WEIGHT(autocoder->bias[h] +
+                        autocoder->last_bias_change[h]);
         int n = (h+1)*autocoder->no_of_inputs - 1;
         COUNTDOWN(i, autocoder->no_of_inputs) {
             autocoder->last_weight_change[n] =
                 e * (autocoder->last_weight_change[n] + 1) *
                 gradient * autocoder->inputs[i];
-            autocoder->weights[n] += autocoder->last_weight_change[n];
-            autocoder->weights[n] = CLIP(autocoder->weights[n], -2, 2);
+            autocoder->weights[n] =
+                CLIP_WEIGHT(autocoder->weights[n] +
+                            autocoder->last_weight_change[n]);
             n--;
         }
     }

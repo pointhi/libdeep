@@ -65,7 +65,7 @@ int main(int argc, char* argv[])
 
     deeplearn_set_learning_rate(&learner, 0.2f);
 
-    deeplearn_set_pruning(&learner, 10000, 0.3f);
+    deeplearn_set_pruning(&learner, 5000, 0.3f);
 
     /* set percentage of dropouts */
     deeplearn_set_dropouts(&learner, 2.0f);
