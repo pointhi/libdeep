@@ -150,7 +150,7 @@ static void test_backprop_feed_forward()
     }
 
     /* feed forward */
-    bp_feed_forward(&net);
+    bp_feed_forward(&net, 0);
 
     /* check for non-zero outputs */
     for (i = 0; i < no_of_outputs; i++) {
@@ -199,7 +199,7 @@ static void test_backprop2()
     }
 
     /* feed forward */
-    bp_feed_forward(&net);
+    bp_feed_forward(&net, 1);
     bp_backprop(&net,0);
 
     /* check for non-zero backprop error values */
@@ -257,7 +257,7 @@ static void test_backprop1()
     }
 
     /* feed forward */
-    bp_feed_forward(&net);
+    bp_feed_forward(&net, 1);
     bp_backprop(&net,0);
 
     /* check for non-zero backprop error values */
@@ -377,7 +377,7 @@ static void test_backprop_training()
 
     bp_set_input(net, 0, state_FALSE);
     bp_set_input(net, 1, state_FALSE);
-    bp_feed_forward(net);
+    bp_feed_forward(net, 0);
     if (bp_get_output(net, 0) >= 0.5f) {
         printf("\n%.5f\n",bp_get_output(net, 0));
     }
@@ -385,7 +385,7 @@ static void test_backprop_training()
 
     bp_set_input(net, 0, state_FALSE);
     bp_set_input(net, 1, state_TRUE);
-    bp_feed_forward(net);
+    bp_feed_forward(net, 0);
     if (bp_get_output(net, 0) <= 0.5f) {
         printf("\n%.5f\n",bp_get_output(net, 0));
     }
@@ -393,7 +393,7 @@ static void test_backprop_training()
 
     bp_set_input(net, 0, state_TRUE);
     bp_set_input(net, 1, state_FALSE);
-    bp_feed_forward(net);
+    bp_feed_forward(net, 0);
     if (bp_get_output(net, 0) <= 0.5f) {
         printf("\n%.5f\n",bp_get_output(net, 0));
     }
@@ -401,7 +401,7 @@ static void test_backprop_training()
 
     bp_set_input(net, 0, state_FALSE);
     bp_set_input(net, 1, state_FALSE);
-    bp_feed_forward(net);
+    bp_feed_forward(net, 0);
     if (bp_get_output(net, 0) >= 0.5f) {
         printf("\n%.5f\n",bp_get_output(net, 0));
     }

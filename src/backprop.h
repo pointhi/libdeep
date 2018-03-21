@@ -73,7 +73,7 @@ int bp_init(bp * net,
             int no_of_outputs,
             unsigned int * random_seed);
 void bp_free(bp * net);
-void bp_feed_forward(bp * net);
+void bp_feed_forward(bp * net, int learning);
 void bp_feed_forward_layers(bp * net, int layers);
 void bp_backprop(bp * net, int current_hidden_layer);
 void bp_learn(bp * net, int current_hidden_layer);

@@ -275,7 +275,7 @@ void deeplearn_set_title(deeplearn * learner, char title[])
  */
 void deeplearn_feed_forward(deeplearn * learner)
 {
-    bp_feed_forward(learner->net);
+    bp_feed_forward(learner->net, 0);
 }
 
 /**

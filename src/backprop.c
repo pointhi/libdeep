@@ -172,11 +172,14 @@ void bp_free(bp * net)
 /**
 * @brief Propagates the current inputs through the layers of the network
 * @param net Backprop neural net object
+* @param learning Non-zero if learning
 */
-void bp_feed_forward(bp * net)
+void bp_feed_forward(bp * net, int learning)
 {
-    unsigned int drop_percent =
-        (unsigned int)(net->dropout_percent*100);
+    unsigned int drop_percent = 0;
+
+    if (learning != 0)
+        drop_percent = (unsigned int)(net->dropout_percent*100);
 
     /* for each hidden layer */
     COUNTUP(l, net->hidden_layers) {
@@ -981,7 +984,7 @@ static void bp_dropouts(bp * net)
 void bp_update(bp * net, int current_hidden_layer)
 {
     bp_dropouts(net);
-    bp_feed_forward(net);
+    bp_feed_forward(net, 1);
     bp_backprop(net, current_hidden_layer);
     bp_learn(net, current_hidden_layer);
     bp_clear_dropouts(net);
