@@ -336,6 +336,7 @@ static void test_backprop_training()
     assert(net->hiddens!=0);
     assert(net->outputs!=0);
     net->dropout_percent = 0;
+    net->learning_rate = 0.2f;
 
     /* training */
     example=0;

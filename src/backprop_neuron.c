@@ -263,6 +263,7 @@ void bp_neuron_learn(bp_neuron * n,
     gradient = afact * n->backprop_error;
     n->last_bias_change = e * (n->last_bias_change + 1.0f) * gradient;
     n->bias += n->last_bias_change;
+    n->bias = CLIP(n->bias, -1, 1);
     n->min_weight = 9999;
     n->max_weight = -9999;
 
@@ -273,6 +274,8 @@ void bp_neuron_learn(bp_neuron * n,
                 e * (n->last_weight_change[i] + 1) *
                 gradient * n->inputs[i]->value;
             n->weights[i] += n->last_weight_change[i];
+
+            n->weights[i] = CLIP(n->weights[i], -1, 1);
 
             /* limit weights within range */
             if (n->weights[i] < n->min_weight)

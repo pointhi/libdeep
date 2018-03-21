@@ -108,6 +108,6 @@
 #define BYTEREAD(m) READVAR(m, unsigned char)
 
 /* clip between min and max */
-#define CLIP(x, min, max) ((x) > (max) ? (max) : ((x) < (min) ? (min) : (x)))
+#define CLIP(x, min, max) ( ((x) > max) ? max : ( ((x) < min) ? (min) : (x) ) )
 
 #endif

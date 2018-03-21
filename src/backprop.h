@@ -61,6 +61,8 @@ struct backprop {
     float noise;
     unsigned int random_seed;
     unsigned int itterations;
+    unsigned int pruning_cycle;
+    float pruning_rate;
 };
 typedef struct backprop bp;
 

@@ -55,6 +55,8 @@ int bp_init(bp * net,
     net->backprop_error_average = DEEPLEARN_UNKNOWN_ERROR;
     net->backprop_error_total = DEEPLEARN_UNKNOWN_ERROR;
     net->itterations = 0;
+    net->pruning_cycle = 0;
+    net->pruning_rate = 0.1f;
     net->dropout_percent = 20;
 
     net->no_of_inputs = no_of_inputs;
@@ -388,6 +390,16 @@ void bp_learn(bp * net, int current_hidden_layer)
 #pragma omp parallel for schedule(static) num_threads(DEEPLEARN_THREADS)
     COUNTDOWN(i, net->no_of_outputs)
         bp_neuron_learn(net->outputs[i], net->learning_rate);
+
+    /* perform periodic pruning of weights so that there is a cycle
+       of growth and pruning */
+    if (net->pruning_cycle != 0) {
+        if (net->itterations % net->pruning_cycle == 0) {
+            if (net->itterations > 0) {
+                bp_prune_weights(net, net->pruning_rate);
+            }
+        }
+    }
 }
 
 /**
@@ -986,32 +998,38 @@ int bp_save(FILE * fp, bp * net)
     if (UINTWRITE(net->itterations) == 0)
         return -1;
 
-    if (INTWRITE(net->no_of_inputs) == 0)
+    if (UINTWRITE(net->pruning_cycle) == 0)
         return -2;
 
-    if (INTWRITE(net->no_of_hiddens) == 0)
+    if (FLOATWRITE(net->pruning_rate) == 0)
         return -3;
 
-    if (INTWRITE(net->no_of_outputs) == 0)
+    if (INTWRITE(net->no_of_inputs) == 0)
         return -4;
 
-    if (INTWRITE(net->hidden_layers) == 0)
+    if (INTWRITE(net->no_of_hiddens) == 0)
         return -5;
 
-    if (FLOATWRITE(net->learning_rate) == 0)
+    if (INTWRITE(net->no_of_outputs) == 0)
         return -6;
 
-    if (FLOATWRITE(net->noise) == 0)
+    if (INTWRITE(net->hidden_layers) == 0)
         return -7;
 
-    if (FLOATWRITE(net->backprop_error_average) == 0)
+    if (FLOATWRITE(net->learning_rate) == 0)
         return -8;
 
-    if (FLOATWRITE(net->dropout_percent) == 0)
+    if (FLOATWRITE(net->noise) == 0)
         return -9;
 
-    if (UINTWRITE(net->random_seed) == 0)
+    if (FLOATWRITE(net->backprop_error_average) == 0)
         return -10;
+
+    if (FLOATWRITE(net->dropout_percent) == 0)
+        return -11;
+
+    if (UINTWRITE(net->random_seed) == 0)
+        return -12;
 
     COUNTUP(l, net->hidden_layers) {
         COUNTUP(i, HIDDENS_IN_LAYER(net,l))
@@ -1035,55 +1053,62 @@ int bp_load(FILE * fp, bp * net)
     int no_of_inputs=0, no_of_hiddens=0, no_of_outputs=0;
     int hidden_layers=0;
     float learning_rate=0, noise=0, backprop_error_average=0;
-    float dropout_percent=0;
+    float dropout_percent=0,pruning_rate=0;
     unsigned int itterations=0;
+    unsigned int pruning_cycle=0;
     unsigned int random_seed=0;
 
     if (UINTREAD(itterations) == 0)
         return -1;
 
-    if (INTREAD(no_of_inputs) == 0)
+    if (UINTREAD(pruning_cycle) == 0)
         return -2;
 
-    if (INTREAD(no_of_hiddens) == 0)
+    if (FLOATREAD(pruning_rate) == 0)
         return -3;
 
-    if (INTREAD(no_of_outputs) == 0)
+    if (INTREAD(no_of_inputs) == 0)
         return -4;
 
-    if (INTREAD(hidden_layers) == 0)
+    if (INTREAD(no_of_hiddens) == 0)
         return -5;
 
-    if (FLOATREAD(learning_rate) == 0)
+    if (INTREAD(no_of_outputs) == 0)
         return -6;
 
-    if (FLOATREAD(noise) == 0)
+    if (INTREAD(hidden_layers) == 0)
         return -7;
 
-    if (FLOATREAD(backprop_error_average) == 0)
+    if (FLOATREAD(learning_rate) == 0)
         return -8;
 
-    if (FLOATREAD(dropout_percent) == 0)
+    if (FLOATREAD(noise) == 0)
         return -9;
 
-    if (UINTREAD(random_seed) == 0)
+    if (FLOATREAD(backprop_error_average) == 0)
         return -10;
+
+    if (FLOATREAD(dropout_percent) == 0)
+        return -11;
+
+    if (UINTREAD(random_seed) == 0)
+        return -12;
 
     if (bp_init(net, no_of_inputs, no_of_hiddens,
                 hidden_layers, no_of_outputs,
                 &random_seed) != 0)
-        return -11;
+        return -13;
 
     COUNTUP(l, net->hidden_layers) {
         COUNTUP(i, HIDDENS_IN_LAYER(net,l)) {
             if (bp_neuron_load(fp,net->hiddens[l][i]) != 0)
-                return -12;
+                return -14;
         }
     }
 
     COUNTUP(i, net->no_of_outputs) {
         if (bp_neuron_load(fp,net->outputs[i]) != 0)
-            return -13;
+            return -15;
     }
 
     net->learning_rate = learning_rate;
@@ -1093,6 +1118,8 @@ int bp_load(FILE * fp, bp * net)
     net->backprop_error_total = backprop_error_average;
     net->itterations = itterations;
     net->dropout_percent = dropout_percent;
+    net->pruning_cycle = pruning_cycle;
+    net->pruning_rate = pruning_rate;
 
     return 0;
 }
@@ -1122,8 +1149,14 @@ int bp_compare(bp * net1, bp * net2)
     if (net1->learning_rate != net2->learning_rate)
         return -5;
 
-    if (net1->noise != net2->noise)
+    if (net1->pruning_cycle != net2->pruning_cycle)
         return -6;
+
+    if (net1->pruning_rate != net2->pruning_rate)
+        return -7;
+
+    if (net1->noise != net2->noise)
+        return -8;
 
     COUNTDOWN(l, net1->hidden_layers) {
         COUNTDOWN(i, HIDDENS_IN_LAYER(net1,l)) {
@@ -1131,24 +1164,24 @@ int bp_compare(bp * net1, bp * net2)
                 bp_neuron_compare(net1->hiddens[l][i],
                                   net2->hiddens[l][i]);
             if (retval == 0)
-                return -7;
+                return -9;
         }
     }
 
     COUNTDOWN(i, net1->no_of_outputs) {
         retval = bp_neuron_compare(net1->outputs[i], net2->outputs[i]);
         if (retval == 0)
-            return -8;
+            return -10;
     }
 
     if (net1->itterations != net2->itterations)
-        return -9;
+        return -11;
 
     if (net1->backprop_error_average != net2->backprop_error_average)
-        return -9;
+        return -12;
 
     if (net1->dropout_percent!= net2->dropout_percent)
-        return -10;
+        return -13;
 
     return 1;
 }
