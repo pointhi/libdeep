@@ -62,11 +62,11 @@ int main(int argc, char* argv[])
     printf("Number of test examples: %d\n",learner.test_data_samples);
     printf("Number of Inputs: %d\n",learner.net->no_of_inputs);
 
-    deeplearn_set_learning_rate(&learner, 0.5f);
+    deeplearn_set_learning_rate(&learner, 0.1f);
 
     deeplearn_set_pruning(&learner, 10000, 0.3f);
 
-    deeplearn_set_dropouts(&learner, 0.001f);
+    deeplearn_set_dropouts(&learner, 0.1f);
 
     learner.history.interval = 500000;
 

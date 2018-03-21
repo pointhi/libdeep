@@ -44,9 +44,8 @@ int main(int argc, char* argv[])
 {
     int no_of_outputs = 1;
     int output_field_index[] = { 1 };
-    float error_threshold_percent[] = { 1.5f, 1.5f, 1.5f, 20.0f };
+    float error_threshold_percent[] = { 1.4f, 1.4f, 1.4f, 15.0f };
     unsigned int random_seed = 123;
-    int pruned_percent;
 
     /* load the data */
     printf("Loading data set\n");
@@ -64,8 +63,9 @@ int main(int argc, char* argv[])
     printf("Number of test examples: %d\n",learner.test_data_samples);
     printf("Number of Inputs: %d\n",learner.net->no_of_inputs);
 
-    /* set learning rate */
     deeplearn_set_learning_rate(&learner, 0.2f);
+
+    deeplearn_set_pruning(&learner, 10000, 0.3f);
 
     /* set percentage of dropouts */
     deeplearn_set_dropouts(&learner, 2.0f);
@@ -83,11 +83,6 @@ int main(int argc, char* argv[])
 
     printf("Test data set performance is %.1f%%\n",
            deeplearndata_get_performance(&learner));
-
-    pruned_percent = deeplearn_prune_weights(&learner, 0.3f);
-
-    printf("Test data set performance after %d%% pruning is %.1f%%\n",
-           pruned_percent, deeplearndata_get_performance(&learner));
 
     deeplearn_export(&learner, "export_cancer_classifier.c");
     deeplearn_export(&learner, "export_cancer_classifier_sketch.c");
