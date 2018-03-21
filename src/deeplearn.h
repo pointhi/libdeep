@@ -171,5 +171,6 @@ int deeplearn_plot_weight_magnitude(deeplearn * learner,
                                     float max_magnitude,
                                     int img_width, int img_height);
 int deeplearn_prune_weights(deeplearn * learner, float threshold);
+void deeplearn_set_pruning(deeplearn * learner, unsigned int cycle, float rate);
 
 #endif

@@ -1964,11 +1964,23 @@ int deeplearn_export(deeplearn * learner, char * filename)
 
 /**
  * @brief Sets small weights to zero
- * @param net Backprop neural net object
+ * @param learner deeplearn object
  * @param threshold Pruning threshold in the range 0.0 -> 1.0
  * @returns The percent of weights pruned
  */
 int deeplearn_prune_weights(deeplearn * learner, float threshold)
 {
     return bp_prune_weights(learner->net, threshold);
+}
+
+/*
+ * @brief Sets the pruning parameters used during training
+ * @param learner deeplearn object
+ * @param cycle The number of itterations after which pruning happens
+ * @param rate Pruning rate in the range 0.0 -> 1.0
+ */
+void deeplearn_set_pruning(deeplearn * learner, unsigned int cycle, float rate)
+{
+    learner->net->pruning_cycle = cycle;
+    learner->net->pruning_rate = rate;
 }
