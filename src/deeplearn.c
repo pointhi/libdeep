@@ -485,6 +485,14 @@ void deeplearn_free(deeplearn * learner)
     free(learner->output_range_max);
     if (learner->field_length != 0)
         free(learner->field_length);
+    if (learner->indexed_data != 0)
+        free(learner->indexed_data);
+    if (learner->indexed_training_data != 0)
+        free(learner->indexed_training_data);
+    if (learner->indexed_training_data_labeled != 0)
+        free(learner->indexed_training_data_labeled);
+    if (learner->indexed_test_data != 0)
+        free(learner->indexed_test_data);
 
     while (sample != 0) {
         prev_sample = sample;
